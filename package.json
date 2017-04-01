@@ -19,6 +19,18 @@
   ],
   "author": "Jiang Fengming",
   "license": "MIT",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-enough": "^0.2.6"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "enough",
+    "env": {
+      "browser": true,
+      "node": true
+    }
+  },
   "bugs": {
     "url": "https://github.com/fenivana/vue-router-x/issues"
   },
