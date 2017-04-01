@@ -20,6 +20,7 @@
   "author": "Jiang Fengming",
   "license": "MIT",
   "devDependencies": {
+    "babel-eslint": "7.2.1",
     "eslint": "^3.19.0",
     "eslint-config-enough": "^0.2.6"
   },
