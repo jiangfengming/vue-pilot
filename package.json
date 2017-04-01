@@ -1,0 +1,26 @@
+{
+  "name": "vue-router-x",
+  "version": "0.1.0-dev.0",
+  "description": "If the official router can't meet your needs",
+  "main": "dist/Router.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fenivana/vue-router-x.git"
+  },
+  "keywords": [
+    "vue",
+    "router"
+  ],
+  "author": "Jiang Fengming",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fenivana/vue-router-x/issues"
+  },
+  "homepage": "https://github.com/fenivana/vue-router-x#readme"
+}
