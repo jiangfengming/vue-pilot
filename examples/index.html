@@ -1,4 +1,13 @@
-[
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+
+<body>
+<script src="../dist/Router.js"></script>
+<script>
+const routes = [
   {
     layout: {
       sideLeft: 'layouts/Sideleft',
@@ -20,3 +29,8 @@
   { path: '/404', file: '404' },
   { path: '*', file: '404' }
 ]
+
+const router = new Router(routes)
+</script>
+</body>
+</html>
