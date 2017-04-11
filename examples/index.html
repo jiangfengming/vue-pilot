@@ -9,25 +9,30 @@
 <script>
 const routes = [
   {
-    layout: {
-      sideLeft: 'layouts/Sideleft',
+    file: 'layouts/Default', props: route => ({ activeTab: route.meta.type }), children: {
+      sideLeft: 'layouts/SideLeft',
 
-      default: { file: 'layouts/Default', props: route => ({ activeTab: route.options.type }), routes: [
-        { path: '/', file: 'Index', options: { type: 'home' } },
-        { path: '/articles', file: 'Articles', options: { type: 'article' } },
-        { path: '/articles/:id', file: 'ArticleDetail', options: { type: 'article' }, props: route => ({ id: route.params.id }) }
-      ] },
+      default: [
+        { path: '/', file: 'Index', meta: { type: 'home' } },
+        { path: '/articles/:id', file: 'ArticleDetail', meta: route => ({ type: 'article', id: route.params.id }), props: route => ({ id: route.params.id }) }
+      ],
 
-      sideRight: { file: 'layouts/Sideright', children: {
-        panelOne: { file: 'layouts/NewsPanel', props: route => ({ category: route.params.type || route.options.type || 'default' }) },
+      sideRight: { file: 'layouts/SideRight', children: {
+        panelOne: { file: 'layouts/NewsPanel', props: route => ({ category: route.params.type || route.meta.type || 'default' }) },
         panelTwo: 'layouts/Ads'
       } }
     }
   },
 
-  { path: '/500', file: '500' },
-  { path: '/404', file: '404' },
-  { path: '*', file: '404' }
+  {
+    file: 'layouts/Simple', children: [
+      { path: '/500', file: '500' },
+      { path: '/404', file: '404' },
+      { path: '*', file: '404' }
+    ]
+  },
+
+  { path: '/activity', file: 'activity' }
 ]
 
 const router = new Router(routes)

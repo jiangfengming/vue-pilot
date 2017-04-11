@@ -7,7 +7,8 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "babel src -w -d dist",
+    "build": "babel src -d dist"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,28 @@
   "author": "Jiang Fengming",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "6.24.1",
     "babel-eslint": "7.2.1",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-preset-env": "1.3.3",
+    "babel-preset-stage-2": "6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-enough": "^0.2.6"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "loose": true,
+          "modules": "umd"
+        }
+      ],
+      "stage-2"
+    ],
+    "plugins": [
+      "add-module-exports"
+    ]
   },
   "eslintConfig": {
     "parser": "babel-eslint",
