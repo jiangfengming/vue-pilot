@@ -32,33 +32,38 @@
 
       this.mode = mode;
       this.base = base;
-      this.routes = this.parseRoutes(routes);
+      this.routes = this._parseRoutes(routes);
     }
 
-    _class.prototype.parseRoutes = function parseRoutes(routes) {
+    _class.prototype._parseRoutes = function _parseRoutes(routes) {
       var _this = this;
 
       var parsed = [];
       routes.forEach(function (route) {
         if (route.path) {
           parsed.push([route.path, route.file, { meta: route.meta, props: route.props, layout: null }]);
-        } else {
-          var rts = _this.findRoutesInLayout(route);
+        } else if (route.layout) {
+          var rts = _this._findRoutesInLayout(route.layout);
           if (rts) rts.forEach(function (r) {
-            return parsed.push([r.path, r.file, { meta: r.meta, props: r.props, layout: route }]);
+            return parsed.push([r.path, r.file, { meta: r.meta, props: r.props, layout: route.layout }]);
           });
         }
       });
+      return parsed;
     };
 
-    _class.prototype.findRoutesInLayout = function findRoutesInLayout(layout) {
+    _class.prototype._findRoutesInLayout = function _findRoutesInLayout(layout) {
       for (var name in layout) {
         var section = layout[name];
-        if (section.routes) {
-          return layout[name].routes;
+        if (section.constructor === Array) {
+          return section;
         } else if (section.children) {
-          var routes = this.findRoutesInLayout(section.children);
-          if (routes) return routes;
+          if (section.children.constructor === Array) {
+            return section.children;
+          } else {
+            var routes = this._findRoutesInLayout(section.children);
+            if (routes) return routes;
+          }
         }
       }
     };
