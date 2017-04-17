@@ -1,8 +1,12 @@
-export default class {
+import url from 'x-url'
+import UrlRouter from 'url-router'
+
+class VueRouter {
   constructor({ routes, mode = 'history', base }) {
     this.mode = mode
     this.base = base
     this.routes = this._parseRoutes(routes)
+    this.router = new UrlRouter(this.routes)
   }
 
   _parseRoutes(routes) {
@@ -33,4 +37,24 @@ export default class {
       }
     }
   }
+
+  resolve(u) {
+    u = url.parse(u)
+    const route = this.router.find(u.pathname)
+    if (!route) return false
+
+
+  }
+
+  static install(Vue) {
+    Vue.component('router-view', {
+      props: ['name'],
+
+      render(h) {
+
+      }
+    })
+  }
 }
+
+export default VueRouter
