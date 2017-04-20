@@ -1,5 +1,6 @@
 import url from 'x-url'
 import UrlRouter from 'url-router'
+import view from './view'
 
 class VueRouter {
   constructor({ routes, mode = 'history', base }) {
@@ -13,10 +14,10 @@ class VueRouter {
     const parsed = []
     routes.forEach(route => {
       if (route.path) {
-        parsed.push([route.path, route.file, { meta: route.meta, props: route.props, layout: null }])
+        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, layout: null }])
       } else if (route.layout) {
         const rts = this._findRoutesInLayout(route.layout)
-        if (rts) rts.forEach(r => parsed.push([r.path, r.file, { meta: r.meta, props: r.props, layout: route.layout }]))
+        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, layout: route.layout }]))
       }
     })
     return parsed
@@ -42,18 +43,10 @@ class VueRouter {
     u = url.parse(u)
     const route = this.router.find(u.pathname)
     if (!route) return false
-
-
   }
 
   static install(Vue) {
-    Vue.component('router-view', {
-      props: ['name'],
-
-      render(h) {
-
-      }
-    })
+    Vue.component('router-view', view)
   }
 }
 
