@@ -41,8 +41,29 @@ class VueRouter {
 
   resolve(u) {
     u = url.parse(u)
-    const route = this.router.find(u.pathname)
-    if (!route) return false
+    const _route = this.router.find(u.pathname)
+    if (!_route) return false
+
+    let route
+    if (_route.options.layout) {
+      route = this._resolveLayout(_route.options.layout)
+    } else {
+      route = {
+        default: {
+
+        }
+      }
+    }
+  }
+
+  _resolveLayout(layout) {
+    for (const routerViewName in layout) {
+      let routerView = layout[routerViewName]
+
+      if (routerView.component.constructor === String) {
+        this.resolveComponent(routerView.component).then(component => routerView.component = component)
+      }
+    }
   }
 
   static install(Vue) {

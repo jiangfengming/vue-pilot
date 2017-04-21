@@ -12,7 +12,7 @@ const routes = [
     layout: {
       default: {
         component: 'layouts/Default', props: route => ({ activeTab: route.meta.type }), children: {
-          sideLeft: 'layouts/SideLeft',
+          sideLeft: { component: 'layouts/SideLeft' },
 
           default: [
             { path: '/', component: 'Index', meta: { type: 'home' } },
@@ -21,7 +21,7 @@ const routes = [
 
           sideRight: { component: 'layouts/SideRight', children: {
             panelOne: { component: 'layouts/NewsPanel', props: route => ({ category: route.params.type || route.meta.type || 'default' }) },
-            panelTwo: 'layouts/Ads'
+            panelTwo: { component: 'layouts/Ads' }
           } }
         }
       }
@@ -45,7 +45,7 @@ const routes = [
 
 const router = new Router({
   routes,
-  loader: component => import('./views/' + component + '.vue')
+  resolveComponent: component => import('./views/' + component + '.vue')
 })
 </script>
 </body>
