@@ -14,10 +14,10 @@ class VueRouter {
     const parsed = []
     routes.forEach(route => {
       if (route.path) {
-        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, layout: null }])
+        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, children: route.children, layout: null }])
       } else if (route.layout) {
         const rts = this._findRoutesInLayout(route.layout)
-        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, layout: route.layout }]))
+        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, children: r.children, layout: route.layout }]))
       }
     })
     return parsed
@@ -44,24 +44,35 @@ class VueRouter {
     const _route = this.router.find(u.pathname)
     if (!_route) return false
 
+    const mainView = {
+      component: _route.result,
+      meta: _route.options.meta,
+      props: _route.options.props,
+      children: _route.options.children
+    }
+
     let route
     if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout)
+      route = this._resolveLayout(_route.options.layout, mainView)
     } else {
-      route = {
-        default: {
-
-        }
-      }
+      route = this._resolveLayout({ default: mainView })
     }
+
+
   }
 
-  _resolveLayout(layout) {
-    for (const routerViewName in layout) {
-      let routerView = layout[routerViewName]
+  _resolveLayout(layout, mainView, asyncComponents = []) {
+    for (const viewName in layout) {
+      let routerView = layout[viewName]
+
+      if (routerView.constructor === Array) {
+        routerView = layout[viewName] = mainView
+      }
 
       if (routerView.component.constructor === String) {
-        this.resolveComponent(routerView.component).then(component => routerView.component = component)
+        asyncComponents.push(routerView)
+      } else if (routerView.children) {
+        this._resolveLayout(routerView.children, mainView, asyncComponents)
       }
     }
   }
