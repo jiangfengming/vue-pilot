@@ -7,7 +7,7 @@ class VueRouter {
     this.mode = mode
     this.base = base
     this.routes = this._parseRoutes(routes)
-    this.router = new UrlRouter(this.routes)
+    this.urlRouter = new UrlRouter(this.routes)
   }
 
   _parseRoutes(routes) {
@@ -39,40 +39,59 @@ class VueRouter {
     }
   }
 
-  resolve(u) {
-    u = url.parse(u)
-    const _route = this.router.find(u.pathname)
+  resolve(_url) {
+    _url = url.parse(_url)
+
+    let pathname = _url.pathname
+
+    // if (this.base)
+
+    const _route = this.urlRouter.find(u.pathname)
     if (!_route) return false
 
-    const mainView = {
-      component: _route.result,
+
+    const route = {
       meta: _route.options.meta,
+      params: _route.params,
+      query: _url.query
+    }
+    const mainRouterView = {
+      component: _route.result,
       props: _route.options.props,
       children: _route.options.children
     }
 
-    let route
     if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout, mainView)
+      route = this._resolveLayout(_route.options.layout, mainRouterView)
     } else {
-      route = this._resolveLayout({ default: mainView })
+      route = this._resolveLayout({ default: mainRouterView })
     }
-
-
   }
 
-  _resolveLayout(layout, mainView, asyncComponents = []) {
-    for (const viewName in layout) {
-      let routerView = layout[viewName]
+  _resolveLayout(layout, mainRouterView, asyncComponents = []) {
+    const result = {}
 
-      if (routerView.constructor === Array) {
-        routerView = layout[viewName] = mainView
+    for (const name in layout) {
+      let routerView = layout[name]
+
+      if (routerView.constructor === Array) routerView =  mainRouterView
+
+      // create a clone
+      routerView = {
+        component: routerView.component,
+        meta: routerView.meta,
+        props: routerView.props,
+        children: routerView.children
       }
 
-      if (routerView.component.constructor === String) {
+      routerView.meta = routerView.meta()
+      routerView.props = routerView.props()
+      result[name] = routerView
+
+      if (routerView.component.constructor !== Object) {
         asyncComponents.push(routerView)
       } else if (routerView.children) {
-        this._resolveLayout(routerView.children, mainView, asyncComponents)
+        this._resolveLayout(routerView.children, mainRouterView, asyncComponents)
       }
     }
   }
