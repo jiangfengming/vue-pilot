@@ -1,13 +1,18 @@
-import url from 'x-url'
 import UrlRouter from 'url-router'
 import view from './view'
 
-class VueRouter {
-  constructor({ routes, mode = 'history', base }) {
-    this.mode = mode
-    this.base = base
-    this.routes = this._parseRoutes(routes)
-    this.urlRouter = new UrlRouter(this.routes)
+export default class {
+  _init({ routes }) {
+    this._routes = this._parseRoutes(routes)
+    this.urlRouter = new UrlRouter(this._routes)
+  }
+
+  _beforeChange(to, from) {
+
+  }
+
+  _change(to) {
+
   }
 
   _parseRoutes(routes) {
@@ -100,5 +105,3 @@ class VueRouter {
     Vue.component('router-view', view)
   }
 }
-
-export default VueRouter
