@@ -8,11 +8,70 @@ export default class {
   }
 
   start(loc) {
-    this._history.start(loc)
+    return this._history.start(loc)
+  }
+
+  normalize(loc) {
+    return this._history.normalize(loc)
+  }
+
+  url(loc) {
+    return this._history.url(loc)
+  }
+
+  gotoStatelessLocation(loc) {
+    return this._history.gotoStatelessLocation(loc)
+  }
+
+  push(loc) {
+    return this._history.push(loc)
+  }
+
+  replace(loc) {
+    return this._history.replace(loc)
+  }
+
+  setState(state) {
+    return this._history.setState(state)
+  }
+
+  go(n, opts) {
+    return this._history.go(n, opts)
+  }
+
+  back(opts) {
+    return this._history.back(opts)
+  }
+
+  forward(opts) {
+    return this._history.forward(opts)
+  }
+
+  hookAnchorElements(container) {
+    return this._history.hookAnchorElements(container)
   }
 
   _beforeChange(to, from) {
+    const _route = this.urlRouter.find(u.pathname)
+    if (!_route) return false
 
+
+    const route = {
+      meta: _route.options.meta,
+      params: _route.params,
+      query: _url.query
+    }
+    const mainRouterView = {
+      component: _route.result,
+      props: _route.options.props,
+      children: _route.options.children
+    }
+
+    if (_route.options.layout) {
+      route = this._resolveLayout(_route.options.layout, mainRouterView)
+    } else {
+      route = this._resolveLayout({ default: mainRouterView })
+    }
   }
 
   _change(to) {
@@ -45,29 +104,6 @@ export default class {
           if (routes) return routes
         }
       }
-    }
-  }
-
-  resolve(url) {
-    const _route = this.urlRouter.find(u.pathname)
-    if (!_route) return false
-
-
-    const route = {
-      meta: _route.options.meta,
-      params: _route.params,
-      query: _url.query
-    }
-    const mainRouterView = {
-      component: _route.result,
-      props: _route.options.props,
-      children: _route.options.children
-    }
-
-    if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout, mainRouterView)
-    } else {
-      route = this._resolveLayout({ default: mainRouterView })
     }
   }
 
