@@ -2,9 +2,13 @@ import UrlRouter from 'url-router'
 import view from './view'
 
 export default class {
-  _init({ routes }) {
+  constructor({ routes }) {
     this._routes = this._parseRoutes(routes)
     this.urlRouter = new UrlRouter(this._routes)
+  }
+
+  start(loc) {
+    this._history.start(loc)
   }
 
   _beforeChange(to, from) {
@@ -44,13 +48,7 @@ export default class {
     }
   }
 
-  resolve(_url) {
-    _url = url.parse(_url)
-
-    let pathname = _url.pathname
-
-    // if (this.base)
-
+  resolve(url) {
     const _route = this.urlRouter.find(u.pathname)
     if (!_route) return false
 
