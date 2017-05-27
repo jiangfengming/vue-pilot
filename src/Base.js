@@ -52,15 +52,15 @@ export default class {
   }
 
   _beforeChange(to, from) {
-    const _route = this.urlRouter.find(u.pathname)
+    const _route = this.urlRouter.find(to.path)
     if (!_route) return false
-
 
     const route = {
       meta: _route.options.meta,
       params: _route.params,
-      query: _url.query
+      query: to.query
     }
+
     const mainRouterView = {
       component: _route.result,
       props: _route.options.props,
