@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "babel src -w -d dist",
-    "build": "babel src -d dist"
+    "build": "rollup -c rollup.config.HashRouter.js && rollup -c rollup.config.PathRouter.js"
   },
   "repository": {
     "type": "git",
@@ -21,13 +21,16 @@
   "author": "Jiang Fengming",
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "6.24.1",
-    "babel-eslint": "7.2.1",
-    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-core": "6.24.1",
+    "babel-plugin-external-helpers": "6.22.0",
     "babel-preset-env": "1.3.3",
     "babel-preset-stage-2": "6.24.1",
     "eslint": "^3.19.0",
-    "eslint-config-enough": "^0.2.6"
+    "eslint-config-enough": "^0.2.6",
+    "rollup": "0.41.6",
+    "rollup-plugin-babel": "2.7.1",
+    "rollup-plugin-commonjs": "8.0.2",
+    "rollup-plugin-node-resolve": "3.0.0"
   },
   "babel": {
     "presets": [
@@ -35,25 +38,24 @@
         "env",
         {
           "loose": true,
-          "modules": "umd"
+          "modules": false
         }
       ],
       "stage-2"
     ],
     "plugins": [
-      "add-module-exports"
+      "external-helpers"
     ]
   },
   "eslintConfig": {
-    "parser": "babel-eslint",
-    "extends": "enough",
-    "env": {
-      "browser": true,
-      "node": true
-    }
+    "extends": "enough"
   },
   "bugs": {
     "url": "https://github.com/fenivana/vue-router-x/issues"
   },
-  "homepage": "https://github.com/fenivana/vue-router-x#readme"
+  "homepage": "https://github.com/fenivana/vue-router-x#readme",
+  "dependencies": {
+    "spa-history": "0.4.2",
+    "url-router": "3.0.1"
+  }
 }

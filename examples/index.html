@@ -5,7 +5,7 @@
 </head>
 
 <body>
-<script src="../dist/Router.js"></script>
+<script src="../HashRouter.js"></script>
 <script>
 const routes = [
   {
@@ -43,10 +43,12 @@ const routes = [
   { path: '/activity', component: 'activity' }
 ]
 
-const router = new Router({
+const router = new HashRouter({
   routes,
-  resolveComponent: component => import('./views/' + component + '.vue')
+  // resolveComponent: component => import('./views/' + component + '.vue')
 })
+
+router.start()
 </script>
 </body>
 </html>

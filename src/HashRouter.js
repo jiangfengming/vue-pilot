@@ -6,8 +6,8 @@ export default class extends Base {
     super(args)
 
     this._history = new HashHistory({
-      beforeChange: this._beforeChange,
-      change: this._change
+      beforeChange: this._beforeChange.bind(this),
+      change: this._change.bind(this)
     })
   }
 }

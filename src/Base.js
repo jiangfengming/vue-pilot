@@ -2,9 +2,120 @@ import UrlRouter from 'url-router'
 import view from './view'
 
 export default class {
-  constructor({ routes }) {
+  static install(Vue) {
+    Vue.component('router-view', view)
+  }
+
+  constructor({ routes, beforeLeave = () => {} }) {
     this._routes = this._parseRoutes(routes)
-    this.urlRouter = new UrlRouter(this._routes)
+    this._urlRouter = new UrlRouter(this._routes)
+    this.beforeLeave = beforeLeave
+  }
+
+  _parseRoutes(routes) {
+    const parsed = []
+    routes.forEach(route => {
+      if (route.path) {
+        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, children: route.children, layout: null }])
+      } else if (route.layout) {
+        const rts = this._findRoutesInLayout(route.layout)
+        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, children: r.children, layout: route.layout }]))
+      }
+    })
+    return parsed
+  }
+
+  _findRoutesInLayout(layout) {
+    for (const name in layout) {
+      const section = layout[name]
+      if (section.constructor === Array) {
+        return section
+      } else if (section.children) {
+        if (section.children.constructor === Array) {
+          return section.children
+        } else {
+          const routes = this._findRoutesInLayout(section.children)
+          if (routes) return routes
+        }
+      }
+    }
+  }
+
+  _beforeChange(to, from) {
+    console.log(to)
+    const _route = this._urlRouter.find(to.path)
+    console.log(_route)
+    if (!_route) return false
+
+    const route = {
+      path: to.path,
+      fullPath: to.fullPath,
+      query: to.query,
+      hash: to.hash,
+      params: _route.params,
+      meta: _route.options.meta
+    }
+
+    const mainView = {
+      component: _route.result,
+      props: _route.options.props,
+      children: _route.options.children
+    }
+
+    route.layout = this._resolveLayout(route, mainView, _route.options.layout)
+
+    Promise.resolve(this.beforeLeave ? this.beforeLeave(route, this.current) : true).then(result => {
+
+      Promise.resolve(this.current.beforeRouteLeave ? this.current.beforeRouteLeave(route, this.current) : true).then(result => {
+
+      })
+    })
+
+    /*
+    if (_route.options.layout) {
+      route = this._resolveLayout(_route.options.layout, mainView)
+    } else {
+      route = this._resolveLayout({ default: mainView })
+    }
+    */
+  }
+
+  _change(to) {
+
+  }
+
+  _resolveLayout(route, mainView, layout, asyncComponents = []) {
+    const resolved = {}
+
+    if (!layout) {
+      layout = {
+        default: mainView
+      }
+    }
+
+    for (const name in layout) {
+      let view = layout[name]
+
+      if (view.constructor === Array) view = mainView
+
+      // create a copy
+      view = {
+        component: view.component,
+        props: view.props,
+        children: view.children
+      }
+
+      if (view.props && view.props.constructor === Function) view.props = view.props(route)
+      resolved[name] = view
+
+      if (view.component.constructor !== Object) {
+        asyncComponents.push(view)
+      } else if (view.children) {
+        this._resolveLayout(route, mainView, view.children, asyncComponents)
+      }
+    }
+
+    return resolved
   }
 
   start(loc) {
@@ -49,93 +160,5 @@ export default class {
 
   hookAnchorElements(container) {
     return this._history.hookAnchorElements(container)
-  }
-
-  _beforeChange(to, from) {
-    const _route = this.urlRouter.find(to.path)
-    if (!_route) return false
-
-    const route = {
-      meta: _route.options.meta,
-      params: _route.params,
-      query: to.query
-    }
-
-    const mainRouterView = {
-      component: _route.result,
-      props: _route.options.props,
-      children: _route.options.children
-    }
-
-    if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout, mainRouterView)
-    } else {
-      route = this._resolveLayout({ default: mainRouterView })
-    }
-  }
-
-  _change(to) {
-
-  }
-
-  _parseRoutes(routes) {
-    const parsed = []
-    routes.forEach(route => {
-      if (route.path) {
-        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, children: route.children, layout: null }])
-      } else if (route.layout) {
-        const rts = this._findRoutesInLayout(route.layout)
-        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, children: r.children, layout: route.layout }]))
-      }
-    })
-    return parsed
-  }
-
-  _findRoutesInLayout(layout) {
-    for (const name in layout) {
-      const section = layout[name]
-      if (section.constructor === Array) {
-        return section
-      } else if (section.children) {
-        if (section.children.constructor === Array) {
-          return section.children
-        } else {
-          const routes = this._findRoutesInLayout(section.children)
-          if (routes) return routes
-        }
-      }
-    }
-  }
-
-  _resolveLayout(layout, mainRouterView, asyncComponents = []) {
-    const result = {}
-
-    for (const name in layout) {
-      let routerView = layout[name]
-
-      if (routerView.constructor === Array) routerView =  mainRouterView
-
-      // create a clone
-      routerView = {
-        component: routerView.component,
-        meta: routerView.meta,
-        props: routerView.props,
-        children: routerView.children
-      }
-
-      routerView.meta = routerView.meta()
-      routerView.props = routerView.props()
-      result[name] = routerView
-
-      if (routerView.component.constructor !== Object) {
-        asyncComponents.push(routerView)
-      } else if (routerView.children) {
-        this._resolveLayout(routerView.children, mainRouterView, asyncComponents)
-      }
-    }
-  }
-
-  static install(Vue) {
-    Vue.component('router-view', view)
   }
 }
