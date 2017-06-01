@@ -1,11 +1,11 @@
 import UrlRouter from 'url-router'
-import view from './view'
-import link from './link'
+import RouterView from './RouterView'
+import RouterLink from './RouterLink'
 
 export default class {
   static install(Vue) {
-    Vue.component('router-view', view)
-    Vue.component('router-link', link)
+    Vue.component('router-view', RouterView)
+    Vue.component('router-link', RouterLink)
 
     Vue.mixin({
       beforeCreate() {
