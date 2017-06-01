@@ -1,15 +1,25 @@
 import UrlRouter from 'url-router'
 import view from './view'
+import link from './link'
 
 export default class {
   static install(Vue) {
     Vue.component('router-view', view)
+    Vue.component('router-link', link)
+
+    Vue.mixin({
+      beforeCreate() {
+        if (this.$vnode.data._isRouteView && this.$options.beforeRouteLeave) {
+          this.$route._leaveHooks.push(this.$options.beforeRouteLeave.bind(this))
+        }
+      }
+    })
   }
 
-  constructor({ routes, beforeLeave = () => {} }) {
+  constructor({ routes }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
-    this.beforeLeave = beforeLeave
+    this._beforeLeaveHooks = []
   }
 
   _parseRoutes(routes) {
@@ -54,7 +64,16 @@ export default class {
         query: to.query,
         hash: to.hash,
         params: _route.params,
-        meta: _route.options.meta
+        _beforeLeaveHooksInComp: [],
+        _beforeEnterHooks: [],
+        _beforeEnterHooksInComp: []
+      }
+
+      if (_route.options.meta) {
+        if (_route.options.meta.constructor === Function) route.meta = _route.options.meta(route)
+        else route.meta = _route.options.meta
+      } else {
+        route.meta = {}
       }
 
       const mainView = {
@@ -63,32 +82,31 @@ export default class {
         children: _route.options.children
       }
 
-      this._runHooks([], result => {
+      route.components = this._resolveComponents(route, mainView, _route.options.layout)
 
-      })
 
-      route.layout = this._resolveLayout(route, mainView, _route.options.layout)
+      const hooks = this.current._beforeLeaveHooksInComp.concat(this._beforeLeaveHooks, route._beforeEnterHooks, route._beforeEnterHooksInComp)
 
-      Promise.resolve(this.beforeLeave ? this.beforeLeave(route, this.current) : true).then(result => {
-
-        Promise.resolve(this.current.beforeRouteLeave ? this.current.beforeRouteLeave(route, this.current) : true).then(result => {
-
+      let promise
+      for (const hook of hooks) {
+        promise = promise.then(() => {
+          Promise.resolve(hook(route, this.current)).then(result => {
+            if (!(result === true || result == null)) throw result
+          })
         })
+      }
+
+      promise.catch(result => {
+        resolve(result)
       })
     })
-  }
-
-  _runHooks(hooks, cb) {
-    for (const hook of hooks) {
-
-    }
   }
 
   _change(to) {
     console.log(to)
   }
 
-  _resolveLayout(route, mainView, layout, asyncComponents = []) {
+  _resolveComponents(route, mainView, layout, asyncComponents = []) {
     const resolved = {}
 
     if (!layout) {
@@ -115,7 +133,7 @@ export default class {
       if (view.component.constructor !== Object) {
         asyncComponents.push(view)
       } else if (view.children) {
-        this._resolveLayout(route, mainView, view.children, asyncComponents)
+        this._resolveComponents(route, mainView, view.children, asyncComponents)
       }
     }
 

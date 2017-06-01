@@ -22,5 +22,7 @@ export default {
         break
       }
     }
+
+    const component = parentRoute.children[props.name]
   }
 }
