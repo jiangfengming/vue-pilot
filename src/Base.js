@@ -26,12 +26,35 @@ export default class {
     const parsed = []
     routes.forEach(route => {
       if (route.path) {
-        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, children: route.children, layout: null }])
+        parsed.push([
+          route.path,
+          route.component,
+          {
+            meta: route.meta,
+            props: route.props,
+            children: route.children,
+            layout: null,
+            beforeEnter: route.beforeEnter
+          }
+        ])
       } else if (route.layout) {
         const rts = this._findRoutesInLayout(route.layout)
-        if (rts) rts.forEach(r => parsed.push([r.path, r.component, { meta: r.meta, props: r.props, children: r.children, layout: route.layout }]))
+        if (rts) {
+          rts.forEach(r => parsed.push([
+            r.path,
+            r.component,
+            {
+              meta: r.meta,
+              props: r.props,
+              children: r.children,
+              layout: route.layout,
+              beforeEnter: r.beforeEnter
+            }
+          ]))
+        }
       }
     })
+
     return parsed
   }
 
@@ -119,6 +142,8 @@ export default class {
       let view = layout[name]
 
       if (view.constructor === Array) view = mainView
+
+      if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter)
 
       // create a copy
       view = {
