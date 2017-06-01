@@ -42,46 +42,50 @@ export default class {
   }
 
   _beforeChange(to, from) {
-    console.log(to)
-    const _route = this._urlRouter.find(to.path)
-    console.log(_route)
-    if (!_route) return false
+    return new Promise((resolve, reject) => {
+      console.log(to)
+      const _route = this._urlRouter.find(to.path)
+      console.log(_route)
+      if (!_route) return false
 
-    const route = {
-      path: to.path,
-      fullPath: to.fullPath,
-      query: to.query,
-      hash: to.hash,
-      params: _route.params,
-      meta: _route.options.meta
-    }
+      const route = {
+        path: to.path,
+        fullPath: to.fullPath,
+        query: to.query,
+        hash: to.hash,
+        params: _route.params,
+        meta: _route.options.meta
+      }
 
-    const mainView = {
-      component: _route.result,
-      props: _route.options.props,
-      children: _route.options.children
-    }
+      const mainView = {
+        component: _route.result,
+        props: _route.options.props,
+        children: _route.options.children
+      }
 
-    route.layout = this._resolveLayout(route, mainView, _route.options.layout)
-
-    Promise.resolve(this.beforeLeave ? this.beforeLeave(route, this.current) : true).then(result => {
-
-      Promise.resolve(this.current.beforeRouteLeave ? this.current.beforeRouteLeave(route, this.current) : true).then(result => {
+      this._runHooks([], result => {
 
       })
-    })
 
-    /*
-    if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout, mainView)
-    } else {
-      route = this._resolveLayout({ default: mainView })
+      route.layout = this._resolveLayout(route, mainView, _route.options.layout)
+
+      Promise.resolve(this.beforeLeave ? this.beforeLeave(route, this.current) : true).then(result => {
+
+        Promise.resolve(this.current.beforeRouteLeave ? this.current.beforeRouteLeave(route, this.current) : true).then(result => {
+
+        })
+      })
+    })
+  }
+
+  _runHooks(hooks, cb) {
+    for (const hook of hooks) {
+
     }
-    */
   }
 
   _change(to) {
-
+    console.log(to)
   }
 
   _resolveLayout(route, mainView, layout, asyncComponents = []) {
