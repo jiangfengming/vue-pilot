@@ -16,10 +16,16 @@ export default class {
     })
   }
 
-  constructor({ routes }) {
+  constructor({ routes, resolveComponent = () => {}, onError = () => {} }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
-    this._beforeLeaveHooks = []
+    this._beforeChangeHooks = []
+    this.resolveComponent = resolveComponent
+    this.onError = onError
+  }
+
+  beforeChange(cb) {
+    this._beforeChangeHooks.push(cb)
   }
 
   _parseRoutes(routes) {
@@ -74,14 +80,12 @@ export default class {
     }
   }
 
-  _beforeChange(to, from) {
-    return new Promise((resolve, reject) => {
-      console.log(to)
+  _beforeChange(to) {
+    return new Promise(resolve => {
       const _route = this._urlRouter.find(to.path)
-      console.log(_route)
       if (!_route) return false
 
-      const route = {
+      const route = to.route = {
         path: to.path,
         fullPath: to.fullPath,
         query: to.query,
@@ -105,31 +109,34 @@ export default class {
         children: _route.options.children
       }
 
-      route.components = this._resolveComponents(route, mainView, _route.options.layout)
+      route.layout = this._resolveLayout(route, mainView, _route.options.layout).catch(e => this.onError(e))
 
+      let prom = Promise.resolve(true)
+      this.current._beforeLeaveHooksInComp.concat(
+        this._beforeChangeHooks,
+        route._beforeEnterHooks,
+        route._beforeEnterHooksInComp
+      ).forEach(hook =>
+        prom = prom.then(() =>
+          // route._beforeEnterHooksInComp maybe async
+          Promise.resolve(hook).then(hook =>
+            Promise.resolve(hook(route, this.current)).then(result => {
+              // if the hook abort or redirect the navigation, cancel the promise chain.
+              if (!(result === true || result == null)) throw result
+            })
+          )
+        )
+      )
 
-      const hooks = this.current._beforeLeaveHooksInComp.concat(this._beforeLeaveHooks, route._beforeEnterHooks, route._beforeEnterHooksInComp)
-
-      let promise
-      for (const hook of hooks) {
-        promise = promise.then(() => {
-          Promise.resolve(hook(route, this.current)).then(result => {
-            if (!(result === true || result == null)) throw result
-          })
-        })
-      }
-
-      promise.catch(result => {
-        resolve(result)
-      })
+      prom.catch(e => e).then(result => resolve(result))
     })
   }
 
   _change(to) {
-    console.log(to)
+    this.current = to.route
   }
 
-  _resolveComponents(route, mainView, layout, asyncComponents = []) {
+  _resolveLayout(route, mainView, layout, asyncComponents = []) {
     const resolved = {}
 
     if (!layout) {
@@ -158,7 +165,7 @@ export default class {
       if (view.component.constructor !== Object) {
         asyncComponents.push(view)
       } else if (view.children) {
-        this._resolveComponents(route, mainView, view.children, asyncComponents)
+        this._resolveLayout(route, mainView, view.children, asyncComponents)
       }
     }
 
