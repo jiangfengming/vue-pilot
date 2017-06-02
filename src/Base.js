@@ -6,14 +6,6 @@ export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
-
-    Vue.mixin({
-      beforeCreate() {
-        if (this.$vnode.data._isRouteView && this.$options.beforeRouteLeave) {
-          this.$route._leaveHooks.push(this.$options.beforeRouteLeave.bind(this))
-        }
-      }
-    })
   }
 
   constructor({ routes, resolveComponent = () => {}, onError = () => {} }) {
