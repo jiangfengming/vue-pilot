@@ -5,8 +5,14 @@
 </head>
 
 <body>
+<div id="app">
+  <router-view foo="hello"></router-view>
+</div>
+
+<script src="https://unpkg.com/vue"></script>
 <script src="../HashRouter.js"></script>
 <script>
+/*
 const routes = [
   {
     layout: {
@@ -42,10 +48,27 @@ const routes = [
 
   { path: '/activity', component: 'activity' }
 ]
+*/
+
+Vue.use(HashRouter)
+
+const routes = [
+  {
+    path: '/',
+    component: {
+      props: ['foo'],
+      template: '<div>{{foo}} world</div>'
+    }
+  }
+]
 
 const router = new HashRouter({
-  routes,
-  // resolveComponent: component => import('./views/' + component + '.vue')
+  routes
+})
+
+const app = new Vue({
+  el: '#app',
+  router
 })
 
 router.start()

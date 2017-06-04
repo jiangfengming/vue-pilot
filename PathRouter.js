@@ -568,7 +568,7 @@ var Router = createCommonjsModule(function (module, exports) {
 
 var UrlRouter = unwrapExports(Router);
 
-var view = {
+var RouterView = {
   functional: true,
 
   props: {
@@ -584,19 +584,34 @@ var view = {
         parent = _ref.parent,
         data = _ref.data;
 
-    var parentRoute = void 0;
-
+    debugger;
     while (parent) {
-      if (parent.$vnode && parent.$vnode.routerView) {
-        parentRoute = parent;
+      if (parent.$vnode && parent.$vnode.data._routerView) {
+        data._routerView = parent.$vnode.data._routerView.children[props.name];
         break;
       } else if (parent.$parent) {
         parent = parent.$parent;
-      } else {
-        parentRoute = parent.$route;
+      } else if (parent.$route) {
+        data._routerView = parent.$root.$route.layout[props.name];
         break;
+      } else {
+        return h();
       }
     }
+
+    return h(data._routerView.component, Object.assign(data, { props: data._routerView.props }), children);
+  }
+};
+
+var RouterLink = {
+  functional: true,
+
+  props: ['tag', 'to', 'method'],
+
+  render: function render(h, _ref) {
+    var props = _ref.props;
+
+    return h();
   }
 };
 
@@ -651,13 +666,176 @@ var possibleConstructorReturn = function (self, call) {
 };
 
 var _class$2 = function () {
+  _class.install = function install(Vue) {
+    Vue.component('router-view', RouterView);
+    Vue.component('router-link', RouterLink);
+
+    Vue.mixin({
+      data: function data() {
+        return this.$root === this ? { $route: null } : {};
+      },
+      created: function created() {
+        if (this.$options.router) {
+          this.$router = this.$options.router;
+          this.$router.app = this;
+
+          Object.defineProperty(this, '$route', {
+            get: function get$$1() {
+              return this.$data.$route;
+            },
+            set: function set$$1(v) {
+              this.$data.$route = v;
+            }
+          });
+        } else if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+          this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this));
+        }
+      }
+    });
+  };
+
   function _class(_ref) {
     var routes = _ref.routes;
     classCallCheck(this, _class);
 
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
+    this._beforeChangeHooks = [];
   }
+
+  _class.prototype.beforeChange = function beforeChange(cb) {
+    this._beforeChangeHooks.push(cb);
+  };
+
+  _class.prototype._parseRoutes = function _parseRoutes(routes) {
+    var _this = this;
+
+    var parsed = [];
+    routes.forEach(function (route) {
+      if (route.path) {
+        parsed.push([route.path, route.component, {
+          meta: route.meta,
+          props: route.props,
+          children: route.children,
+          layout: null,
+          beforeEnter: route.beforeEnter
+        }]);
+      } else if (route.layout) {
+        var rts = _this._findRoutesInLayout(route.layout);
+        if (rts) {
+          rts.forEach(function (r) {
+            return parsed.push([r.path, r.component, {
+              meta: r.meta,
+              props: r.props,
+              children: r.children,
+              layout: route.layout,
+              beforeEnter: r.beforeEnter
+            }]);
+          });
+        }
+      }
+    });
+
+    return parsed;
+  };
+
+  _class.prototype._findRoutesInLayout = function _findRoutesInLayout(layout) {
+    for (var name in layout) {
+      var section = layout[name];
+      if (section.constructor === Array) {
+        return section;
+      } else if (section.children) {
+        if (section.children.constructor === Array) {
+          return section.children;
+        } else {
+          var routes = this._findRoutesInLayout(section.children);
+          if (routes) return routes;
+        }
+      }
+    }
+  };
+
+  _class.prototype._beforeChange = function _beforeChange(to) {
+    var _this2 = this;
+
+    return new Promise(function (resolve) {
+      var _route = _this2._urlRouter.find(to.path);
+      if (!_route) return false;
+
+      var route = to.route = {
+        path: to.path,
+        fullPath: to.fullPath,
+        query: to.query,
+        hash: to.hash,
+        params: _route.params,
+        _beforeLeaveHooksInComp: [],
+        _beforeEnterHooks: []
+      };
+
+      if (_route.options.meta) {
+        if (_route.options.meta.constructor === Function) route.meta = _route.options.meta(route);else route.meta = _route.options.meta;
+      } else {
+        route.meta = {};
+      }
+
+      var mainView = {
+        component: _route.result,
+        props: _route.options.props,
+        children: _route.options.children
+      };
+
+      route.layout = _this2._resolveLayout(route, mainView, _route.options.layout);
+
+      var prom = Promise.resolve(true);[].concat(_this2.current ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
+        return prom = prom.then(function () {
+          return Promise.resolve(hook(route, _this2.current)).then(function (result) {
+            // if the hook abort or redirect the navigation, cancel the promise chain.
+            if (!(result === true || result == null)) throw result;
+          });
+        });
+      });
+
+      prom.catch(function (e) {
+        return e;
+      }).then(function (result) {
+        return resolve(result);
+      });
+    });
+  };
+
+  _class.prototype._change = function _change(to) {
+    this.app.$route = this.current = to.route;
+  };
+
+  _class.prototype._resolveLayout = function _resolveLayout(route, mainView, layout) {
+    var resolved = {};
+
+    if (!layout) {
+      layout = {
+        default: mainView
+      };
+    }
+
+    for (var name in layout) {
+      var view = layout[name];
+
+      if (view.constructor === Array) view = mainView;
+
+      if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter
+
+      // create a copy
+      );resolved[name] = view = {
+        component: view.component,
+        props: view.props,
+        children: view.children
+      };
+
+      if (view.props && view.props.constructor === Function) view.props = view.props(route);
+      if (view.children) view.children = this._resolveLayout(route, mainView, view.children);
+    }
+
+    return resolved;
+  };
 
   _class.prototype.start = function start(loc) {
     return this._history.start(loc);
@@ -701,102 +879,6 @@ var _class$2 = function () {
 
   _class.prototype.hookAnchorElements = function hookAnchorElements(container) {
     return this._history.hookAnchorElements(container);
-  };
-
-  _class.prototype._beforeChange = function _beforeChange(to, from) {
-    console.log(to);
-    var _route = this._urlRouter.find(to.path);
-    console.log(_route);
-    if (!_route) return false;
-
-    var route = {
-      meta: _route.options.meta,
-      params: _route.params,
-      query: to.query
-    };
-
-    var mainRouterView = {
-      component: _route.result,
-      props: _route.options.props,
-      children: _route.options.children
-    };
-
-    /*
-    if (_route.options.layout) {
-      route = this._resolveLayout(_route.options.layout, mainRouterView)
-    } else {
-      route = this._resolveLayout({ default: mainRouterView })
-    }
-    */
-  };
-
-  _class.prototype._change = function _change(to) {};
-
-  _class.prototype._parseRoutes = function _parseRoutes(routes) {
-    var _this = this;
-
-    var parsed = [];
-    routes.forEach(function (route) {
-      if (route.path) {
-        parsed.push([route.path, route.component, { meta: route.meta, props: route.props, children: route.children, layout: null }]);
-      } else if (route.layout) {
-        var rts = _this._findRoutesInLayout(route.layout);
-        if (rts) rts.forEach(function (r) {
-          return parsed.push([r.path, r.component, { meta: r.meta, props: r.props, children: r.children, layout: route.layout }]);
-        });
-      }
-    });
-    return parsed;
-  };
-
-  _class.prototype._findRoutesInLayout = function _findRoutesInLayout(layout) {
-    for (var name in layout) {
-      var section = layout[name];
-      if (section.constructor === Array) {
-        return section;
-      } else if (section.children) {
-        if (section.children.constructor === Array) {
-          return section.children;
-        } else {
-          var routes = this._findRoutesInLayout(section.children);
-          if (routes) return routes;
-        }
-      }
-    }
-  };
-
-  _class.prototype._resolveLayout = function _resolveLayout(layout, mainRouterView) {
-    var asyncComponents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-
-    var result = {};
-
-    for (var name in layout) {
-      var routerView = layout[name];
-
-      if (routerView.constructor === Array) routerView = mainRouterView;
-
-      // create a clone
-      routerView = {
-        component: routerView.component,
-        meta: routerView.meta,
-        props: routerView.props,
-        children: routerView.children
-      };
-
-      routerView.meta = routerView.meta();
-      routerView.props = routerView.props();
-      result[name] = routerView;
-
-      if (routerView.component.constructor !== Object) {
-        asyncComponents.push(routerView);
-      } else if (routerView.children) {
-        this._resolveLayout(routerView.children, mainRouterView, asyncComponents);
-      }
-    }
-  };
-
-  _class.install = function install(Vue) {
-    Vue.component('router-view', view);
   };
 
   return _class;

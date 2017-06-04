@@ -1,9 +1,33 @@
 export default {
   functional: true,
 
-  props: ['tag', 'to', 'method'],
+  props: {
+    tag: {
+      type: String,
+      default: 'a'
+    },
 
-  render(h, { props }) {
-    return h()
+    to: {
+      type: [String, Object]
+    },
+
+    replace: {
+      type: Boolean,
+      default: false
+    }
+  },
+
+  render(h, { props, children }) {
+    return h(
+      props.tag,
+      {
+        on: {
+          click(e) {
+            e.preventDefault()
+            this.$router[props.replace ? 'replace' : 'push'](props.to)
+          }
+        }
+      },
+      children)
   }
 }

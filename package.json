@@ -55,7 +55,7 @@
   },
   "homepage": "https://github.com/fenivana/vue-router-x#readme",
   "dependencies": {
-    "spa-history": "0.4.2",
+    "spa-history": "0.4.3",
     "url-router": "3.0.1"
   }
 }

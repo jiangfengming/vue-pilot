@@ -9,17 +9,22 @@ export default class {
 
     Vue.mixin({
       data() {
-        const data = { $router: null }
-        if (this.$root === this) data.$route = null
-        return data
-      }
+        return this.$root === this ? { $route: null } : {}
+      },
 
       created() {
         if (this.$options.router) {
           this.$router = this.$options.router
           this.$router.app = this
-        } else if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
-          this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
+
+          Object.defineProperty(this, '$route', {
+            get() { return this.$data.$route },
+            set(v) { this.$data.$route = v }
+          })
+        } else {
+          this.$router = this.$root.$router
+
+          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
         }
       }
     })
@@ -115,10 +120,10 @@ export default class {
         children: _route.options.children
       }
 
-      route.layout = this._resolveLayout(route, mainView, _route.options.layout).catch(e => this.onError(e))
+      route.layout = this._resolveLayout(route, mainView, _route.options.layout)
 
       let prom = Promise.resolve(true)
-      [].concat(
+      ;[].concat(
         this.current ? this.current._beforeLeaveHooksInComp : [],
         this._beforeChangeHooks,
         route._beforeEnterHooks
