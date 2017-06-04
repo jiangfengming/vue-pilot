@@ -1,4 +1,6 @@
 export default {
+  functional: true,
+
   props: {
     name: {
       type: String,
@@ -7,23 +9,19 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    if (this.$options.beforeRouteLeave) {
-      this.$root.$route._leaveHooks.push(this.$options.beforeRouteLeave.bind(this))
-    }
-
-    let parent = this.$parent
-
     while (parent) {
-      if (parent.constructor.extendOptions) {
-        this.layout = parent.layout.children[this.name]
+      if (parent.$vnode && parent.$vnode.data._routerView) {
+        data._routerView = parent.$vnode.data._routerView.children[props.name]
         break
       } else if (parent.$parent) {
         parent = parent.$parent
+      } else if (parent.$root.$route) {
+        data._routerView = parent.$root.$route.layout[this.name]
       } else {
-        this.layout = this.$root.$route.layout[this.name]
+        return h()
       }
     }
 
-    return h(this.layout, this.$vnode.data)
+    return h(data._routerView.component, data, children)
   }
 }

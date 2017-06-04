@@ -6,14 +6,29 @@ export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
+
+    Vue.mixin({
+      data() {
+        const data = { $router: null }
+        if (this.$root === this) data.$route = null
+        return data
+      }
+
+      created() {
+        if (this.$options.router) {
+          this.$router = this.$options.router
+          this.$router.app = this
+        } else if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+          this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
+        }
+      }
+    })
   }
 
-  constructor({ routes, resolveComponent = () => {}, onError = () => {} }) {
+  constructor({ routes }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
-    this.resolveComponent = resolveComponent
-    this.onError = onError
   }
 
   beforeChange(cb) {
@@ -84,8 +99,7 @@ export default class {
         hash: to.hash,
         params: _route.params,
         _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: [],
-        _beforeEnterHooksInComp: []
+        _beforeEnterHooks: []
       }
 
       if (_route.options.meta) {
@@ -104,19 +118,16 @@ export default class {
       route.layout = this._resolveLayout(route, mainView, _route.options.layout).catch(e => this.onError(e))
 
       let prom = Promise.resolve(true)
-      this.current._beforeLeaveHooksInComp.concat(
+      [].concat(
+        this.current ? this.current._beforeLeaveHooksInComp : [],
         this._beforeChangeHooks,
-        route._beforeEnterHooks,
-        route._beforeEnterHooksInComp
+        route._beforeEnterHooks
       ).forEach(hook =>
         prom = prom.then(() =>
-          // route._beforeEnterHooksInComp maybe async
-          Promise.resolve(hook).then(hook =>
-            Promise.resolve(hook(route, this.current)).then(result => {
-              // if the hook abort or redirect the navigation, cancel the promise chain.
-              if (!(result === true || result == null)) throw result
-            })
-          )
+          Promise.resolve(hook(route, this.current)).then(result => {
+            // if the hook abort or redirect the navigation, cancel the promise chain.
+            if (!(result === true || result == null)) throw result
+          })
         )
       )
 
@@ -125,10 +136,10 @@ export default class {
   }
 
   _change(to) {
-    this.current = to.route
+    this.app.$route = this.current = to.route
   }
 
-  _resolveLayout(route, mainView, layout, asyncComponents = []) {
+  _resolveLayout(route, mainView, layout) {
     const resolved = {}
 
     if (!layout) {
@@ -145,20 +156,14 @@ export default class {
       if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter)
 
       // create a copy
-      view = {
+      resolved[name] = view = {
         component: view.component,
         props: view.props,
         children: view.children
       }
 
       if (view.props && view.props.constructor === Function) view.props = view.props(route)
-      resolved[name] = view
-
-      if (view.component.constructor !== Object) {
-        asyncComponents.push(view)
-      } else if (view.children) {
-        this._resolveLayout(route, mainView, view.children, asyncComponents)
-      }
+      if (view.children) view.children = this._resolveLayout(route, mainView, view.children)
     }
 
     return resolved
