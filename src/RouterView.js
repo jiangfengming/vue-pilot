@@ -1,8 +1,4 @@
-const RouterView = {
-  data: {
-    layout: null
-  },
-
+export default {
   props: {
     name: {
       type: String,
@@ -10,7 +6,7 @@ const RouterView = {
     }
   },
 
-  created() {
+  render(h, { props, children, parent, data }) {
     if (this.$options.beforeRouteLeave) {
       this.$root.$route._leaveHooks.push(this.$options.beforeRouteLeave.bind(this))
     }
@@ -27,11 +23,7 @@ const RouterView = {
         this.layout = this.$root.$route.layout[this.name]
       }
     }
-  },
 
-  render(h) {
     return h(this.layout, this.$vnode.data)
   }
 }
-
-export default RouterView
