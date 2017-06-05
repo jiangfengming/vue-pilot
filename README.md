@@ -1,4 +1,4 @@
-# vue-router-x
-If the official router can't meet your needs
+# vue-stateful-router
+A vue router with the power of history.state
 
 ## Under Developing...

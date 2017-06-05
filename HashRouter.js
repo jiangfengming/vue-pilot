@@ -602,12 +602,34 @@ var RouterView = {
 var RouterLink = {
   functional: true,
 
-  props: ['tag', 'to', 'method'],
+  props: {
+    tag: {
+      type: String,
+      default: 'a'
+    },
+
+    to: {
+      type: [String, Object]
+    },
+
+    replace: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   render: function render(h, _ref) {
-    var props = _ref.props;
+    var props = _ref.props,
+        children = _ref.children;
 
-    return h();
+    return h(props.tag, {
+      on: {
+        click: function click(e) {
+          e.preventDefault();
+          this.$router[props.replace ? 'replace' : 'push'](props.to);
+        }
+      }
+    }, children);
   }
 };
 
@@ -670,7 +692,7 @@ var _class$2 = function () {
       data: function data() {
         return this.$root === this ? { $route: null } : {};
       },
-      created: function created() {
+      beforeCreate: function beforeCreate() {
         if (this.$options.router) {
           this.$router = this.$options.router;
           this.$router.app = this;
@@ -683,8 +705,10 @@ var _class$2 = function () {
               this.$data.$route = v;
             }
           });
-        } else if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
-          this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this));
+        } else {
+          this.$router = this.$root.$router;
+
+          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this));
         }
       }
     });
@@ -800,7 +824,7 @@ var _class$2 = function () {
   };
 
   _class.prototype._change = function _change(to) {
-    this.app.$route = this.current = to.route;
+    this.current = this.app.$route = to.route;
   };
 
   _class.prototype._resolveLayout = function _resolveLayout(route, mainView, layout) {
@@ -817,10 +841,10 @@ var _class$2 = function () {
 
       if (view.constructor === Array) view = mainView;
 
-      if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter
+      if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter);
 
       // create a copy
-      );resolved[name] = view = {
+      resolved[name] = view = {
         component: view.component,
         props: view.props,
         children: view.children
@@ -845,8 +869,8 @@ var _class$2 = function () {
     return this._history.url(loc);
   };
 
-  _class.prototype.gotoStatelessLocation = function gotoStatelessLocation(loc) {
-    return this._history.gotoStatelessLocation(loc);
+  _class.prototype.dispatch = function dispatch(loc) {
+    return this._history.dispatch(loc);
   };
 
   _class.prototype.push = function push(loc) {

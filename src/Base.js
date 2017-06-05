@@ -12,7 +12,7 @@ export default class {
         return this.$root === this ? { $route: null } : {}
       },
 
-      created() {
+      beforeCreate() {
         if (this.$options.router) {
           this.$router = this.$options.router
           this.$router.app = this
@@ -141,7 +141,7 @@ export default class {
   }
 
   _change(to) {
-    this.app.$route = this.current = to.route
+    this.current = this.app.$route = to.route
   }
 
   _resolveLayout(route, mainView, layout) {
@@ -186,8 +186,8 @@ export default class {
     return this._history.url(loc)
   }
 
-  gotoStatelessLocation(loc) {
-    return this._history.gotoStatelessLocation(loc)
+  dispatch(loc) {
+    return this._history.dispatch(loc)
   }
 
   push(loc) {
