@@ -102,6 +102,7 @@ export default class {
         fullPath: to.fullPath,
         query: to.query,
         hash: to.hash,
+        state: to.state,
         params: _route.params,
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: []
