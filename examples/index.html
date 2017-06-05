@@ -6,64 +6,112 @@
 
 <body>
 <div id="app">
-  <router-view foo="hello"></router-view>
+  <router-link to="/">/</router-link><br>
+  <router-link to="/props-obj">/props-obj</router-link><br>
+  <router-link to="/props-func/bonjour?foo=hey">/props-func/bonjour?foo=hey</router-link><br>
+  <router-link to="/layout/foo">/layout/foo</router-link><br>
+  <router-link to="/layout/bar">/layout/bar</router-link><br>
+  <router-link :to="{ path: '/', hidden: true }">hidden /</router-link><br>
+  <router-link :to="{ path: '/' }" method="replace">replace /</router-link><br>
+  <router-link :to="{ path: '/' }" method="dispatch">dispatch /</router-link><br>
+  <router-link to="/404">/404</router-link>
+
+  <router-view foo="hello" class="foo"></router-view>
 </div>
 
 <script src="https://unpkg.com/vue"></script>
 <script src="../HashRouter.js"></script>
 <script>
-/*
+Vue.use(HashRouter)
+
+// async
+const VFoo = () => Promise.resolve({
+  props: ['foo', 'bar', 'baz'],
+  template: '<div>foo: {{foo}}, bar: {{bar}}, baz: {{baz}}</div>'
+})
+
+const VLayoutA = {
+  props: ['foo'],
+  template: `
+    <div>
+      Layout A. foo: {{foo}}
+      <router-view></router-view>
+      <router-view name="footer"></router-view>
+    </div>
+  `
+}
+
 const routes = [
+  {
+    path: '/',
+    component: VFoo
+  },
+
+  {
+    path: '/props-obj',
+    component: VFoo,
+    props: { foo: 'hallo' }
+  },
+
+  {
+    path: '/props-func/:bar',
+    component: VFoo,
+    meta: { baz: 'one' },
+    props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
+  },
+
   {
     layout: {
       default: {
-        component: 'layouts/Default', props: route => ({ activeTab: route.meta.type }), children: {
-          sideLeft: { component: 'layouts/SideLeft' },
-
+        component: VLayoutA,
+        props: route => ({ foo: route.meta.foo }),
+        children: {
           default: [
-            { path: '/', component: 'Index', meta: { type: 'home' } },
-            { path: '/articles/:id', component: 'ArticleDetail', meta: route => ({ type: 'article', id: route.params.id }), props: route => ({ id: route.params.id }) }
+            {
+              path: '/layout/foo',
+              component: VFoo,
+              meta: route => ({ foo: 'one' }),
+              props: { foo: 'one', bar: 'two', baz: 'three' }
+            },
+
+            {
+              path: '/layout/bar',
+              component: {
+                template: '<div>bar</div>',
+                beforeRouteLeave() {
+                  console.log(this)
+                  return confirm('Leave?')
+                }
+              },
+              meta: { foo: 'two' },
+              beforeEnter() {
+                return confirm('Enter?')
+              }
+            }
           ],
 
-          sideRight: { component: 'layouts/SideRight', children: {
-            panelOne: { component: 'layouts/NewsPanel', props: route => ({ category: route.params.type || route.meta.type || 'default' }) },
-            panelTwo: { component: 'layouts/Ads' }
-          } }
+          footer: {
+            component: {
+              template: '<footer>footer</footer>'
+            }
+          }
         }
       }
     }
   },
 
   {
-    layout: {
-      default: {
-        component: 'layouts/Simple', children: [
-          { path: '/500', component: '500' },
-          { path: '/404', component: '404' },
-          { path: '*', component: '404' }
-        ]
-      }
-    }
-  },
-
-  { path: '/activity', component: 'activity' }
-]
-*/
-
-Vue.use(HashRouter)
-
-const routes = [
-  {
-    path: '/',
+    path: '*',
     component: {
-      props: ['foo'],
-      template: '<div>{{foo}} world</div>'
+      template: '<div>404 Not Found</div>'
     }
   }
 ]
 
-const router = new HashRouter({
-  routes
+const router = new HashRouter({ routes })
+
+router.beforeChange((to, from) => {
+  if (from && from.path === '/layout/foo') return confirm('Leave?')
 })
 
 const app = new Vue({

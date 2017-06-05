@@ -9,7 +9,6 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    debugger
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
         data._routerView = parent.$vnode.data._routerView.children[props.name]
@@ -17,7 +16,7 @@ export default {
       } else if (parent.$parent) {
         parent = parent.$parent
       } else if (parent.$route) {
-        data._routerView = parent.$root.$route.layout[props.name]
+        data._routerView = parent.$root.$route._layout[props.name]
         break
       } else {
         return h()

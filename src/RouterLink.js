@@ -11,23 +11,28 @@ export default {
       type: [String, Object]
     },
 
-    replace: {
-      type: Boolean,
-      default: false
+    method: {
+      type: String,
+      default: 'push' // push, replace, dispatch
     }
   },
 
-  render(h, { props, children }) {
+  render(h, { parent, props, children, data }) {
     return h(
       props.tag,
-      {
+      Object.assign(data, {
+        attrs: {
+          href: parent.$router.url(props.to)
+        },
+
         on: {
           click(e) {
             e.preventDefault()
-            this.$router[props.replace ? 'replace' : 'push'](props.to)
+            parent.$router[props.method](props.to)
           }
         }
-      },
-      children)
+      }),
+      children
+    )
   }
 }

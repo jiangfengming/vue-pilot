@@ -117,10 +117,11 @@ export default class {
       const mainView = {
         component: _route.result,
         props: _route.options.props,
-        children: _route.options.children
+        children: _route.options.children,
+        beforeEnter: _route.options.beforeEnter
       }
 
-      route.layout = this._resolveLayout(route, mainView, _route.options.layout)
+      route._layout = this._resolveLayout(route, mainView, _route.options.layout)
 
       let prom = Promise.resolve(true)
       ;[].concat(
@@ -136,7 +137,10 @@ export default class {
         )
       )
 
-      prom.catch(e => e).then(result => resolve(result))
+      prom.catch(e => {
+        if (e instanceof Error) throw e
+        else return e
+      }).then(result => resolve(result))
     })
   }
 

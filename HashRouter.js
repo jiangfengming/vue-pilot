@@ -193,8 +193,8 @@ var _class$2 = function () {
     success: replaceState(to)          fail: nop                                     redirect: _beforeChange('replace', redirect)
      popstate
     success: nop                       fail: __changeHistory('push', current)        redirect: _beforeChange('push', redirect)
-     stateless
-    success: nop                       fail: nop                                     redirect: _beforeChange('stateless', redirect)
+     sessionless
+    success: nop                       fail: nop                                     redirect: _beforeChange('sessionless', redirect)
   */
 
 
@@ -217,9 +217,9 @@ var _class$2 = function () {
     });
   };
 
-  _class.prototype.gotoStatelessLocation = function gotoStatelessLocation(to) {
+  _class.prototype.dispatch = function dispatch(to) {
     to = this.normalize(to);
-    this._beforeChange('stateless', to);
+    this._beforeChange('sessionless', to);
   };
 
   /*
@@ -580,7 +580,6 @@ var RouterView = {
         parent = _ref.parent,
         data = _ref.data;
 
-    debugger;
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
         data._routerView = parent.$vnode.data._routerView.children[props.name];
@@ -588,7 +587,7 @@ var RouterView = {
       } else if (parent.$parent) {
         parent = parent.$parent;
       } else if (parent.$route) {
-        data._routerView = parent.$root.$route.layout[props.name];
+        data._routerView = parent.$root.$route._layout[props.name];
         break;
       } else {
         return h();
@@ -612,24 +611,30 @@ var RouterLink = {
       type: [String, Object]
     },
 
-    replace: {
-      type: Boolean,
-      default: false
+    method: {
+      type: String,
+      default: 'push' // push, replace, dispatch
     }
   },
 
   render: function render(h, _ref) {
-    var props = _ref.props,
-        children = _ref.children;
+    var parent = _ref.parent,
+        props = _ref.props,
+        children = _ref.children,
+        data = _ref.data;
 
-    return h(props.tag, {
+    return h(props.tag, Object.assign(data, {
+      attrs: {
+        href: parent.$router.url(props.to)
+      },
+
       on: {
         click: function click(e) {
           e.preventDefault();
-          this.$router[props.replace ? 'replace' : 'push'](props.to);
+          parent.$router[props.method](props.to);
         }
       }
-    }, children);
+    }), children);
   }
 };
 
@@ -801,10 +806,11 @@ var _class$2 = function () {
       var mainView = {
         component: _route.result,
         props: _route.options.props,
-        children: _route.options.children
+        children: _route.options.children,
+        beforeEnter: _route.options.beforeEnter
       };
 
-      route.layout = _this2._resolveLayout(route, mainView, _route.options.layout);
+      route._layout = _this2._resolveLayout(route, mainView, _route.options.layout);
 
       var prom = Promise.resolve(true);[].concat(_this2.current ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return prom = prom.then(function () {
@@ -816,7 +822,7 @@ var _class$2 = function () {
       });
 
       prom.catch(function (e) {
-        return e;
+        if (e instanceof Error) throw e;else return e;
       }).then(function (result) {
         return resolve(result);
       });
