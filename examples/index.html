@@ -9,6 +9,7 @@
   <router-link to="/">/</router-link><br>
   <router-link to="/props-obj">/props-obj</router-link><br>
   <router-link to="/props-func/bonjour?foo=hey">/props-func/bonjour?foo=hey</router-link><br>
+  <router-link :to="{ path: '/state', state: { foo: 'message from history.state.' } }">/state</router-link><br>
   <router-link to="/layout/foo">/layout/foo</router-link><br>
   <router-link to="/layout/bar">/layout/bar</router-link><br>
   <router-link :to="{ path: '/', hidden: true }">hidden /</router-link><br>
@@ -34,7 +35,7 @@ const VLayoutA = {
   props: ['foo'],
   template: `
     <div>
-      Layout A. foo: {{foo}}
+      <p>Layout A. foo: {{foo}} <button @click="$router.setState({ foo: Math.random() })">reset</button></p>
       <router-view></router-view>
       <router-view name="footer"></router-view>
     </div>
@@ -61,6 +62,12 @@ const routes = [
   },
 
   {
+    path: '/state',
+    component: VFoo,
+    props: route => ({ foo: route.state.foo })
+  },
+
+  {
     layout: {
       default: {
         component: VLayoutA,
@@ -70,7 +77,7 @@ const routes = [
             {
               path: '/layout/foo',
               component: VFoo,
-              meta: route => ({ foo: 'one' }),
+              meta: route => ({ foo: route.state.foo }),
               props: { foo: 'one', bar: 'two', baz: 'three' }
             },
 

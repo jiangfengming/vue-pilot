@@ -9,13 +9,14 @@ export default class {
 
     Vue.mixin({
       data() {
-        return this.$root === this ? { $route: null } : {}
+        return this.$root === this && this.$root.$options.router ? { $route: this.$root.$options.router.current } : {}
       },
 
       beforeCreate() {
+        if (!this.$root.$options.router) return
+
         if (this.$options.router) {
           this.$router = this.$options.router
-          this.$router.app = this
 
           Object.defineProperty(this, '$route', {
             get() { return this.$data.$route },
@@ -36,6 +37,16 @@ export default class {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
+    this.current = {
+      path: null,
+      query: null,
+      hash: null,
+      fullPath: null,
+      state: null,
+      params: null,
+      meta: null,
+      _layout: null
+    }
   }
 
   beforeChange(cb) {
@@ -131,7 +142,7 @@ export default class {
 
       let prom = Promise.resolve(true)
       ;[].concat(
-        this.current ? this.current._beforeLeaveHooksInComp : [],
+        this.current.path ? this.current._beforeLeaveHooksInComp : [],
         this._beforeChangeHooks,
         route._beforeEnterHooks
       ).forEach(hook =>
@@ -152,7 +163,7 @@ export default class {
 
   _change(to) {
     Promise.all(to.route._asyncComponents).then(() => {
-      this.current = this.app.$route = to.route
+      Object.assign(this.current, to.route)
     })
   }
 
@@ -216,9 +227,6 @@ export default class {
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
     if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current)
-
-    // trigger re-rendering
-    this.current = this.app.$route = Object.assign({}, this.current)
   }
 
   go(n, opts) {

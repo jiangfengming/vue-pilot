@@ -584,17 +584,17 @@ var RouterView = {
         parent = _ref.parent,
         data = _ref.data;
 
+    if (!parent.$root.$route.path) return h();
+
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
         data._routerView = parent.$vnode.data._routerView.children[props.name];
         break;
       } else if (parent.$parent) {
         parent = parent.$parent;
-      } else if (parent.$route) {
+      } else {
         data._routerView = parent.$route._layout[props.name];
         break;
-      } else {
-        return h();
       }
     }
 
@@ -704,12 +704,13 @@ var _class$2 = function () {
 
     Vue.mixin({
       data: function data() {
-        return this.$root === this ? { $route: null } : {};
+        return this.$root === this && this.$root.$options.router ? { $route: this.$root.$options.router.current } : {};
       },
       beforeCreate: function beforeCreate() {
+        if (!this.$root.$options.router) return;
+
         if (this.$options.router) {
           this.$router = this.$options.router;
-          this.$router.app = this;
 
           Object.defineProperty(this, '$route', {
             get: function get$$1() {
@@ -737,6 +738,16 @@ var _class$2 = function () {
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
     this._beforeChangeHooks = [];
+    this.current = {
+      path: null,
+      query: null,
+      hash: null,
+      fullPath: null,
+      state: null,
+      params: null,
+      meta: null,
+      _layout: null
+    };
   }
 
   _class.prototype.beforeChange = function beforeChange(cb) {
@@ -828,7 +839,7 @@ var _class$2 = function () {
 
       route._layout = _this2._resolveLayout(route, mainView, _route.options.layout);
 
-      var prom = Promise.resolve(true);[].concat(_this2.current ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
+      var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return prom = prom.then(function () {
           return Promise.resolve(hook(route, _this2.current)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
@@ -849,7 +860,7 @@ var _class$2 = function () {
     var _this3 = this;
 
     Promise.all(to.route._asyncComponents).then(function () {
-      _this3.current = _this3.app.$route = to.route;
+      Object.assign(_this3.current, to.route);
     });
   };
 
@@ -921,9 +932,6 @@ var _class$2 = function () {
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
     if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current);
-
-    // trigger re-rendering
-    this.current = this.app.$route = Object.assign({}, this.current);
   };
 
   _class.prototype.go = function go(n, opts) {
