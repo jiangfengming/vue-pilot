@@ -24,7 +24,9 @@ export default class {
         } else {
           this.$router = this.$root.$router
 
-          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
+          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+            this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
+          }
         }
       }
     })
@@ -105,14 +107,17 @@ export default class {
         state: to.state,
         params: _route.params,
         _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: []
+        _beforeEnterHooks: [],
+        _asyncComponents: []
       }
 
-      if (_route.options.meta) {
-        if (_route.options.meta.constructor === Function) route.meta = _route.options.meta(route)
-        else route.meta = _route.options.meta
-      } else {
+      if (!_route.options.meta) {
         route.meta = {}
+      } else if (_route.options.meta.constructor === Function) {
+        route._metaFactory = _route.options.meta
+        route.meta = route._metaFactory(route)
+      } else {
+        route.meta = _route.options.meta
       }
 
       const mainView = {
@@ -146,7 +151,9 @@ export default class {
   }
 
   _change(to) {
-    this.current = this.app.$route = to.route
+    Promise.all(to.route._asyncComponents).then(() => {
+      this.current = this.app.$route = to.route
+    })
   }
 
   _resolveLayout(route, mainView, layout) {
@@ -165,15 +172,15 @@ export default class {
 
       if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter)
 
-      // create a copy
-      resolved[name] = view = {
-        component: view.component,
-        props: view.props,
-        children: view.children
+      const v = resolved[name] = { props: view.props }
+
+      if (view.component.constructor === Function) {
+        route._asyncComponents.push(view.component().then(component => v.component = view.component = component))
+      } else {
+        v.component = view.component
       }
 
-      if (view.props && view.props.constructor === Function) view.props = view.props(route)
-      if (view.children) view.children = this._resolveLayout(route, mainView, view.children)
+      if (view.children) resolved[name].children = this._resolveLayout(route, mainView, view.children)
     }
 
     return resolved
@@ -204,7 +211,14 @@ export default class {
   }
 
   setState(state) {
-    return this._history.setState(state)
+    this._history.setState(state)
+
+    // meta factory function may use state object to generate meta object
+    // so we need to re-generate a new meta
+    if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current)
+
+    // trigger re-rendering
+    this.current = this.app.$route = Object.assign({}, this.current)
   }
 
   go(n, opts) {

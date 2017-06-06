@@ -591,14 +591,19 @@ var RouterView = {
       } else if (parent.$parent) {
         parent = parent.$parent;
       } else if (parent.$route) {
-        data._routerView = parent.$root.$route._layout[props.name];
+        data._routerView = parent.$route._layout[props.name];
         break;
       } else {
         return h();
       }
     }
 
-    return h(data._routerView.component, Object.assign(data, { props: data._routerView.props }), children);
+    if (data._routerView.props) {
+      var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
+      Object.assign(data, { props: viewProps });
+    }
+
+    return h(data._routerView.component, data, children);
   }
 };
 
@@ -717,7 +722,9 @@ var _class$2 = function () {
         } else {
           this.$router = this.$root.$router;
 
-          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this));
+          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+            this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this));
+          }
         }
       }
     });
@@ -796,15 +803,20 @@ var _class$2 = function () {
         fullPath: to.fullPath,
         query: to.query,
         hash: to.hash,
+        state: to.state,
         params: _route.params,
         _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: []
+        _beforeEnterHooks: [],
+        _asyncComponents: []
       };
 
-      if (_route.options.meta) {
-        if (_route.options.meta.constructor === Function) route.meta = _route.options.meta(route);else route.meta = _route.options.meta;
-      } else {
+      if (!_route.options.meta) {
         route.meta = {};
+      } else if (_route.options.meta.constructor === Function) {
+        route._metaFactory = _route.options.meta;
+        route.meta = route._metaFactory(route);
+      } else {
+        route.meta = _route.options.meta;
       }
 
       var mainView = {
@@ -834,10 +846,16 @@ var _class$2 = function () {
   };
 
   _class.prototype._change = function _change(to) {
-    this.current = this.app.$route = to.route;
+    var _this3 = this;
+
+    Promise.all(to.route._asyncComponents).then(function () {
+      _this3.current = _this3.app.$route = to.route;
+    });
   };
 
   _class.prototype._resolveLayout = function _resolveLayout(route, mainView, layout) {
+    var _this4 = this;
+
     var resolved = {};
 
     if (!layout) {
@@ -846,22 +864,28 @@ var _class$2 = function () {
       };
     }
 
-    for (var name in layout) {
+    var _loop = function _loop(name) {
       var view = layout[name];
 
       if (view.constructor === Array) view = mainView;
 
       if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter);
 
-      // create a copy
-      resolved[name] = view = {
-        component: view.component,
-        props: view.props,
-        children: view.children
-      };
+      var v = resolved[name] = { props: view.props };
 
-      if (view.props && view.props.constructor === Function) view.props = view.props(route);
-      if (view.children) view.children = this._resolveLayout(route, mainView, view.children);
+      if (view.component.constructor === Function) {
+        route._asyncComponents.push(view.component().then(function (component) {
+          return v.component = view.component = component;
+        }));
+      } else {
+        v.component = view.component;
+      }
+
+      if (view.children) resolved[name].children = _this4._resolveLayout(route, mainView, view.children);
+    };
+
+    for (var name in layout) {
+      _loop(name);
     }
 
     return resolved;
@@ -892,7 +916,14 @@ var _class$2 = function () {
   };
 
   _class.prototype.setState = function setState(state) {
-    return this._history.setState(state);
+    this._history.setState(state);
+
+    // meta factory function may use state object to generate meta object
+    // so we need to re-generate a new meta
+    if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current);
+
+    // trigger re-rendering
+    this.current = this.app.$route = Object.assign({}, this.current);
   };
 
   _class.prototype.go = function go(n, opts) {

@@ -16,13 +16,18 @@ export default {
       } else if (parent.$parent) {
         parent = parent.$parent
       } else if (parent.$route) {
-        data._routerView = parent.$root.$route._layout[props.name]
+        data._routerView = parent.$route._layout[props.name]
         break
       } else {
         return h()
       }
     }
 
-    return h(data._routerView.component, Object.assign(data, { props: data._routerView.props }), children)
+    if (data._routerView.props) {
+      const viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props
+      Object.assign(data, { props: viewProps })
+    }
+
+    return h(data._routerView.component, data, children)
   }
 }

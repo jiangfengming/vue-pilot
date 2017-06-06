@@ -53,8 +53,8 @@ const router = new PathRouter({
 const routes = [
   { path: '/basic', component: { /* component definition */ } },
 
-  // support async components
-  // https://vuejs.org/v2/guide/components.html#Async-Components
+
+  // return promise to define async components
   { path: '/async', component: () => import('./AsyncComponent.vue') },
 
 
