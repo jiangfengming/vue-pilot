@@ -109,11 +109,16 @@ const routes = [
     }
   },
 
+  // catch-all route must be put at the last
   {
-    path: '*',
-    component: {
-      template: '<div>404 Not Found</div>'
-    }
+    default: [
+      {
+        path: '*',
+        component: {
+          template: '<div>404 Not Found</div>'
+        }
+      }
+    ]
   }
 ]
 

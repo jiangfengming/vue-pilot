@@ -178,14 +178,24 @@ const routes = [
 
             // meta can be a factory function, the first argument is the current route object
             meta: route => ({ activeTab: route.query.get('active') })
-          }
-        ],
+          },
 
-        // <router-view name="footer" />
-        footer: {
-          component: { /* ... */ }
-        }
+          // define a catch-all route
+          // it must be put at the last of all routes definition
+          {
+            path: '*',
+            component: {
+              template: '<h1>404 Not Found</h1>'
+            }
+          }
+        ]
       }
+    }
+  },
+
+  {
+    aside: {
+      component: { /* ... */ }
     }
   }
 ]
