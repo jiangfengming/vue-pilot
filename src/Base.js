@@ -55,35 +55,9 @@ export default class {
 
   _parseRoutes(routes) {
     const parsed = []
-    routes.forEach(route => {
-      if (route.path) {
-        parsed.push([
-          route.path,
-          route.component,
-          {
-            meta: route.meta,
-            props: route.props,
-            children: route.children,
-            layout: null,
-            beforeEnter: route.beforeEnter
-          }
-        ])
-      } else if (route.layout) {
-        const rts = this._findRoutesInLayout(route.layout)
-        if (rts) {
-          rts.forEach(r => parsed.push([
-            r.path,
-            r.component,
-            {
-              meta: r.meta,
-              props: r.props,
-              children: r.children,
-              layout: route.layout,
-              beforeEnter: r.beforeEnter
-            }
-          ]))
-        }
-      }
+    routes.forEach(layout => {
+      const rts = this._findRoutesInLayout(layout)
+      if (rts) rts.forEach(mainView => parsed.push([mainView.path, { mainView, layout }]))
     })
 
     return parsed
@@ -95,12 +69,8 @@ export default class {
       if (section.constructor === Array) {
         return section
       } else if (section.children) {
-        if (section.children.constructor === Array) {
-          return section.children
-        } else {
-          const routes = this._findRoutesInLayout(section.children)
-          if (routes) return routes
-        }
+        const routes = this._findRoutesInLayout(section.children)
+        if (routes) return routes
       }
     }
   }
@@ -122,23 +92,18 @@ export default class {
         _asyncComponents: []
       }
 
-      if (!_route.options.meta) {
+      const mainView = _route.result.mainView
+
+      if (!mainView.meta) {
         route.meta = {}
-      } else if (_route.options.meta.constructor === Function) {
-        route._metaFactory = _route.options.meta
+      } else if (mainView.meta.constructor === Function) {
+        route._metaFactory = mainView.meta
         route.meta = route._metaFactory(route)
       } else {
-        route.meta = _route.options.meta
+        route.meta = mainView.meta
       }
 
-      const mainView = {
-        component: _route.result,
-        props: _route.options.props,
-        children: _route.options.children,
-        beforeEnter: _route.options.beforeEnter
-      }
-
-      route._layout = this._resolveLayout(route, mainView, _route.options.layout)
+      route._layout = this._resolveLayout(route, mainView, _route.result.layout)
 
       let prom = Promise.resolve(true)
       ;[].concat(
@@ -170,12 +135,6 @@ export default class {
   _resolveLayout(route, mainView, layout) {
     const resolved = {}
 
-    if (!layout) {
-      layout = {
-        default: mainView
-      }
-    }
-
     for (const name in layout) {
       let view = layout[name]
 
@@ -186,7 +145,7 @@ export default class {
       const v = resolved[name] = { props: view.props }
 
       if (view.component.constructor === Function) {
-        route._asyncComponents.push(view.component().then(component => v.component = view.component = component))
+        route._asyncComponents.push(view.component().then(component => v.component = component))
       } else {
         v.component = view.component
       }

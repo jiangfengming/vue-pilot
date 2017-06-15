@@ -201,7 +201,8 @@ var _class$2 = function () {
   _class.prototype._beforeChange = function _beforeChange(op, to) {
     var _this2 = this;
 
-    if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString()) return;
+    // to is the same as current and op is push, set op to replace
+    if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') op = 'replace';
 
     Promise.resolve(this.beforeChange(to, this.current)).then(function (ret) {
       if (ret == null || ret === true) {
@@ -320,10 +321,10 @@ var _class$2 = function () {
     var container = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.body;
 
     container.addEventListener('click', function (e) {
-      var a = e.target.closest('a');
+      var a = e.target.closest('a'
 
       // force not handle the <a> element
-      if (!a || a.getAttribute('spa-history-skip') != null) return;
+      );if (!a || a.getAttribute('spa-history-skip') != null) return;
 
       // open new window
       var target = a.getAttribute('target');
@@ -332,10 +333,10 @@ var _class$2 = function () {
       // out of app
       if (a.href.indexOf(location.origin + _this4.url('/')) !== 0) return;
 
-      var to = _this4.normalize(a.href);
+      var to = _this4.normalize(a.href
 
       // hash change
-      if (to.path === _this4.current.path && to.query.toString() === _this4.current.query.toString() && to.hash && to.hash !== _this4.current.hash) return;
+      );if (to.path === _this4.current.path && to.query.toString() === _this4.current.query.toString() && to.hash && to.hash !== _this4.current.hash) return;
 
       e.preventDefault();
       _this4.push(to);
@@ -758,29 +759,11 @@ var _class$2 = function () {
     var _this = this;
 
     var parsed = [];
-    routes.forEach(function (route) {
-      if (route.path) {
-        parsed.push([route.path, route.component, {
-          meta: route.meta,
-          props: route.props,
-          children: route.children,
-          layout: null,
-          beforeEnter: route.beforeEnter
-        }]);
-      } else if (route.layout) {
-        var rts = _this._findRoutesInLayout(route.layout);
-        if (rts) {
-          rts.forEach(function (r) {
-            return parsed.push([r.path, r.component, {
-              meta: r.meta,
-              props: r.props,
-              children: r.children,
-              layout: route.layout,
-              beforeEnter: r.beforeEnter
-            }]);
-          });
-        }
-      }
+    routes.forEach(function (layout) {
+      var rts = _this._findRoutesInLayout(layout);
+      if (rts) rts.forEach(function (mainView) {
+        return parsed.push([mainView.path, { mainView: mainView, layout: layout }]);
+      });
     });
 
     return parsed;
@@ -792,12 +775,8 @@ var _class$2 = function () {
       if (section.constructor === Array) {
         return section;
       } else if (section.children) {
-        if (section.children.constructor === Array) {
-          return section.children;
-        } else {
-          var routes = this._findRoutesInLayout(section.children);
-          if (routes) return routes;
-        }
+        var routes = this._findRoutesInLayout(section.children);
+        if (routes) return routes;
       }
     }
   };
@@ -821,23 +800,18 @@ var _class$2 = function () {
         _asyncComponents: []
       };
 
-      if (!_route.options.meta) {
+      var mainView = _route.result.mainView;
+
+      if (!mainView.meta) {
         route.meta = {};
-      } else if (_route.options.meta.constructor === Function) {
-        route._metaFactory = _route.options.meta;
+      } else if (mainView.meta.constructor === Function) {
+        route._metaFactory = mainView.meta;
         route.meta = route._metaFactory(route);
       } else {
-        route.meta = _route.options.meta;
+        route.meta = mainView.meta;
       }
 
-      var mainView = {
-        component: _route.result,
-        props: _route.options.props,
-        children: _route.options.children,
-        beforeEnter: _route.options.beforeEnter
-      };
-
-      route._layout = _this2._resolveLayout(route, mainView, _route.options.layout);
+      route._layout = _this2._resolveLayout(route, mainView, _route.result.layout);
 
       var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return prom = prom.then(function () {
@@ -869,12 +843,6 @@ var _class$2 = function () {
 
     var resolved = {};
 
-    if (!layout) {
-      layout = {
-        default: mainView
-      };
-    }
-
     var _loop = function _loop(name) {
       var view = layout[name];
 
@@ -886,7 +854,7 @@ var _class$2 = function () {
 
       if (view.component.constructor === Function) {
         route._asyncComponents.push(view.component().then(function (component) {
-          return v.component = view.component = component;
+          return v.component = component;
         }));
       } else {
         v.component = view.component;
@@ -927,11 +895,11 @@ var _class$2 = function () {
   };
 
   _class.prototype.setState = function setState(state) {
-    this._history.setState(state);
+    this._history.setState(state
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
-    if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current);
+    );if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current);
   };
 
   _class.prototype.go = function go(n, opts) {

@@ -44,63 +44,65 @@ const VLayoutA = {
 
 const routes = [
   {
-    path: '/',
-    component: VFoo
+    default: [
+      {
+        path: '/',
+        component: VFoo
+      },
+
+      {
+        path: '/props-obj',
+        component: VFoo,
+        props: { foo: 'hallo' }
+      },
+
+      {
+        path: '/props-func/:bar',
+        component: VFoo,
+        meta: { baz: 'one' },
+        props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
+      },
+
+      {
+        path: '/state',
+        component: VFoo,
+        props: route => ({ foo: route.state.foo })
+      }
+    ]
   },
 
   {
-    path: '/props-obj',
-    component: VFoo,
-    props: { foo: 'hallo' }
-  },
+    default: {
+      component: VLayoutA,
+      props: route => ({ foo: route.meta.foo }),
+      children: {
+        default: [
+          {
+            path: '/layout/foo',
+            component: VFoo,
+            meta: route => ({ foo: route.state.foo }),
+            props: { foo: 'one', bar: 'two', baz: 'three' }
+          },
 
-  {
-    path: '/props-func/:bar',
-    component: VFoo,
-    meta: { baz: 'one' },
-    props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
-  },
-
-  {
-    path: '/state',
-    component: VFoo,
-    props: route => ({ foo: route.state.foo })
-  },
-
-  {
-    layout: {
-      default: {
-        component: VLayoutA,
-        props: route => ({ foo: route.meta.foo }),
-        children: {
-          default: [
-            {
-              path: '/layout/foo',
-              component: VFoo,
-              meta: route => ({ foo: route.state.foo }),
-              props: { foo: 'one', bar: 'two', baz: 'three' }
-            },
-
-            {
-              path: '/layout/bar',
-              component: {
-                template: '<div>bar</div>',
-                beforeRouteLeave() {
-                  console.log(this)
-                  return confirm('Leave?')
-                }
-              },
-              meta: { foo: 'two' },
-              beforeEnter() {
-                return confirm('Enter?')
-              }
-            }
-          ],
-
-          footer: {
+          {
+            path: '/layout/bar',
             component: {
-              template: '<footer>footer</footer>'
+              template: '<div>bar</div>',
+              beforeRouteLeave() {
+                console.log(this)
+                return confirm('Leave?')
+              }
+            },
+            meta: { foo: 'two' },
+            beforeEnter() {
+              return confirm('Enter?')
             }
+          }
+        ],
+
+        footer: {
+          component: {
+            template: '<footer>footer</footer>'
           }
         }
       }
