@@ -266,7 +266,7 @@ var _class$2 = function () {
     var url = this._url(to.fullPath);
     if (to.hidden) {
       state.path = to.fullPath;
-      url = undefined;
+      url = to.appearPath && this.url(to.appearPath);
     }
 
     window.history[method + 'State'](Object.keys(state).length ? state : null, '', url);
@@ -712,15 +712,7 @@ var _class$2 = function () {
 
         if (this.$options.router) {
           this.$router = this.$options.router;
-
-          Object.defineProperty(this, '$route', {
-            get: function get$$1() {
-              return this.$data.$route;
-            },
-            set: function set$$1(v) {
-              this.$data.$route = v;
-            }
-          });
+          this.$route = this.$router.current;
         } else {
           this.$router = this.$root.$router;
 

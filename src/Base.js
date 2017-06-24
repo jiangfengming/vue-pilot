@@ -17,11 +17,7 @@ export default class {
 
         if (this.$options.router) {
           this.$router = this.$options.router
-
-          Object.defineProperty(this, '$route', {
-            get() { return this.$data.$route },
-            set(v) { this.$data.$route = v }
-          })
+          this.$route = this.$router.current
         } else {
           this.$router = this.$root.$router
 
