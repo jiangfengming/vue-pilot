@@ -140,7 +140,7 @@ export default class {
 
       const v = resolved[name] = { props: view.props }
 
-      if (view.component.constructor === Function) {
+      if (view.component && view.component.constructor === Function) {
         route._asyncComponents.push(view.component().then(component => v.component = component))
       } else {
         v.component = view.component

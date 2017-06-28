@@ -581,12 +581,16 @@ var RouterView = {
         parent = _ref.parent,
         data = _ref.data;
 
-    if (!parent.$root.$route.path) return h();
+    if (!parent.$root.$route.path) return;
 
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
-        data._routerView = parent.$vnode.data._routerView.children[props.name];
-        break;
+        if (parent.$vnode.data._routerView.children && parent.$vnode.data._routerView.children[props.name]) {
+          data._routerView = parent.$vnode.data._routerView.children[props.name];
+          break;
+        } else {
+          return;
+        }
       } else if (parent.$parent) {
         parent = parent.$parent;
       } else {
@@ -595,12 +599,14 @@ var RouterView = {
       }
     }
 
-    if (data._routerView.props) {
-      var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
-      Object.assign(data, { props: viewProps });
-    }
+    if (data._routerView.component) {
+      if (data._routerView.props) {
+        var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
+        Object.assign(data, { props: viewProps });
+      }
 
-    return h(data._routerView.component, data, children);
+      return h(data._routerView.component, data, children);
+    }
   }
 };
 
@@ -840,7 +846,7 @@ var _class$2 = function () {
 
       var v = resolved[name] = { props: view.props };
 
-      if (view.component.constructor === Function) {
+      if (view.component && view.component.constructor === Function) {
         route._asyncComponents.push(view.component().then(function (component) {
           return v.component = component;
         }));

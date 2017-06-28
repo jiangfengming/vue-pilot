@@ -15,7 +15,9 @@
   <router-link :to="{ path: '/', hidden: true }">hidden /</router-link><br>
   <router-link :to="{ path: '/' }" method="replace">replace /</router-link><br>
   <router-link :to="{ path: '/' }" method="dispatch">dispatch /</router-link><br>
-  <router-link to="/404">/404</router-link>
+  <router-link to="/404">/404</router-link><br>
+  <router-link to="/undefined-component">/undefined-component</router-link><br>
+  <router-link to="/undefined-children">/undefined-children</router-link><br>
 
   <router-view foo="hello" class="foo"></router-view>
 </div>
@@ -67,6 +69,13 @@ const routes = [
         path: '/state',
         component: VFoo,
         props: route => ({ foo: route.state.foo })
+      },
+
+      {
+        path: '/undefined-component',
+        beforeEnter() {
+          console.log('/undefined-component')
+        }
       }
     ]
   },
@@ -107,6 +116,13 @@ const routes = [
         }
       }
     }
+  },
+
+  {
+    default: [{
+      path: '/undefined-children',
+      component: VLayoutA
+    }]
   },
 
   // catch-all route must be put at the last

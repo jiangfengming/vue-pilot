@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A vue router with the power of history.state",
   "main": "",
   "directories": {
@@ -24,7 +24,7 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.5.2",
     "babel-preset-stage-2": "^6.24.1",
-    "eslint": "^4.1.0",
+    "eslint": "^4.1.1",
     "eslint-config-enough": "^0.2.7",
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
