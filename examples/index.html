@@ -19,6 +19,7 @@
   <router-link to="/undefined-component">/undefined-component</router-link><br>
   <router-link to="/undefined-children">/undefined-children</router-link><br>
 
+  <router-view name="header"></router-view>
   <router-view foo="hello" class="foo"></router-view>
 </div>
 
@@ -46,95 +47,108 @@ const VLayoutA = {
 
 const routes = [
   {
-    default: [
-      {
-        path: '/',
-        component: VFoo
-      },
-
-      {
-        path: '/props-obj',
-        component: VFoo,
-        props: { foo: 'hallo' }
-      },
-
-      {
-        path: '/props-func/:bar',
-        component: VFoo,
-        meta: { baz: 'one' },
-        props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
-      },
-
-      {
-        path: '/state',
-        component: VFoo,
-        props: route => ({ foo: route.state.foo })
-      },
-
-      {
-        path: '/undefined-component',
-        beforeEnter() {
-          console.log('/undefined-component')
-        }
-      }
-    ]
+    path: '/',
+    component: VFoo
   },
 
   {
-    default: {
+    path: '/props-obj',
+    component: VFoo,
+    props: { foo: 'hallo' }
+  },
+
+  {
+    path: '/props-func/:bar',
+    component: VFoo,
+    meta: { baz: 'one' },
+    props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
+  },
+
+  {
+    path: '/state',
+    component: VFoo,
+    props: route => ({ foo: route.state.foo })
+  },
+
+  [
+    {
       component: VLayoutA,
       props: route => ({ foo: route.meta.foo }),
-      children: {
-        default: [
+      children: [
+        [
           {
             path: '/layout/foo',
             component: VFoo,
             meta: route => ({ foo: route.state.foo }),
-            props: { foo: 'one', bar: 'two', baz: 'three' }
+            props: { foo: 'one', bar: 'two', baz: 'three' },
+            children: [
+              {
+                component: {}
+              }
+            ]
           },
 
           {
-            path: '/layout/bar',
+            routerView: 'footer',
             component: {
-              template: '<div>bar</div>',
-              beforeRouteLeave() {
-                console.log(this)
-                return confirm('Leave?')
-              }
-            },
-            meta: { foo: 'two' },
-            beforeEnter() {
-              return confirm('Enter?')
+              template: '<footer>footer</footer>'
             }
           }
         ],
 
-        footer: {
+        {
+          path: '/layout/bar',
           component: {
-            template: '<footer>footer</footer>'
+            template: '<div>bar</div>',
+            beforeRouteLeave() {
+              console.log(this)
+              return confirm('Leave?')
+            }
+          },
+          meta: { foo: 'two' },
+          beforeEnter() {
+            return confirm('Enter?')
           }
         }
-      }
+      ]
+    },
+
+    {
+      path: '/foo/bar',
+      component: {}
+    },
+
+    {
+      routerView: 'bar',
+      component: {}
     }
-  },
+  ],
+
+  [
+    {
+      path: '/undefined-component',
+      beforeEnter() {
+        console.log('/undefined-component')
+      }
+    },
+
+    {
+      routerView: 'bar',
+      component: {}
+    },
+  ],
 
   {
-    default: [{
-      path: '/undefined-children',
-      component: VLayoutA
-    }]
+    path: '/undefined-children',
+    component: VLayoutA
   },
 
   // catch-all route must be put at the last
   {
-    default: [
-      {
-        path: '*',
-        component: {
-          template: '<div>404 Not Found</div>'
-        }
-      }
-    ]
+    path: '*',
+    component: {
+      template: '<div>404 Not Found</div>'
+    }
   }
 ]
 

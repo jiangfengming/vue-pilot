@@ -41,7 +41,7 @@ export default class {
       state: null,
       params: null,
       meta: null,
-      _layout: null
+      _routerViews: null
     }
   }
 
@@ -49,24 +49,14 @@ export default class {
     this._beforeChangeHooks.push(cb)
   }
 
-  _parseRoutes(routes) {
-    const parsed = []
-    routes.forEach(layout => {
-      const rts = this._findRoutesInLayout(layout)
-      if (rts) rts.forEach(mainView => parsed.push([mainView.path, { mainView, layout }]))
-    })
-
-    return parsed
-  }
-
-  _findRoutesInLayout(layout) {
-    for (const name in layout) {
-      const section = layout[name]
-      if (section.constructor === Array) {
-        return section
-      } else if (section.children) {
-        const routes = this._findRoutesInLayout(section.children)
-        if (routes) return routes
+  _parseRoutes(routerViews, depth = [], parsed = []) {
+    for (const routerView of routerViews) {
+      if (routerView.constructor === Array) {
+        this._parseRoutes(routerView, [...depth, routerView], parsed)
+      } else if (routerView.path) {
+        parsed.push([routerView.path, [...depth, routerView]])
+      } else if (routerView.children) {
+        this._parseRoutes(routerView.children, [...depth, routerView], parsed)
       }
     }
   }
@@ -88,7 +78,7 @@ export default class {
         _asyncComponents: []
       }
 
-      const mainView = _route.result.mainView
+      const mainView = _route.result[_route.result.length - 1]
 
       if (!mainView.meta) {
         route.meta = {}
@@ -99,7 +89,7 @@ export default class {
         route.meta = mainView.meta
       }
 
-      route._layout = this._resolveLayout(route, mainView, _route.result.layout)
+      route._routerViews = this._resolveRouterViews(route, _route.result)
 
       let prom = Promise.resolve(true)
       ;[].concat(
@@ -128,26 +118,35 @@ export default class {
     })
   }
 
-  _resolveLayout(route, mainView, layout) {
-    const resolved = {}
+  _resolveRouterViews(route, routerViews) {
+    let resolved = {}
 
-    for (const name in layout) {
-      let view = layout[name]
+    routerViews.forEach((routerView, i) => {
+      if (routerView.constructor === Array) {
 
-      if (view.constructor === Array) view = mainView
+        routerView.forEach(view => {
 
-      if (view.beforeEnter) route._beforeEnterHooks.push(view.beforeEnter)
-
-      const v = resolved[name] = { props: view.props }
-
-      if (view.component && view.component.constructor === Function) {
-        route._asyncComponents.push(view.component().then(component => v.component = component))
+        })
       } else {
-        v.component = view.component
-      }
+        const v = resolved[routerView.name || 'default'] = { props: routerView.props }
 
-      if (view.children) resolved[name].children = this._resolveLayout(route, mainView, view.children)
-    }
+        if (routerView.beforeEnter) {
+          route._beforeEnterHooks.push(routerView.beforeEnter)
+        }
+
+        if (routerView.component && routerView.component.constructor === Function) {
+          route._asyncComponents.push(
+            routerView.component().then(component => v.component = component)
+          )
+        } else {
+          v.component = routerView.component
+        }
+
+        if (routerView.children) {
+          v.children = this._resolveRouterViews(route, routerView.children)
+        }
+      }
+    })
 
     return resolved
   }
@@ -181,7 +180,9 @@ export default class {
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
-    if (this.current._metaFactory) this.current.meta = this.current._metaFactory(this.current)
+    if (this.current._metaFactory) {
+      this.current.meta = this.current._metaFactory(this.current)
+    }
   }
 
   go(n, opts) {
