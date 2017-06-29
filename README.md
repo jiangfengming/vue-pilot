@@ -107,6 +107,14 @@ const routes = [
     }
   },
 
+  {
+    // path can be RegExp
+    path: /^\/regex\/(\d+)$/,
+    component: VFoo,
+    // the subexpressions are stored as route.params.$1, route.params.$2, ...
+    props: route => ({ foo: route.params.$1 })
+  },
+
   // define hooks
   {
     path: '/login',

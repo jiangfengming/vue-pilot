@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A vue router with the power of history.state",
   "main": "",
   "directories": {
@@ -55,6 +55,6 @@
   "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
   "dependencies": {
     "spa-history": "^0.4.8",
-    "url-router": "^3.0.1"
+    "url-router": "^3.1.0"
   }
 }

@@ -409,59 +409,6 @@ var Router = createCommonjsModule(function (module, exports) {
           regex: []
         };
 
-        var _loop = function _loop(_rt) {
-          var path = void 0,
-              result = void 0,
-              params = void 0,
-              options = void 0;
-
-          if (_rt.constructor === String) {
-            path = _rt;
-            result = '$&';
-            params = [];
-            options = {};
-          } else {
-            var rt = _rt.concat(); // clone, preserve original route
-            path = rt.shift();
-            result = rt.length ? rt.shift() : '$&';
-            options = _typeof(rt[rt.length - 1]) === 'object' ? rt.pop() : {};
-            params = rt;
-          }
-
-          if (path.constructor === RegExp) {
-            rts.regex.push({
-              path: path,
-              result: result,
-              params: params,
-              options: options,
-              origin: _rt
-            });
-          } else {
-            if (!/:|\*|\$/.test(path)) {
-              rts.string[path] = {
-                result: result === '$&' ? path : result,
-                options: options,
-                origin: _rt
-              };
-            } else {
-              params = [];
-
-              path = path.replace(/[\\&()+.[?^{|]/g, '\\$&').replace(/:(\w+)/g, function (str, key) {
-                params.push(key);
-                return '([^/]+)';
-              }).replace(/\*/g, '.*');
-
-              rts.regex.push({
-                path: new RegExp('^' + path + '$'),
-                result: result,
-                params: params,
-                options: options,
-                origin: _rt
-              });
-            }
-          }
-        };
-
         for (var _iterator = routes, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
           var _ref;
 
@@ -476,7 +423,44 @@ var Router = createCommonjsModule(function (module, exports) {
 
           var _rt = _ref;
 
-          _loop(_rt);
+          var rt = [].concat(_rt);
+          var path = rt.shift();
+          var result = rt.shift() || '$&';
+          var options = rt.shift() || {};
+
+          if (path.constructor === RegExp) {
+            rts.regex.push({
+              path: path,
+              result: result,
+              options: options,
+              origin: _rt
+            });
+          } else {
+            if (!/:|\*|\$/.test(path)) {
+              rts.string[path] = {
+                result: result === '$&' ? path : result,
+                options: options,
+                origin: _rt
+              };
+            } else {
+              (function () {
+                var params = [];
+
+                var regex = path.replace(/[\\&()+.[?^{|]/g, '\\$&').replace(/:(\w+)/g, function (str, key) {
+                  params.push(key);
+                  return '([^/]+)';
+                }).replace(/\*/g, '.*');
+
+                rts.regex.push({
+                  path: new RegExp('^' + regex + '$'),
+                  result: result,
+                  params: params,
+                  options: options,
+                  origin: _rt
+                });
+              })();
+            }
+          }
         }
       }
     }
@@ -487,65 +471,87 @@ var Router = createCommonjsModule(function (module, exports) {
       var rts = this._routes[method];
 
       if (rts) {
-        if (rts.string[path]) {
-          var match = {
-            result: rts.string[path].result,
-            params: {},
-            options: rts.string[path].options,
-            origin: rts.string[path].origin
-          };
-
-          if (Router.log) {
-            console.log('path:', path, '\n', 'method:', method, '\n', 'match:', match); // eslint-disable-line
-          }
-
-          return match;
-        }
-
-        var _result = void 0;
-        var _params = {};
-        for (var _iterator2 = rts.regex, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-          var _ref2;
-
-          if (_isArray2) {
-            if (_i2 >= _iterator2.length) break;
-            _ref2 = _iterator2[_i2++];
-          } else {
-            _i2 = _iterator2.next();
-            if (_i2.done) break;
-            _ref2 = _i2.value;
-          }
-
-          var rt = _ref2;
-
-          var matches = path.match(rt.path);
-          if (matches) {
-            _result = rt.result;
-            if (_result && _result.constructor === String && _result.indexOf('$') !== -1) {
-              _result = _result === '$&' ? path : path.replace(rt.path, _result);
-            }
-
-            matches.shift();
-            for (var j = 0; j < rt.params.length; j++) {
-              if (rt.params[j]) {
-                _params[rt.params[j]] = matches[j];
-              }
-            }
-
-            var _match = {
-              result: _result,
-              params: _params,
-              options: rt.options,
-              origin: rt.origin
+        var _ret2 = function () {
+          if (rts.string[path]) {
+            var match = {
+              result: rts.string[path].result,
+              params: {},
+              options: rts.string[path].options,
+              origin: rts.string[path].origin
             };
 
             if (Router.log) {
-              console.log('path:', path, '\n', 'method:', method, '\n', 'match:', _match); // eslint-disable-line
+              console.log('path:', path, '\n', 'method:', method, '\n', 'match:', match); // eslint-disable-line
             }
 
-            return _match;
+            return {
+              v: match
+            };
           }
-        }
+
+          var result = void 0;
+          var params = {};
+
+          var _loop = function _loop(rt) {
+            var matches = path.match(rt.path);
+            if (matches) {
+              result = rt.result;
+              if (result && result.constructor === String && result.indexOf('$') !== -1) {
+                result = result === '$&' ? path : path.replace(rt.path, result);
+              }
+
+              matches.shift();
+
+              if (rt.params) {
+                rt.params.forEach(function (v, i) {
+                  return params[v] = matches[i];
+                });
+              } else {
+                matches.forEach(function (v, i) {
+                  return params['$' + (i + 1)] = v;
+                });
+              }
+
+              var _match = {
+                result: result,
+                params: params,
+                options: rt.options,
+                origin: rt.origin
+              };
+
+              if (Router.log) {
+                console.log('path:', path, '\n', 'method:', method, '\n', 'match:', _match); // eslint-disable-line
+              }
+
+              return {
+                v: {
+                  v: _match
+                }
+              };
+            }
+          };
+
+          for (var _iterator2 = rts.regex, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+            var _ref2;
+
+            if (_isArray2) {
+              if (_i2 >= _iterator2.length) break;
+              _ref2 = _iterator2[_i2++];
+            } else {
+              _i2 = _iterator2.next();
+              if (_i2.done) break;
+              _ref2 = _i2.value;
+            }
+
+            var rt = _ref2;
+
+            var _ret3 = _loop(rt);
+
+            if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+          }
+        }();
+
+        if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
       }
 
       if (Router.log) {

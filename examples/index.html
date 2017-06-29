@@ -11,6 +11,7 @@
   <router-link to="/">/</router-link><br>
   <router-link to="/props-obj">/props-obj</router-link><br>
   <router-link to="/props-func/bonjour?foo=hey">/props-func/bonjour?foo=hey</router-link><br>
+  <router-link to="/regex/123">/regex/123</router-link><br>
   <router-link :to="{ path: '/state', state: { foo: 'message from history.state.' } }">/state</router-link><br>
   <router-link to="/another-header">/another-header</router-link><br>
   <router-link to="/layout/foo">/layout/foo</router-link><br>
@@ -71,6 +72,12 @@ const routes = [
     component: VFoo,
     meta: { baz: 'one' },
     props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
+  },
+
+  {
+    path: /^\/regex\/(\d+)$/,
+    component: VFoo,
+    props: route => ({ foo: route.params.$1 })
   },
 
   {
