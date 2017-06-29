@@ -66,86 +66,82 @@ Let's see the example routes definition:
 
 ```js
 const routes = [
+  // define which component will be mounted into <router-view name="aside">
   {
-    // define which component will be mounted into <router-view name="aside">
-    aside: {
-      component: { /* component definition */ }
-    },
-
-    // use Array to define the default <router-view> as route component
-    // the first component that matches to the current path will be used
-    default: [
-      { path: '/basic', component: { /* component definition */ } },
-
-      // return promise to define async components
-      { path: '/async', component: () => import('./AsyncComponent.vue') },
-
-      {
-        path: '/prop',
-
-        // pass some props to the component
-        props: { foo: 'hello' },
-
-        component: {
-          props: ['foo'],
-          // ...
-        }
-      },
-
-      {
-        // use : to define params
-        path: '/article/:id',
-
-        // props can be a factory function, it receives the current route object as the first argument.
-        // see route object definition below to see what info can get.
-        props: route => ({
-          articleId: route.params.id,
-          foo: route.query.get('foo'),
-          bar: route.state.bar
-        }),
-
-        component: {
-          props: ['articleId', 'foo', 'bar'],
-          // ...
-        }
-      },
-
-      // define hooks
-      {
-        path: '/login',
-
-        // beforeEnter hook will be called before confirming the navigation.
-        // arguments 'to' and 'from' are route objects.
-        // return true or undefined/null to confirm the navigation
-        // return URL string or location object to redirect
-        // return false to abort the navigation
-        // can return Promise
-        beforeEnter(to, from) {
-
-        },
-
-        component: {
-          // in-component beforeRouteLeave hook
-          // will be called before route leave
-          beforeRouteLeave(to, from) {
-
-          },
-
-          // ...
-        }
-      }
-    ]
+    name: 'aside',
+    component: { /* component definition */ }
   },
 
-  // define another layout
-  // the routes definition are grouped by layouts
-  // each layout can only has one <router-view> that defines the routes
+  { path: '/basic', component: { /* component definition */ } },
+
+  // return promise to define async components
+  { path: '/async', component: () => import('./AsyncComponent.vue') },
+
   {
-    aside: {
+    path: '/prop',
+
+    // pass some props to the component
+    props: { foo: 'hello' },
+
+    component: {
+      props: ['foo'],
+      // ...
+    }
+  },
+
+  {
+    // use : to define params
+    path: '/article/:id',
+
+    // props can be a factory function, it receives the current route object as the first argument.
+    // see route object definition below to see what info can get.
+    props: route => ({
+      articleId: route.params.id,
+      foo: route.query.get('foo'),
+      bar: route.state.bar
+    }),
+
+    component: {
+      props: ['articleId', 'foo', 'bar'],
+      // ...
+    }
+  },
+
+  // define hooks
+  {
+    path: '/login',
+
+    // beforeEnter hook will be called before confirming the navigation.
+    // arguments 'to' and 'from' are route objects.
+    // return true or undefined/null to confirm the navigation
+    // return URL string or location object to redirect
+    // return false to abort the navigation
+    // can return Promise
+    beforeEnter(to, from) {
+
+    },
+
+    component: {
+      // in-component beforeRouteLeave hook
+      // will be called before route leave
+      beforeRouteLeave(to, from) {
+
+      },
+
+      // ...
+    }
+  },
+
+
+  // use Array to group <router-view> definitions
+  [
+    // in this group, this aside component will override the default aside <router-view> definition
+    {
+      name: 'aside',
       component: { /* ... */}
     },
 
-    default: {
+    {
       // in this layout, the default <router-view> will mount a component that has nested <router-view>s
       component: {
         props: ['activeTab'],
@@ -160,44 +156,36 @@ const routes = [
       // route.meta is set by the matched route
       props: route => ({ activeTab: route.meta.activeTab })
 
-      children: {
-        // define routes
-        default: [
-          {
-            path: '/foo',
-            component: { /* ... */},
+      // define child <router-view>s
+      children: [
+        {
+          path: '/foo',
+          component: { /* ... */},
 
-            // define some meta
-            // then it can be passed to layout components as route.meta
-            meta: { activeTab: 'foo' }
-          },
+          // define some meta
+          // then it can be passed to layout components as route.meta
+          meta: { activeTab: 'foo' }
+        },
 
-          {
-            path: '/bar',
-            component: { /* ... */},
+        {
+          path: '/bar',
+          component: { /* ... */},
 
-            // meta can be a factory function, the first argument is the current route object
-            meta: route => ({ activeTab: route.query.get('active') })
-          },
+          // meta can be a factory function, the first argument is the current route object
+          meta: route => ({ activeTab: route.query.get('active') })
+        },
 
-          // define a catch-all route
-          // it must be put at the last of all routes definition
-          {
-            path: '*',
-            component: {
-              template: '<h1>404 Not Found</h1>'
-            }
+        // define a catch-all route
+        // it must be put at the last of all routes definition
+        {
+          path: '*',
+          component: {
+            template: '<h1>404 Not Found</h1>'
           }
-        ]
-      }
+        }
+      ]
     }
-  },
-
-  {
-    aside: {
-      component: { /* ... */ }
-    }
-  }
+  ]
 ]
 ```
 
