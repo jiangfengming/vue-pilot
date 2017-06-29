@@ -575,7 +575,12 @@ var RouterView = {
     }
   },
 
-  render(h, { props, children, parent, data }) {
+  render: function render(h, _ref) {
+    var props = _ref.props,
+        children = _ref.children,
+        parent = _ref.parent,
+        data = _ref.data;
+
     if (!parent.$root.$route.path) return;
 
     while (parent) {
@@ -596,7 +601,7 @@ var RouterView = {
 
     if (data._routerView.component) {
       if (data._routerView.props) {
-        const viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
+        var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
         Object.assign(data, { props: viewProps });
       }
 
@@ -623,14 +628,19 @@ var RouterLink = {
     }
   },
 
-  render(h, { parent, props, children, data }) {
+  render: function render(h, _ref) {
+    var parent = _ref.parent,
+        props = _ref.props,
+        children = _ref.children,
+        data = _ref.data;
+
     return h(props.tag, Object.assign(data, {
       attrs: {
         href: parent.$router.url(props.to)
       },
 
       on: {
-        click(e) {
+        click: function click(e) {
           e.preventDefault();
           parent.$router[props.method](props.to);
         }
@@ -639,17 +649,66 @@ var RouterLink = {
   }
 };
 
-var Base = class {
-  static install(Vue) {
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+var _class$2 = function () {
+  _class.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
 
     Vue.mixin({
-      data() {
+      data: function data() {
         return this.$root === this && this.$root.$options.router ? { $route: this.$root.$options.router.current } : {};
       },
-
-      beforeCreate() {
+      beforeCreate: function beforeCreate() {
         if (!this.$root.$options.router) return;
 
         if (this.$options.router) {
@@ -664,9 +723,12 @@ var Base = class {
         }
       }
     });
-  }
+  };
 
-  constructor({ routes }) {
+  function _class(_ref) {
+    var routes = _ref.routes;
+    classCallCheck(this, _class);
+
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
     this._beforeChangeHooks = [];
@@ -682,34 +744,66 @@ var Base = class {
     };
   }
 
-  beforeChange(cb) {
+  _class.prototype.beforeChange = function beforeChange(cb) {
     this._beforeChangeHooks.push(cb);
-  }
+  };
 
-  _parseRoutes(routerViews, depth = [], parsed = []) {
-    for (const routerView of routerViews) {
+  _class.prototype._parseRoutes = function _parseRoutes(routerViews) {
+    var _this = this;
+
+    var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    var parsed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+    var _loop = function _loop(routerView) {
       if (routerView.constructor === Array) {
-        const names = routerView.map(c => c.name);
-        const children = [...routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))];
-        this._parseRoutes(children, depth, parsed);
+        var names = routerView.map(function (c) {
+          return c.name;
+        });
+        var children = [].concat(routerView, routerViews.filter(function (v) {
+          return v.constructor !== Array && !v.path && !names.includes(v.name);
+        }));
+        _this._parseRoutes(children, depth, parsed);
       } else if (routerView.path) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)];
-        parsed.push([routerView.path, [...depth, children]]);
+        var _children = [routerView].concat(routerViews.filter(function (v) {
+          return v.constructor !== Array && !v.path && v.name !== routerView.name;
+        }));
+        parsed.push([routerView.path, [].concat(depth, [_children])]);
       } else if (routerView.children) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)];
-        this._parseRoutes(routerView.children, [...depth, children], parsed);
+        var _children2 = [routerView].concat(routerViews.filter(function (v) {
+          return v.constructor !== Array && !v.path && v.name !== routerView.name;
+        }));
+        _this._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
       }
+    };
+
+    for (var _iterator = routerViews, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+      var _ref2;
+
+      if (_isArray) {
+        if (_i >= _iterator.length) break;
+        _ref2 = _iterator[_i++];
+      } else {
+        _i = _iterator.next();
+        if (_i.done) break;
+        _ref2 = _i.value;
+      }
+
+      var routerView = _ref2;
+
+      _loop(routerView);
     }
 
     return parsed;
-  }
+  };
 
-  _beforeChange(to) {
-    return new Promise(resolve => {
-      const _route = this._urlRouter.find(to.path);
+  _class.prototype._beforeChange = function _beforeChange(to) {
+    var _this2 = this;
+
+    return new Promise(function (resolve) {
+      var _route = _this2._urlRouter.find(to.path);
       if (!_route) return false;
 
-      const route = to.route = {
+      var route = to.route = {
         path: to.path,
         fullPath: to.fullPath,
         query: to.query,
@@ -721,7 +815,7 @@ var Base = class {
         _asyncComponents: []
       };
 
-      const mainView = _route.result[_route.result.length - 1][0];
+      var mainView = _route.result[_route.result.length - 1][0];
 
       if (!mainView.meta) {
         route.meta = {};
@@ -732,33 +826,67 @@ var Base = class {
         route.meta = mainView.meta;
       }
 
-      route._layout = this._resolveRoute(route, _route.result);
+      route._layout = _this2._resolveRoute(route, _route.result);
 
-      let prom = Promise.resolve(true);[].concat(this.current.path ? this.current._beforeLeaveHooksInComp : [], this._beforeChangeHooks, route._beforeEnterHooks).forEach(hook => prom = prom.then(() => Promise.resolve(hook(route, this.current)).then(result => {
-        // if the hook abort or redirect the navigation, cancel the promise chain.
-        if (!(result === true || result == null)) throw result;
-      })));
+      var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
+        return prom = prom.then(function () {
+          return Promise.resolve(hook(route, _this2.current)).then(function (result) {
+            // if the hook abort or redirect the navigation, cancel the promise chain.
+            if (!(result === true || result == null)) throw result;
+          });
+        });
+      });
 
-      prom.catch(e => {
+      prom.catch(function (e) {
         if (e instanceof Error) throw e;else return e;
-      }).then(result => resolve(result));
+      }).then(function (result) {
+        return resolve(result);
+      });
     });
-  }
+  };
 
-  _change(to) {
-    Promise.all(to.route._asyncComponents).then(() => {
-      Object.assign(this.current, to.route);
+  _class.prototype._change = function _change(to) {
+    var _this3 = this;
+
+    Promise.all(to.route._asyncComponents).then(function () {
+      Object.assign(_this3.current, to.route);
     });
-  }
+  };
 
-  _resolveRoute(route, depth) {
-    const layout = {};
-    let current = layout;
+  _class.prototype._resolveRoute = function _resolveRoute(route, depth) {
+    var layout = {};
+    var current = layout;
 
-    for (const routerViews of depth) {
+    for (var _iterator2 = depth, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref3;
+
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref3 = _iterator2[_i2++];
+      } else {
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref3 = _i2.value;
+      }
+
+      var routerViews = _ref3;
+
       current.children = {};
 
-      for (const routerView of routerViews) {
+      for (var _iterator3 = routerViews, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref4;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref4 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref4 = _i3.value;
+        }
+
+        var routerView = _ref4;
+
         current.children[routerView.name || 'default'] = Object.assign({}, routerView);
       }
 
@@ -768,61 +896,71 @@ var Base = class {
     delete current.path;
 
     return this._resolveRouterViews(route, layout.children);
-  }
+  };
 
-  _resolveRouterViews(route, routerViews) {
-    const resolved = {};
+  _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
+    var _this4 = this;
 
-    for (const name in routerViews) {
-      const routerView = routerViews[name];
+    var resolved = {};
 
-      if (routerView.constructor === Array || routerView.path) continue;
+    var _loop2 = function _loop2(name) {
+      var routerView = routerViews[name];
 
-      const v = resolved[name] = { props: routerView.props };
+      if (routerView.constructor === Array || routerView.path) return 'continue';
+
+      var v = resolved[name] = { props: routerView.props };
 
       if (routerView.beforeEnter) {
         route._beforeEnterHooks.push(routerView.beforeEnter);
       }
 
       if (routerView.component && routerView.component.constructor === Function) {
-        route._asyncComponents.push(routerView.component().then(component => v.component = component));
+        route._asyncComponents.push(routerView.component().then(function (component) {
+          return v.component = component;
+        }));
       } else {
         v.component = routerView.component;
       }
 
       if (routerView.children) {
-        v.children = this._resolveRouterViews(route, routerView.children);
+        v.children = _this4._resolveRouterViews(route, routerView.children);
       }
+    };
+
+    for (var name in routerViews) {
+      var _ret2 = _loop2(name);
+
+      if (_ret2 === 'continue') continue;
     }
 
     return resolved;
-  }
+  };
 
-  start(loc) {
+  _class.prototype.start = function start(loc) {
     return this._history.start(loc);
-  }
+  };
 
-  normalize(loc) {
+  _class.prototype.normalize = function normalize(loc) {
     return this._history.normalize(loc);
-  }
+  };
 
-  url(loc) {
+  _class.prototype.url = function url(loc) {
     return this._history.url(loc);
-  }
+  };
 
-  dispatch(loc) {
+  _class.prototype.dispatch = function dispatch(loc) {
     return this._history.dispatch(loc);
-  }
+  };
 
-  push(loc) {
+  _class.prototype.push = function push(loc) {
     return this._history.push(loc);
-  }
+  };
 
-  replace(loc) {
+  _class.prototype.replace = function replace(loc) {
     return this._history.replace(loc);
-  }
+  };
 
-  setState(state) {
+  _class.prototype.setState = function setState(state) {
     this._history.setState(state
 
     // meta factory function may use state object to generate meta object
@@ -830,36 +968,45 @@ var Base = class {
     );if (this.current._metaFactory) {
       this.current.meta = this.current._metaFactory(this.current);
     }
-  }
+  };
 
-  go(n, opts) {
+  _class.prototype.go = function go(n, opts) {
     return this._history.go(n, opts);
-  }
+  };
 
-  back(opts) {
+  _class.prototype.back = function back(opts) {
     return this._history.back(opts);
-  }
+  };
 
-  forward(opts) {
+  _class.prototype.forward = function forward(opts) {
     return this._history.forward(opts);
-  }
+  };
 
-  hookAnchorElements(container) {
+  _class.prototype.hookAnchorElements = function hookAnchorElements(container) {
     return this._history.hookAnchorElements(container);
-  }
-};
+  };
 
-var HashRouter = class extends Base {
-  constructor(args) {
-    super(args);
+  return _class;
+}();
 
-    this._history = new HashHistory({
-      beforeChange: this._beforeChange.bind(this),
-      change: this._change.bind(this)
+var _class = function (_Base) {
+  inherits(_class, _Base);
+
+  function _class(args) {
+    classCallCheck(this, _class);
+
+    var _this = possibleConstructorReturn(this, _Base.call(this, args));
+
+    _this._history = new HashHistory({
+      beforeChange: _this._beforeChange.bind(_this),
+      change: _this._change.bind(_this)
     });
+    return _this;
   }
-};
 
-return HashRouter;
+  return _class;
+}(_class$2);
+
+return _class;
 
 })));
