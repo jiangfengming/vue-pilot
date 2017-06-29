@@ -52,13 +52,19 @@ export default class {
   _parseRoutes(routerViews, depth = [], parsed = []) {
     for (const routerView of routerViews) {
       if (routerView.constructor === Array) {
-        this._parseRoutes(routerView, [...depth, routerView], parsed)
+        const names = routerView.map(c => c.name)
+        const children = [...routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))]
+        this._parseRoutes(children, depth, parsed)
       } else if (routerView.path) {
-        parsed.push([routerView.path, [...depth, routerView]])
+        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
+        parsed.push([routerView.path, [...depth, children]])
       } else if (routerView.children) {
-        this._parseRoutes(routerView.children, [...depth, routerView], parsed)
+        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
+        this._parseRoutes(routerView.children, [...depth, children], parsed)
       }
     }
+
+    return parsed
   }
 
   _beforeChange(to) {
@@ -78,7 +84,7 @@ export default class {
         _asyncComponents: []
       }
 
-      const mainView = _route.result[_route.result.length - 1]
+      const mainView = _route.result[_route.result.length - 1][0]
 
       if (!mainView.meta) {
         route.meta = {}
@@ -89,7 +95,7 @@ export default class {
         route.meta = mainView.meta
       }
 
-      route._routerViews = this._resolveRouterViews(route, _route.result)
+      route._layout = this._resolveRoute(route, _route.result)
 
       let prom = Promise.resolve(true)
       ;[].concat(
@@ -118,35 +124,51 @@ export default class {
     })
   }
 
-  _resolveRouterViews(route, routerViews) {
-    let resolved = {}
+  _resolveRoute(route, depth) {
+    const layout = {}
+    let current = layout
 
-    routerViews.forEach((routerView, i) => {
-      if (routerView.constructor === Array) {
+    for (const routerViews of depth) {
+      current.children = {}
 
-        routerView.forEach(view => {
-
-        })
-      } else {
-        const v = resolved[routerView.name || 'default'] = { props: routerView.props }
-
-        if (routerView.beforeEnter) {
-          route._beforeEnterHooks.push(routerView.beforeEnter)
-        }
-
-        if (routerView.component && routerView.component.constructor === Function) {
-          route._asyncComponents.push(
-            routerView.component().then(component => v.component = component)
-          )
-        } else {
-          v.component = routerView.component
-        }
-
-        if (routerView.children) {
-          v.children = this._resolveRouterViews(route, routerView.children)
-        }
+      for (const routerView of routerViews) {
+        current.children[routerView.name || 'default'] = Object.assign({}, routerView)
       }
-    })
+
+      current = current.children[routerViews[0].name || 'default']
+    }
+
+    delete current.path
+
+    return this._resolveRouterViews(route, layout.children)
+  }
+
+  _resolveRouterViews(route, routerViews) {
+    const resolved = {}
+
+    for (const name in routerViews) {
+      const routerView = routerViews[name]
+
+      if (routerView.constructor === Array || routerView.path) continue
+
+      const v = resolved[name] = { props: routerView.props }
+
+      if (routerView.beforeEnter) {
+        route._beforeEnterHooks.push(routerView.beforeEnter)
+      }
+
+      if (routerView.component && routerView.component.constructor === Function) {
+        route._asyncComponents.push(
+          routerView.component().then(component => v.component = component)
+        )
+      } else {
+        v.component = routerView.component
+      }
+
+      if (routerView.children) {
+        v.children = this._resolveRouterViews(route, routerView.children)
+      }
+    }
 
     return resolved
   }

@@ -6,10 +6,13 @@
 
 <body>
 <div id="app">
+  <router-view name="header"></router-view>
+
   <router-link to="/">/</router-link><br>
   <router-link to="/props-obj">/props-obj</router-link><br>
   <router-link to="/props-func/bonjour?foo=hey">/props-func/bonjour?foo=hey</router-link><br>
   <router-link :to="{ path: '/state', state: { foo: 'message from history.state.' } }">/state</router-link><br>
+  <router-link to="/another-header">/another-header</router-link><br>
   <router-link to="/layout/foo">/layout/foo</router-link><br>
   <router-link to="/layout/bar">/layout/bar</router-link><br>
   <router-link :to="{ path: '/', hidden: true }">hidden /</router-link><br>
@@ -19,7 +22,6 @@
   <router-link to="/undefined-component">/undefined-component</router-link><br>
   <router-link to="/undefined-children">/undefined-children</router-link><br>
 
-  <router-view name="header"></router-view>
   <router-view foo="hello" class="foo"></router-view>
 </div>
 
@@ -47,6 +49,13 @@ const VLayoutA = {
 
 const routes = [
   {
+    name: 'header',
+    component: {
+      template: '<header>Header</header>'
+    }
+  },
+
+  {
     path: '/',
     component: VFoo
   },
@@ -72,6 +81,20 @@ const routes = [
 
   [
     {
+      name: 'header',
+      component: {
+        template: '<header>Another header</header>'
+      }
+    },
+
+    {
+      path: '/another-header',
+      component: {
+        template: '<div>Using Array to group routerViews</div>'
+      }
+    },
+
+    {
       component: VLayoutA,
       props: route => ({ foo: route.meta.foo }),
       children: [
@@ -80,18 +103,13 @@ const routes = [
             path: '/layout/foo',
             component: VFoo,
             meta: route => ({ foo: route.state.foo }),
-            props: { foo: 'one', bar: 'two', baz: 'three' },
-            children: [
-              {
-                component: {}
-              }
-            ]
+            props: { foo: 'one', bar: 'two', baz: 'three' }
           },
 
           {
-            routerView: 'footer',
+            name: 'footer',
             component: {
-              template: '<footer>footer</footer>'
+              template: '<footer>Another footer</footer>'
             }
           }
         ],
@@ -109,33 +127,32 @@ const routes = [
           beforeEnter() {
             return confirm('Enter?')
           }
+        },
+
+        {
+          name: 'footer',
+          component: {
+            template: '<footer>Footer</footer>'
+          }
         }
       ]
-    },
-
-    {
-      path: '/foo/bar',
-      component: {}
-    },
-
-    {
-      routerView: 'bar',
-      component: {}
     }
   ],
 
   [
     {
-      path: '/undefined-component',
-      beforeEnter() {
-        console.log('/undefined-component')
+      name: 'header',
+      component: {
+        template: '<header>/undefined-component</header>'
       }
     },
 
     {
-      routerView: 'bar',
-      component: {}
-    },
+      path: '/undefined-component',
+      beforeEnter() {
+        console.log('/undefined-component')
+      }
+    }
   ],
 
   {
