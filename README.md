@@ -72,6 +72,7 @@ const routes = [
     component: { /* component definition */ }
   },
 
+  // the default <router-view>
   { path: '/basic', component: { /* component definition */ } },
 
   // return promise to define async components
