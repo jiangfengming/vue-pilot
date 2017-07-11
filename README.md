@@ -252,8 +252,8 @@ Mose of the APIs are proxied to [spa-history](https://github.com/fenivana/spa-hi
 - [router.go(position, { silent = false, state = null } = {})](#routergoposition--silent--false-state--null---)
 - [router.back(position, options)](#routerbackoptions)
 - [router.forward(position, options)](#routerforwardoptions)
-- [router.hookAnchorElements(container = document.body)](#routerhookanchorelementscontainer--documentbody)
-- [router.beforeChange(callback)](#routerbeforeChangecallback)
+- [router.captureLinkClickEvent(e)](#routercapturelinkclickevente)
+- [router.beforeChange(callback)](#routerbeforechangecallback)
 
 
 ### router.current
