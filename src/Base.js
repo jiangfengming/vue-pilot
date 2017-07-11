@@ -219,7 +219,7 @@ export default class {
     return this._history.forward(opts)
   }
 
-  hookAnchorElements(container) {
-    return this._history.hookAnchorElements(container)
+  captureLinkClickEvent(e) {
+    return this._history.captureLinkClickEvent(e)
   }
 }

@@ -400,8 +400,14 @@ Same as `router.go(-1, options)`
 ### router.forward(options)
 Same as `router.go(1, options)`
 
-### router.hookAnchorElements(container = document.body)
+### router.captureLinkClickEvent(e)
 Prevent the navigation when clicking the `<a>` element in the container and the `href` is an in-app address, `router.push()` will be called instead.
+
+```html
+<div @click="$router.captureLinkClickEvent($event)">
+  <a href="/foo">foo</a>
+</div>
+```
 
 ### router.beforeChange(callback)
 Add a global beforeChange callback. The callback will be called at initializing and before location change.

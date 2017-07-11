@@ -315,32 +315,26 @@ var _class$2 = function () {
     return this.go(1, opts);
   };
 
-  _class.prototype.hookAnchorElements = function hookAnchorElements() {
-    var _this4 = this;
+  _class.prototype.captureLinkClickEvent = function captureLinkClickEvent(e) {
+    var a = e.target.closest('a'
 
-    var container = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.body;
+    // force not handle the <a> element
+    );if (!a || a.getAttribute('spa-history-skip') != null) return;
 
-    container.addEventListener('click', function (e) {
-      var a = e.target.closest('a'
+    // open new window
+    var target = a.getAttribute('target');
+    if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in { _self: 1, _blank: 1, _parent: 1, _top: 1 }) && target !== window.name)) return;
 
-      // force not handle the <a> element
-      );if (!a || a.getAttribute('spa-history-skip') != null) return;
+    // out of app
+    if (a.href.indexOf(location.origin + this.url('/')) !== 0) return;
 
-      // open new window
-      var target = a.getAttribute('target');
-      if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in { _self: 1, _blank: 1, _parent: 1, _top: 1 }) && target !== window.name)) return;
+    var to = this.normalize(a.href
 
-      // out of app
-      if (a.href.indexOf(location.origin + _this4.url('/')) !== 0) return;
+    // hash change
+    );if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) return;
 
-      var to = _this4.normalize(a.href
-
-      // hash change
-      );if (to.path === _this4.current.path && to.query.toString() === _this4.current.query.toString() && to.hash && to.hash !== _this4.current.hash) return;
-
-      e.preventDefault();
-      _this4.push(to);
-    });
+    e.preventDefault();
+    this.push(to);
   };
 
   return _class;
@@ -992,8 +986,8 @@ var _class$2 = function () {
     return this._history.forward(opts);
   };
 
-  _class.prototype.hookAnchorElements = function hookAnchorElements(container) {
-    return this._history.hookAnchorElements(container);
+  _class.prototype.captureLinkClickEvent = function captureLinkClickEvent(e) {
+    return this._history.captureLinkClickEvent(e);
   };
 
   return _class;
