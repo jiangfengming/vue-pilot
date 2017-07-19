@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A vue router with the power of history.state",
   "main": "",
   "directories": {
@@ -26,7 +26,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "eslint": "^4.2.0",
     "eslint-config-enough": "^0.2.7",
-    "rollup": "^0.45.1",
+    "rollup": "^0.45.2",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0"
@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
   "dependencies": {
-    "spa-history": "^0.5.1",
+    "spa-history": "^0.5.2",
     "url-router": "^3.1.0"
   }
 }

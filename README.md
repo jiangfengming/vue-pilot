@@ -353,19 +353,19 @@ router.push('http://www.example.com/#/home?a=1#b')
 You can push a location with state.
 
 ```js
-router.push(
+router.push({
   path: '/home',
   state: {
     foo: 1,
     bar: 2
   }
-)
+})
 ```
 
 And you can push a hidden location, which will not change the value of browser's address bar. the hidden location is stored in `window.history.state`
 
 ```js
-router.push(
+router.push({
   path: '/login',
   state: {
     foo: 1
@@ -376,7 +376,7 @@ router.push(
 
   // optional. if set, the location bar will show this address instead
   appearPath: '/buy'
-)
+})
 ```
 
 ### router.replace(URL string | location)
