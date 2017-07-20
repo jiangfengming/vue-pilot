@@ -614,45 +614,6 @@ var RouterView = {
   }
 };
 
-var RouterLink = {
-  functional: true,
-
-  props: {
-    tag: {
-      default: 'a'
-    },
-
-    to: {
-      type: [String, Object]
-    },
-
-    method: {
-      type: String,
-      default: 'push' // push, replace, dispatch
-    }
-  },
-
-  render: function render(h, _ref) {
-    var parent = _ref.parent,
-        props = _ref.props,
-        children = _ref.children,
-        data = _ref.data;
-
-    return h(props.tag, Object.assign(data, {
-      attrs: {
-        href: parent.$router.url(props.to)
-      },
-
-      on: {
-        click: function click(e) {
-          e.preventDefault();
-          parent.$router[props.method](props.to);
-        }
-      }
-    }), children);
-  }
-};
-
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -666,6 +627,20 @@ var classCallCheck = function (instance, Constructor) {
 
 
 
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
 
 
 
@@ -701,6 +676,49 @@ var possibleConstructorReturn = function (self, call) {
   }
 
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+var RouterLink = {
+  functional: true,
+
+  props: {
+    tag: {
+      default: 'a'
+    },
+
+    to: {
+      type: [String, Object]
+    },
+
+    method: {
+      type: String,
+      default: 'push' // push, replace, dispatch
+    }
+  },
+
+  render: function render(h, _ref) {
+    var parent = _ref.parent,
+        props = _ref.props,
+        children = _ref.children,
+        listeners = _ref.listeners,
+        data = _ref.data;
+
+    return h(props.tag, _extends({}, data, {
+
+      attrs: {
+        href: parent.$router.url(props.to)
+      },
+
+      on: _extends({}, listeners, {
+        click: function click(e) {
+          e.preventDefault();
+          parent.$router[props.method](props.to);
+
+          if (listeners.click) listeners.click(e);
+        }
+      })
+    }), children);
+  }
 };
 
 var _class$2 = function () {
