@@ -88,7 +88,8 @@ const routes = [
       template: `<div>
                   <div>state.foo: {{ foo }}</div>
                   <div>state.bar: {{ bar }}</div>
-                  <button @click="$router.setState({ bar: 'baaaaaar' })">set state.bar</button>
+                  <button @click="$router.setState({ bar: 'baaaaaar' })">$router.setState({ bar: 'baaaaaar' })</button>
+                  <button @click="$router.setState({ bar: 'bbbbbbar' })">$router.setState({ bar: 'bbbbbbar' })</button>
                  </div>`
     },
     props: route => ({ foo: route.state.foo, bar: route.state.bar })

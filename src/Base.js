@@ -202,7 +202,7 @@ export default class {
 
     // Vue can not react if add new prop into state
     // so we replace it with a new state object
-    this.current.state = { ...this.current.state }
+    this.current.state = { ...this._history.current.state }
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
