@@ -981,9 +981,13 @@ var _class$2 = function () {
   _class.prototype.setState = function setState(state) {
     this._history.setState(state
 
+    // Vue can not react if add new prop into state
+    // so we replace it with a new state object
+    );this.current.state = _extends({}, this.current.state);
+
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
-    );if (this.current._metaFactory) {
+    if (this.current._metaFactory) {
       this.current.meta = this.current._metaFactory(this.current);
     }
   };

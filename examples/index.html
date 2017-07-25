@@ -8,7 +8,7 @@
 <div id="app">
   <router-view name="header"></router-view>
 
-  <router-link to="/">/</router-link><br>
+  <router-link data-foo="bar" to="/">/</router-link><br>
   <router-link to="/props-obj">/props-obj</router-link><br>
   <router-link to="/props-func/bonjour?foo=hey">/props-func/bonjour?foo=hey</router-link><br>
   <router-link to="/regex/123">/regex/123</router-link><br>
@@ -83,8 +83,15 @@ const routes = [
 
   {
     path: '/state',
-    component: VFoo,
-    props: route => ({ foo: route.state.foo })
+    component: {
+      props: ['foo', 'bar'],
+      template: `<div>
+                  <div>state.foo: {{ foo }}</div>
+                  <div>state.bar: {{ bar }}</div>
+                  <button @click="$router.setState({ bar: 'baaaaaar' })">set state.bar</button>
+                 </div>`
+    },
+    props: route => ({ foo: route.state.foo, bar: route.state.bar })
   },
 
   [
