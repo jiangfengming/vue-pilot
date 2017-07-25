@@ -705,9 +705,9 @@ var RouterLink = {
 
     return h(props.tag, _extends({}, data, {
 
-      attrs: {
+      attrs: _extends({}, data.attrs, {
         href: parent.$router.url(props.to)
-      },
+      }),
 
       on: _extends({}, listeners, {
         click: function click(e) {

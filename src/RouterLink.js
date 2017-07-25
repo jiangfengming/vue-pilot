@@ -24,6 +24,7 @@ export default {
         ...data,
 
         attrs: {
+          ...data.attrs,
           href: parent.$router.url(props.to)
         },
 
