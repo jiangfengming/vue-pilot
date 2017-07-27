@@ -112,6 +112,7 @@ const routes = [
 
     {
       component: VLayoutA,
+      meta: { foo: 'default' },
       props: route => ({ foo: route.meta.foo }),
       children: [
         [
@@ -139,7 +140,6 @@ const routes = [
               return confirm('Leave?')
             }
           },
-          meta: { foo: 'two' },
           beforeEnter() {
             return confirm('Enter?')
           }

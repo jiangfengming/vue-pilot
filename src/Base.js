@@ -79,27 +79,21 @@ export default class {
         hash: to.hash,
         state: to.state,
         params: _route.params,
+        meta: {},
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
-        _asyncComponents: []
-      }
-
-      const mainView = _route.result[_route.result.length - 1][0]
-
-      if (!mainView.meta) {
-        route.meta = {}
-      } else if (mainView.meta.constructor === Function) {
-        route._metaFactory = mainView.meta
-        route.meta = route._metaFactory(route)
-      } else {
-        route.meta = mainView.meta
+        _asyncComponents: [],
+        _meta: []
       }
 
       route._layout = this._resolveRoute(route, _route.result)
 
+      this._generateMeta(route)
+
       let prom = Promise.resolve(true)
+
       ;[].concat(
-        this.current.path ? this.current._beforeLeaveHooksInComp : [],
+        this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
         this._beforeChangeHooks,
         route._beforeEnterHooks
       ).forEach(hook =>
@@ -112,10 +106,16 @@ export default class {
       )
 
       prom.catch(e => {
-        if (e instanceof Error) throw e
-        else return e
+        if (e instanceof Error) throw e // error encountered, e.g. network error
+        else return e // the result of cancelled promise
       }).then(result => resolve(result))
     })
+  }
+
+  _generateMeta(route) {
+    if (route._meta.length) {
+      route._meta.forEach(m => Object.assign(route.meta, m.constructor === Function ? m(route) : m))
+    }
   }
 
   _change(to) {
@@ -152,6 +152,10 @@ export default class {
       if (routerView.constructor === Array || routerView.path) continue
 
       const v = resolved[name] = { props: routerView.props }
+
+      if (routerView.meta) {
+        route._meta.push(routerView.meta)
+      }
 
       if (routerView.beforeEnter) {
         route._beforeEnterHooks.push(routerView.beforeEnter)
@@ -206,9 +210,7 @@ export default class {
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
-    if (this.current._metaFactory) {
-      this.current.meta = this.current._metaFactory(this.current)
-    }
+    this._generateMeta(this.current)
   }
 
   go(n, opts) {

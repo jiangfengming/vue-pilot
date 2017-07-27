@@ -828,25 +828,19 @@ var _class$2 = function () {
         hash: to.hash,
         state: to.state,
         params: _route.params,
+        meta: {},
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
-        _asyncComponents: []
+        _asyncComponents: [],
+        _meta: []
       };
-
-      var mainView = _route.result[_route.result.length - 1][0];
-
-      if (!mainView.meta) {
-        route.meta = {};
-      } else if (mainView.meta.constructor === Function) {
-        route._metaFactory = mainView.meta;
-        route.meta = route._metaFactory(route);
-      } else {
-        route.meta = mainView.meta;
-      }
 
       route._layout = _this2._resolveRoute(route, _route.result);
 
-      var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
+      _this2._generateMeta(route);
+
+      var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], // not landing page
+      _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return prom = prom.then(function () {
           return Promise.resolve(hook(route, _this2.current)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
@@ -856,11 +850,20 @@ var _class$2 = function () {
       });
 
       prom.catch(function (e) {
-        if (e instanceof Error) throw e;else return e;
+        if (e instanceof Error) throw e; // error encountered, e.g. network error
+        else return e; // the result of cancelled promise
       }).then(function (result) {
         return resolve(result);
       });
     });
+  };
+
+  _class.prototype._generateMeta = function _generateMeta(route) {
+    if (route._meta.length) {
+      route._meta.forEach(function (m) {
+        return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
+      });
+    }
   };
 
   _class.prototype._change = function _change(to) {
@@ -928,6 +931,10 @@ var _class$2 = function () {
 
       var v = resolved[name] = { props: routerView.props };
 
+      if (routerView.meta) {
+        route._meta.push(routerView.meta);
+      }
+
       if (routerView.beforeEnter) {
         route._beforeEnterHooks.push(routerView.beforeEnter);
       }
@@ -987,9 +994,7 @@ var _class$2 = function () {
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
-    if (this.current._metaFactory) {
-      this.current.meta = this.current._metaFactory(this.current);
-    }
+    this._generateMeta(this.current);
   };
 
   _class.prototype.go = function go(n, opts) {
