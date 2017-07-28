@@ -750,6 +750,9 @@ var _class$2 = function () {
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
     this._beforeChangeHooks = [];
+    this._afterChangeHooks = [];
+    this._errorHooks = [];
+
     this.current = {
       path: null,
       query: null,
@@ -762,8 +765,16 @@ var _class$2 = function () {
     };
   }
 
-  _class.prototype.beforeChange = function beforeChange(cb) {
-    this._beforeChangeHooks.push(cb);
+  _class.prototype.beforeChange = function beforeChange(hook) {
+    this._beforeChangeHooks.push(hook);
+  };
+
+  _class.prototype.afterChange = function afterChange(hook) {
+    this._afterChangeHooks.push(hook);
+  };
+
+  _class.prototype.onError = function onError(hook) {
+    this._errorHooks.push(hook);
   };
 
   _class.prototype._parseRoutes = function _parseRoutes(routerViews) {
@@ -850,7 +861,7 @@ var _class$2 = function () {
       });
 
       prom.catch(function (e) {
-        if (e instanceof Error) throw e; // error encountered, e.g. network error
+        if (e instanceof Error) throw e; // encountered unexpected error
         else return e; // the result of cancelled promise
       }).then(function (result) {
         return resolve(result);
@@ -871,6 +882,17 @@ var _class$2 = function () {
 
     Promise.all(to.route._asyncComponents).then(function () {
       Object.assign(_this3.current, to.route);
+      _this3._afterChangeHooks.forEach(function (hook) {
+        return hook(_this3.current);
+      });
+    }).catch(function (e) {
+      return _this3._handleError(e);
+    });
+  };
+
+  _class.prototype._handleError = function _handleError(e) {
+    this._errorHooks.forEach(function (hook) {
+      return hook(e);
     });
   };
 

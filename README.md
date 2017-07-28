@@ -254,6 +254,8 @@ Mose of the APIs are proxied to [spa-history](https://github.com/fenivana/spa-hi
 - [router.forward(position, options)](#routerforwardoptions)
 - [router.captureLinkClickEvent(e)](#routercapturelinkclickevente)
 - [router.beforeChange(callback)](#routerbeforechangecallback)
+- [router.afterChange(callback)](#routerafterchangecallback)
+- [router.onError(callback)](#routeronerrorcallback)
 
 
 ### router.current
@@ -413,6 +415,29 @@ Prevent the navigation when clicking the `<a>` element in the container and the 
 ### router.beforeChange(callback)
 Add a global beforeChange callback. The callback will be called at initializing and before location change.
 
+```js
+router.beforeChange((to, from) => {
+  // ...
+})
+```
+
+### router.afterChange(callback)
+Add a global afterChange callback. The callback will be called after route has been changed and async components have been loaded.
+
+```js
+router.afterChange(to => {
+  // ...
+})
+```
+
+### router.onError(callback)
+Add a global error callback. The callback will be called when loading async components failed.
+
+```js
+router.onError(error => {
+  // ...
+})
+```
 
 ## Dependencies
 - [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL)

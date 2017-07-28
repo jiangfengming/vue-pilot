@@ -33,6 +33,9 @@ export default class {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
+    this._afterChangeHooks = []
+    this._errorHooks = []
+
     this.current = {
       path: null,
       query: null,
@@ -45,8 +48,16 @@ export default class {
     }
   }
 
-  beforeChange(cb) {
-    this._beforeChangeHooks.push(cb)
+  beforeChange(hook) {
+    this._beforeChangeHooks.push(hook)
+  }
+
+  afterChange(hook) {
+    this._afterChangeHooks.push(hook)
+  }
+
+  onError(hook) {
+    this._errorHooks.push(hook)
   }
 
   _parseRoutes(routerViews, depth = [], parsed = []) {
@@ -106,7 +117,7 @@ export default class {
       )
 
       prom.catch(e => {
-        if (e instanceof Error) throw e // error encountered, e.g. network error
+        if (e instanceof Error) throw e // encountered unexpected error
         else return e // the result of cancelled promise
       }).then(result => resolve(result))
     })
@@ -121,7 +132,12 @@ export default class {
   _change(to) {
     Promise.all(to.route._asyncComponents).then(() => {
       Object.assign(this.current, to.route)
-    })
+      this._afterChangeHooks.forEach(hook => hook(this.current))
+    }).catch(e => this._handleError(e))
+  }
+
+  _handleError(e) {
+    this._errorHooks.forEach(hook => hook(e))
   }
 
   _resolveRoute(route, depth) {

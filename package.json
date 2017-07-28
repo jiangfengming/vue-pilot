@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "A vue router with the power of history.state",
   "main": "",
   "directories": {

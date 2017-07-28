@@ -198,6 +198,15 @@ router.beforeChange((to, from) => {
   if (from && from.path === '/layout/foo') return confirm('Leave?')
 })
 
+router.afterChange(to => {
+  console.log('afterChange called')
+  console.log(to)
+})
+
+router.onError(e => {
+  console.log('error:', e)
+})
+
 const app = new Vue({
   el: '#app',
   router
