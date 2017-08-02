@@ -884,7 +884,7 @@ var _class$2 = function () {
 
     this._afterChangeHooks.forEach(function (hook) {
       return promise = promise.then(function () {
-        return Promise.resolve(hook(to, _this3.current)).then(function (result) {
+        return Promise.resolve(hook(to.route, _this3.current)).then(function (result) {
           if (result === false) throw result;
         });
       });
@@ -896,7 +896,9 @@ var _class$2 = function () {
       }).catch(function (e) {
         return _this3._handleError(e);
       });
-    }).catch(function () {/* nop */});
+    }).catch(function (e) {
+      if (e !== false) throw e;
+    });
   };
 
   _class.prototype._handleError = function _handleError(e) {

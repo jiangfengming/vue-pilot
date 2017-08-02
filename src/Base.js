@@ -134,7 +134,7 @@ export default class {
 
     this._afterChangeHooks.forEach(hook =>
       promise = promise.then(() =>
-        Promise.resolve(hook(to, this.current)).then(result => {
+        Promise.resolve(hook(to.route, this.current)).then(result => {
           if (result === false) throw result
         })
       )
@@ -144,7 +144,9 @@ export default class {
       Promise.all(to.route._asyncComponents).then(() => {
         Object.assign(this.current, to.route)
       }).catch(e => this._handleError(e))
-    }).catch(() => { /* nop */ })
+    }).catch(e => {
+      if (e !== false) throw e
+    })
   }
 
   _handleError(e) {
