@@ -854,9 +854,9 @@ var _class$2 = function () {
 
       _this2._generateMeta(route);
 
-      var prom = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], // not landing page
+      var promise = Promise.resolve(true);[].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], // not landing page
       _this2._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
-        return prom = prom.then(function () {
+        return promise = promise.then(function () {
           return Promise.resolve(hook(route, _this2.current)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result;
@@ -864,7 +864,7 @@ var _class$2 = function () {
         });
       });
 
-      prom.catch(function (e) {
+      promise.catch(function (e) {
         if (e instanceof Error) throw e; // encountered unexpected error
         else return e; // the result of cancelled promise
       }).then(function (result) {
@@ -884,14 +884,23 @@ var _class$2 = function () {
   _class.prototype._change = function _change(to) {
     var _this3 = this;
 
-    Promise.all(to.route._asyncComponents).then(function () {
-      Object.assign(_this3.current, to.route);
-      _this3._afterChangeHooks.forEach(function (hook) {
-        return hook(_this3.current);
+    var promise = Promise.resolve(true);
+
+    this._afterChangeHooks.forEach(function (hook) {
+      return promise = promise.then(function () {
+        return Promise.resolve(hook(to, _this3.current)).then(function (result) {
+          if (result === false) throw result;
+        });
       });
-    }).catch(function (e) {
-      return _this3._handleError(e);
     });
+
+    promise.then(function () {
+      Promise.all(to.route._asyncComponents).then(function () {
+        Object.assign(_this3.current, to.route);
+      }).catch(function (e) {
+        return _this3._handleError(e);
+      });
+    }).catch(function () {/* nop */});
   };
 
   _class.prototype._handleError = function _handleError(e) {

@@ -422,11 +422,17 @@ router.beforeChange((to, from) => {
 ```
 
 ### router.afterChange(callback)
-Add a global afterChange callback. The callback will be called after route has been changed and async components have been loaded.
+Add a global afterChange callback. The callback will be called after history has been changed but before async components have been loaded.
+
+Returning `false` can prevent to load the new page.
 
 ```js
-router.afterChange(to => {
-  // ...
+router.afterChange((to, from) => {
+  // if our SPA has been updated
+  if (outdated()) {
+    location.reload()
+    return false
+  }
 })
 ```
 

@@ -101,14 +101,14 @@ export default class {
 
       this._generateMeta(route)
 
-      let prom = Promise.resolve(true)
+      let promise = Promise.resolve(true)
 
       ;[].concat(
         this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
         this._beforeChangeHooks,
         route._beforeEnterHooks
       ).forEach(hook =>
-        prom = prom.then(() =>
+        promise = promise.then(() =>
           Promise.resolve(hook(route, this.current)).then(result => {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result
@@ -116,7 +116,7 @@ export default class {
         )
       )
 
-      prom.catch(e => {
+      promise.catch(e => {
         if (e instanceof Error) throw e // encountered unexpected error
         else return e // the result of cancelled promise
       }).then(result => resolve(result))
@@ -130,10 +130,21 @@ export default class {
   }
 
   _change(to) {
-    Promise.all(to.route._asyncComponents).then(() => {
-      Object.assign(this.current, to.route)
-      this._afterChangeHooks.forEach(hook => hook(this.current))
-    }).catch(e => this._handleError(e))
+    let promise = Promise.resolve(true)
+
+    this._afterChangeHooks.forEach(hook =>
+      promise = promise.then(() =>
+        Promise.resolve(hook(to, this.current)).then(result => {
+          if (result === false) throw result
+        })
+      )
+    )
+
+    promise.then(() => {
+      Promise.all(to.route._asyncComponents).then(() => {
+        Object.assign(this.current, to.route)
+      }).catch(e => this._handleError(e))
+    }).catch(() => { /* nop */ })
   }
 
   _handleError(e) {
