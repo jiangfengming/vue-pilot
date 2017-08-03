@@ -21,8 +21,25 @@ export default class {
         } else {
           this.$router = this.$root.$router
 
-          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
-            this.$root.$route._beforeLeaveHooksInComp.push(this.$options.beforeRouteLeave.bind(this))
+          if (this.$vnode && this.$vnode.data._routerView) {
+            const hooks = this.$root.$route._beforeLeaveHooksInComp
+            const options = this.constructor.extendOptions
+
+            if (options.extends && options.extends.beforeRouteLeave) {
+              hooks.push(options.extends.beforeRouteLeave.bind(this))
+            }
+
+            if (options.mixins) {
+              options.mixins.forEach(mixin => {
+                if (mixin.beforeRouteLeave) {
+                  hooks.push(mixin.beforeRouteLeave.bind(this))
+                }
+              })
+            }
+
+            if (options.beforeRouteLeave) {
+              hooks.push(options.beforeRouteLeave.bind(this))
+            }
           }
         }
       }

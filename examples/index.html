@@ -134,12 +134,30 @@ const routes = [
         {
           path: '/layout/bar',
           component: {
-            template: '<div>bar</div>',
+            extends: {
+              beforeRouteLeave() {
+                console.log('beforeRouteLeave from super')
+                return confirm('beforeRouteLeave from super. Leave?')
+              }
+            },
+
+            mixins: [
+              {
+                beforeRouteLeave() {
+                  console.log('beforeRouteLeave from mixin')
+                  return confirm('beforeRouteLeave from mixin. Leave?')
+                }
+              }
+            ],
+
             beforeRouteLeave() {
-              console.log(this)
-              return confirm('Leave?')
-            }
+              console.log('beforeRouteLeave from self')
+              return confirm('beforeRouteLeave from self. Leave?')
+            },
+
+            template: '<div>bar</div>'
           },
+
           beforeEnter() {
             return confirm('Enter?')
           }
