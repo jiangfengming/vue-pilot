@@ -8,16 +8,16 @@ export default class {
     Vue.component('router-link', RouterLink)
 
     Vue.mixin({
-      data() {
-        return this.$root === this && this.$root.$options.router ? { $route: this.$root.$options.router.current } : {}
-      },
-
       beforeCreate() {
         if (!this.$root.$options.router) return
 
         if (this.$options.router) {
           this.$router = this.$options.router
-          this.$route = this.$router.current
+
+          // make current route reactive
+          this.$route = new Vue({
+            data: { route: this.$router.current }
+          }).route
         } else {
           this.$router = this.$root.$router
 

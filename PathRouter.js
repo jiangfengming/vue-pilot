@@ -727,9 +727,6 @@ var _class$2 = function () {
     Vue.component('router-link', RouterLink);
 
     Vue.mixin({
-      data: function data() {
-        return this.$root === this && this.$root.$options.router ? { $route: this.$root.$options.router.current } : {};
-      },
       beforeCreate: function beforeCreate() {
         var _this = this;
 
@@ -737,7 +734,11 @@ var _class$2 = function () {
 
         if (this.$options.router) {
           this.$router = this.$options.router;
-          this.$route = this.$router.current;
+
+          // make current route reactive
+          this.$route = new Vue({
+            data: { route: this.$router.current }
+          }).route;
         } else {
           this.$router = this.$root.$router;
 
