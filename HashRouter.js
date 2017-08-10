@@ -132,6 +132,7 @@ var _class$2 = function () {
 
     this.beforeChange = beforeChange;
     this.change = change;
+    this.current = null;
   }
 
   _class.prototype.start = function start(loc) {

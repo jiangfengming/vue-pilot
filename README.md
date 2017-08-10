@@ -421,7 +421,7 @@ Arguments:
   operation:
     push: router.push() is called.
     replace: router.replace() is called.
-    init: "to" is the initial page, at this stage, "from" is null.
+    init: "to" is the initial page, at this stage, "from.path" is null.
     popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called.
     dispatch: router.dispatch() is called.
 
