@@ -95,7 +95,7 @@ export default class {
     return parsed
   }
 
-  _beforeChange(to) {
+  _beforeChange(to, from, op) {
     return new Promise(resolve => {
       const _route = this._urlRouter.find(to.path)
       if (!_route) return false
@@ -126,7 +126,7 @@ export default class {
         route._beforeEnterHooks
       ).forEach(hook =>
         promise = promise.then(() =>
-          Promise.resolve(hook(route, this.current)).then(result => {
+          Promise.resolve(hook(route, this.current, op)).then(result => {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result
           })

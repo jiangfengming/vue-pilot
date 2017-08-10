@@ -65,7 +65,12 @@ const routes = [
   {
     path: '/props-obj',
     component: VFoo,
-    props: { foo: 'hallo' }
+    props: { foo: 'hallo' },
+    beforeEnter(to, from, op) {
+      if (op === 'push') {
+        return Object.assign({}, to, { method: 'replace' })
+      }
+    }
   },
 
   {

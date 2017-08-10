@@ -121,12 +121,8 @@ const routes = [
     path: '/login',
 
     // beforeEnter hook will be called before confirming the navigation.
-    // arguments 'to' and 'from' are route objects.
-    // return true or undefined/null to confirm the navigation
-    // return URL string or location object to redirect
-    // return false to abort the navigation
-    // can return Promise
-    beforeEnter(to, from) {
+    // see router.beforeChange below for details
+    beforeEnter(to, from, operation) {
 
     },
 
@@ -162,17 +158,20 @@ const routes = [
         `
       },
 
-      // route.meta is set by the matched route
+      // define some meta
+      meta: { activeTab: 'main' },
+
+      // route.meta.activeTab is "foo" when path is "/foo"
       props: route => ({ activeTab: route.meta.activeTab })
 
       // define child <router-view>s
       children: [
         {
           path: '/foo',
-          component: { /* ... */},
+          component: { /* ... */ },
 
-          // define some meta
-          // then it can be passed to layout components as route.meta
+          // parent route meta and child route meta will be merged together
+          // if child route meta has same keys as parent, it will override parent ones.
           meta: { activeTab: 'foo' }
         },
 
@@ -413,10 +412,30 @@ Prevent the navigation when clicking the `<a>` element in the container and the 
 ```
 
 ### router.beforeChange(callback)
-Add a global beforeChange callback. The callback will be called at initializing and before location change.
+Add a global beforeChange callback. The callback will be called before confirming the navigation.
+
+```
+Arguments:
+  to: Route Object. The location will be changed to.
+  from: Route Object. The current location.
+  operation:
+    push: router.push() is called.
+    replace: router.replace() is called.
+    init: "to" is the initial page, at this stage, "from" is null.
+    popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called.
+    dispatch: router.dispatch() is called.
+
+Returns:
+  true | undefined | null: The navigation is confirmed.
+  false: Prevent the navigation.
+  location: Redirect to this location.
+            You can override the history manipulate method by providing location.method, values are: push, replace, dispatch.
+
+Return value can be a Promise.
+```
 
 ```js
-router.beforeChange((to, from) => {
+router.beforeChange((to, from, operation) => {
   // ...
 })
 ```

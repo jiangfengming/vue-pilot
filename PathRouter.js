@@ -193,8 +193,8 @@ var _class$2 = function () {
     success: replaceState(to)          fail: nop                                     redirect: _beforeChange('replace', redirect)
      popstate
     success: nop                       fail: __changeHistory('push', current)        redirect: _beforeChange('push', redirect)
-     sessionless
-    success: nop                       fail: nop                                     redirect: _beforeChange('sessionless', redirect)
+     dispatch
+    success: nop                       fail: nop                                     redirect: _beforeChange('dispatch', redirect)
   */
 
 
@@ -204,13 +204,13 @@ var _class$2 = function () {
     // to is the same as current and op is push, set op to replace
     if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') op = 'replace';
 
-    Promise.resolve(this.beforeChange(to, this.current)).then(function (ret) {
+    Promise.resolve(this.beforeChange(to, this.current, op)).then(function (ret) {
       if (ret == null || ret === true) {
         if (op === 'push' || op === 'replace') _this2.__changeHistory(op, to);
         _this2.current = to;
         _this2.change(to);
       } else if (ret.constructor === String || ret.constructor === Object) {
-        if (op === 'init') op = 'replace';else if (op === 'popstate') op = 'push';
+        if (op === 'init') op = 'replace';else if (op === 'popstate') op = 'push';else if (ret.method) op = ret.method;
         _this2._beforeChange(op, _this2.normalize(ret));
       } else if (ret === false) {
         if (op === 'popstate') _this2.__changeHistory('push', _this2.current);
@@ -220,7 +220,7 @@ var _class$2 = function () {
 
   _class.prototype.dispatch = function dispatch(to) {
     to = this.normalize(to);
-    this._beforeChange('sessionless', to);
+    this._beforeChange('dispatch', to);
   };
 
   /*
@@ -849,7 +849,7 @@ var _class$2 = function () {
     return parsed;
   };
 
-  _class.prototype._beforeChange = function _beforeChange(to) {
+  _class.prototype._beforeChange = function _beforeChange(to, from, op) {
     var _this3 = this;
 
     return new Promise(function (resolve) {
@@ -877,7 +877,7 @@ var _class$2 = function () {
       var promise = Promise.resolve(true);[].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
       _this3._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return promise = promise.then(function () {
-          return Promise.resolve(hook(route, _this3.current)).then(function (result) {
+          return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result;
           });
