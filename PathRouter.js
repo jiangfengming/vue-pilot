@@ -157,9 +157,13 @@ var _class$2 = function () {
   };
 
   _class.prototype.normalize = function normalize(loc) {
-    if (loc.fullPath) return loc; // normalized
+    if (loc.constructor === String) {
+      loc = { path: loc };
+    } else {
+      loc = Object.assign({}, loc);
 
-    if (loc.constructor === String) loc = { path: loc };
+      if (loc.fullPath) return loc; // normalized
+    }
 
     if (loc.external || /^\w+:\/\//.test(loc.path)) {
       loc.path = this._extractPathFromExternalURL(new URL(loc.path, 'file://'));
@@ -169,11 +173,13 @@ var _class$2 = function () {
     var url = new URL(loc.path, 'file://');
     if (loc.query) appendSearchParams(url.searchParams, loc.query);
     if (loc.hash) url.hash = loc.hash;
-    return Object.assign({ state: {} }, loc, {
+
+    return Object.assign(loc, {
       path: url.pathname,
       query: url.searchParams,
       hash: url.hash,
-      fullPath: url.pathname + url.search + url.hash
+      fullPath: url.pathname + url.search + url.hash,
+      state: loc.state || {}
     });
   };
 
