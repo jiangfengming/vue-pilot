@@ -430,20 +430,20 @@ var Router = createCommonjsModule(function (module, exports) {
 
           var rt = [].concat(_rt);
           var path = rt.shift();
-          var result = rt.shift() || '$&';
+          var handler = rt.shift() || '$&';
           var options = rt.shift() || {};
 
           if (path.constructor === RegExp) {
             rts.regex.push({
               path: path,
-              result: result,
+              handler: handler,
               options: options,
               origin: _rt
             });
           } else {
             if (!/:|\*|\$/.test(path)) {
               rts.string[path] = {
-                result: result === '$&' ? path : result,
+                handler: handler === '$&' ? path : handler,
                 options: options,
                 origin: _rt
               };
@@ -458,7 +458,7 @@ var Router = createCommonjsModule(function (module, exports) {
 
                 rts.regex.push({
                   path: new RegExp('^' + regex + '$'),
-                  result: result,
+                  handler: handler,
                   params: params,
                   options: options,
                   origin: _rt
@@ -479,7 +479,7 @@ var Router = createCommonjsModule(function (module, exports) {
         var _ret2 = function () {
           if (rts.string[path]) {
             var match = {
-              result: rts.string[path].result,
+              handler: rts.string[path].handler,
               params: {},
               options: rts.string[path].options,
               origin: rts.string[path].origin
@@ -494,15 +494,15 @@ var Router = createCommonjsModule(function (module, exports) {
             };
           }
 
-          var result = void 0;
+          var handler = void 0;
           var params = {};
 
           var _loop = function _loop(rt) {
             var matches = path.match(rt.path);
             if (matches) {
-              result = rt.result;
-              if (result && result.constructor === String && result.indexOf('$') !== -1) {
-                result = result === '$&' ? path : path.replace(rt.path, result);
+              handler = rt.handler;
+              if (handler && handler.constructor === String && handler.indexOf('$') !== -1) {
+                handler = handler === '$&' ? path : path.replace(rt.path, handler);
               }
 
               matches.shift();
@@ -518,7 +518,7 @@ var Router = createCommonjsModule(function (module, exports) {
               }
 
               var _match = {
-                result: result,
+                handler: handler,
                 params: params,
                 options: rt.options,
                 origin: rt.origin
@@ -877,7 +877,7 @@ var _class$2 = function () {
         _meta: []
       };
 
-      route._layout = _this3._resolveRoute(route, _route.result);
+      route._layout = _this3._resolveRoute(route, _route.handler);
 
       _this3._generateMeta(route);
 
@@ -1050,11 +1050,11 @@ var _class$2 = function () {
   };
 
   _class.prototype.setState = function setState(state) {
-    this._history.setState(state
+    this._history.setState(state);
 
     // Vue can not react if add new prop into state
     // so we replace it with a new state object
-    );this.current.state = _extends({}, this._history.current.state);
+    this.current.state = _extends({}, this._history.current.state);
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta

@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "A vue router with the power of history.state",
   "main": "",
   "directories": {
@@ -20,14 +20,14 @@
   "author": "Jiang Fengming",
   "license": "MIT",
   "devDependencies": {
-    "babel-core": "^6.25.0",
+    "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-stage-2": "^6.24.1",
-    "eslint": "^4.4.1",
+    "eslint": "^4.5.0",
     "eslint-config-enough": "^0.2.8",
-    "rollup": "^0.47.2",
-    "rollup-plugin-babel": "^3.0.1",
+    "rollup": "^0.48.2",
+    "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-commonjs": "^8.1.0",
     "rollup-plugin-node-resolve": "^3.0.0"
   },
@@ -55,6 +55,6 @@
   "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
   "dependencies": {
     "spa-history": "^0.5.8",
-    "url-router": "^3.1.0"
+    "url-router": "^4.0.0"
   }
 }

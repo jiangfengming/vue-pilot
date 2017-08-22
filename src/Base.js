@@ -114,7 +114,7 @@ export default class {
         _meta: []
       }
 
-      route._layout = this._resolveRoute(route, _route.result)
+      route._layout = this._resolveRoute(route, _route.handler)
 
       this._generateMeta(route)
 
