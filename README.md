@@ -36,10 +36,15 @@ router.start()
 `PathRouter` is similar to `HashRouter`, but has a `base` option. `base` defines the base path of the app.
 
 ```js
+import Vue from 'vue'
 import PathRouter from 'vue-stateful-router/PathRouter'
-```
 
-```js
+Vue.use(PathRouter)
+
+const routes = [
+  //...
+]
+
 const router = new PathRouter({
   routes,
   base: '/app/' // default: '/'
