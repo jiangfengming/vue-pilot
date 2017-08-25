@@ -258,7 +258,7 @@ Mose of the APIs are proxied to [spa-history](https://github.com/fenivana/spa-hi
 
 
 ### router.current
-The current active route object.
+The current active [route object](#the-route-object).
 
 ### router.start(URL string | location)
 Start the router.
@@ -384,7 +384,7 @@ router.push({
 Counterpart of `window.history.replaceState()`. Replace the current history entry with the location.
 
 ### router.dispatch(URL string | location)
-Dispatch the route without changing the history session.
+Dispatch the route without changing the history session. That is, the location of browser's address bar won't change.
 
 ### router.setState(state)
 Set state of the current route. the state will be merged into `router.current.state`
@@ -429,7 +429,7 @@ Returns:
   true | undefined | null: The navigation is confirmed.
   false: Prevent the navigation.
   location: Redirect to this location.
-            You can override the history manipulate method by providing location.method, values are: push, replace, dispatch.
+            You can override the history manipulate method by providing location.method property, values are: 'push', 'replace', 'dispatch'.
 
 Return value can be a Promise.
 ```
