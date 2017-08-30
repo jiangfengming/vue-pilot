@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
   "dependencies": {
-    "spa-history": "^0.5.8",
+    "spa-history": "^0.5.11",
     "url-router": "^4.0.0"
   }
 }

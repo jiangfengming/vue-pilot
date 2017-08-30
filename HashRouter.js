@@ -30,10 +30,8 @@ function appendSearchParams(searchParams, q) {
     case String:
       q = new URLSearchParams(q);
     case URLSearchParams:
-      // eslint-disable-line
       q = Array.from(q);
     case Array:
-      // eslint-disable-line
       for (var _iterator = q, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
         var _ref2;
 
@@ -323,10 +321,10 @@ var _class$2 = function () {
   };
 
   _class.prototype.captureLinkClickEvent = function captureLinkClickEvent(e) {
-    var a = e.target.closest('a'
+    var a = e.target.closest('a');
 
     // force not handle the <a> element
-    );if (!a || a.getAttribute('spa-history-skip') != null) return;
+    if (!a || a.getAttribute('spa-history-skip') != null) return;
 
     // open new window
     var target = a.getAttribute('target');
@@ -335,10 +333,10 @@ var _class$2 = function () {
     // out of app
     if (a.href.indexOf(location.origin + this.url('/')) !== 0) return;
 
-    var to = this.normalize(a.href
+    var to = this.normalize(a.href);
 
     // hash change
-    );if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) return;
+    if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) return;
 
     e.preventDefault();
     this.push(to);
@@ -1000,8 +998,8 @@ var _class$2 = function () {
       }
 
       if (routerView.component && routerView.component.constructor === Function) {
-        route._asyncComponents.push(routerView.component().then(function (component) {
-          return v.component = component;
+        route._asyncComponents.push(routerView.component().then(function (m) {
+          return v.component = m.__esModule ? m.default : m;
         }));
       } else {
         v.component = routerView.component;

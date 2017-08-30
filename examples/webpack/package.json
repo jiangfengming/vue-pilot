@@ -1,0 +1,72 @@
+{
+  "name": "vue-stateful-router-example-webpack",
+  "version": "0.1.0",
+  "description": "vue stateful router webpack example",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server -d --hot --env.dev --env.config dev",
+    "build": "webpack -p"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "regenerator-runtime": "0.11.0",
+    "vue": "2.4.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "7.1.2",
+    "babel-core": "6.25.0",
+    "babel-eslint": "7.2.3",
+    "babel-helper-vue-jsx-merge-props": "2.0.2",
+    "babel-loader": "7.1.1",
+    "babel-plugin-syntax-jsx": "6.18.0",
+    "babel-plugin-transform-vue-jsx": "3.5.0",
+    "babel-preset-env": "1.6.0",
+    "babel-preset-stage-2": "6.24.1",
+    "css-loader": "0.28.4",
+    "eslint": "4.4.1",
+    "eslint-config-enough": "0.2.8",
+    "eslint-loader": "1.9.0",
+    "eslint-plugin-html": "3.1.1",
+    "file-loader": "0.11.2",
+    "html-loader": "0.5.1",
+    "html-webpack-plugin": "2.30.1",
+    "postcss-loader": "2.0.6",
+    "style-loader": "0.18.2",
+    "url-loader": "0.5.9",
+    "vue-loader": "13.0.4",
+    "vue-template-compiler": "2.4.2",
+    "webpack": "3.5.4",
+    "webpack-dev-server": "2.7.1"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "loose": true,
+          "modules": false
+        }
+      ],
+      "stage-2"
+    ],
+    "plugins": [
+      "transform-vue-jsx"
+    ]
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "enough",
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "plugins": [
+      "html"
+    ],
+    "globals": {
+      "DEBUG": false,
+      "CONFIG": false
+    }
+  }
+}

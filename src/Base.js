@@ -209,7 +209,7 @@ export default class {
 
       if (routerView.component && routerView.component.constructor === Function) {
         route._asyncComponents.push(
-          routerView.component().then(component => v.component = component)
+          routerView.component().then(m => v.component = m.__esModule ? m.default : m)
         )
       } else {
         v.component = routerView.component
