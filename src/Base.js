@@ -60,8 +60,7 @@ export default class {
       fullPath: null,
       state: null,
       params: null,
-      meta: null,
-      _routerViews: null
+      meta: null
     }
   }
 

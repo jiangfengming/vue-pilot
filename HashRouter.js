@@ -785,8 +785,7 @@ var _class$2 = function () {
       fullPath: null,
       state: null,
       params: null,
-      meta: null,
-      _routerViews: null
+      meta: null
     };
   }
 

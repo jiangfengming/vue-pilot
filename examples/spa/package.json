@@ -1,9 +1,10 @@
 {
-  "name": "vue-stateful-router-example-webpack",
+  "name": "vue-stateful-router-spa-example",
   "version": "0.1.0",
-  "description": "vue stateful router webpack example",
+  "description": "Vue stateful router SPA example",
   "main": "index.js",
   "scripts": {
+    "local": "npm run dev --config=local",
     "dev": "webpack-dev-server -d --hot --env.dev --env.config dev",
     "build": "webpack -p"
   },

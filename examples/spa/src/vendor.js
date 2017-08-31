@@ -1,3 +1,3 @@
 import 'regenerator-runtime/runtime'
 import 'vue'
-import '../../../PathRouter'
+import 'vue-stateful-router/PathRouter'

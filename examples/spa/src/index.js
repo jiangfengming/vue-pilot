@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import PathRouter from '../../../PathRouter'
+import PathRouter from 'vue-stateful-router/PathRouter'
 import App from './App'
 
 Vue.use(PathRouter)

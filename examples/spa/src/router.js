@@ -1,4 +1,4 @@
-import Router from '../../../PathRouter'
+import Router from 'vue-stateful-router/PathRouter'
 
 const router = new Router({
   routes: [
