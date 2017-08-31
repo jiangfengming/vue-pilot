@@ -20,7 +20,13 @@
 }
 
 aside {
-  width: 350px;
-  background: #e2e2e2;
+  width: 300px;
+  background: #EEE;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  padding: 20px;
+  background: #BBDEFB;
 }
 </style>

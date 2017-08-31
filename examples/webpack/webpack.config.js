@@ -26,13 +26,7 @@ module.exports = (args = {}) => {
       rules: [
         {
           test: /\.vue$/,
-          use: [
-            {
-              loader: 'vue-loader'
-            },
-
-            'eslint-loader'
-          ]
+          use: ['vue-loader', 'eslint-loader']
         },
 
         {

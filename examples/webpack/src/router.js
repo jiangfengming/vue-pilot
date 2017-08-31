@@ -14,4 +14,6 @@ const router = new Router({
   ]
 })
 
+router.start()
+
 export default router
