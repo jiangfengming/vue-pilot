@@ -49,9 +49,13 @@ export default class {
   constructor({ routes }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
-    this._beforeChangeHooks = []
-    this._afterChangeHooks = []
-    this._errorHooks = []
+
+    this._hooks = {
+      beforeChange: [],
+      afterChange: [],
+      load: [],
+      error: []
+    }
 
     this.current = {
       path: null,
@@ -64,34 +68,27 @@ export default class {
     }
   }
 
-  beforeChange(hook) {
-    this._beforeChangeHooks.push(hook)
-  }
-
-  afterChange(hook) {
-    this._afterChangeHooks.push(hook)
-  }
-
-  onError(hook) {
-    this._errorHooks.push(hook)
-  }
-
   _parseRoutes(routerViews, depth = [], parsed = []) {
-    for (const routerView of routerViews) {
-      if (routerView.constructor === Array) {
-        const names = routerView.map(c => c.name)
-        const children = [...routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))]
-        this._parseRoutes(children, depth, parsed)
-      } else if (routerView.path) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
-        parsed.push([routerView.path, [...depth, children]])
-      } else if (routerView.children) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
-        this._parseRoutes(routerView.children, [...depth, children], parsed)
+    for (const rv of routerViews) {
+      if (rv.constructor === Array) { // a group of routerViews, override uppper level definitions
+        const names = rv.map(c => c.name)
+        this._parseRoutes([...rv, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))], depth, parsed)
+      } else if (rv.path) { // finally get the main router view
+        parsed.push([rv.path, [...depth, [rv, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== rv.name)]]])
+      } else if (rv.children) { // parent router view. look into it's children
+        this._parseRoutes(rv.children, [...depth, [rv, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== rv.name)]], parsed)
       }
     }
 
     return parsed
+  }
+
+  on(event, handler) {
+    this._hooks[event].push(handler)
+  }
+
+  off(event, handler) {
+    this._hooks[event] = this._hooks[event].filter(h => h !== handler)
   }
 
   _beforeChange(to, from, op) {
@@ -110,7 +107,8 @@ export default class {
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
         _asyncComponents: [],
-        _meta: []
+        _meta: [],
+        _prefetch: []
       }
 
       route._layout = this._resolveRoute(route, _route.handler)
@@ -121,7 +119,7 @@ export default class {
 
       ;[].concat(
         this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
-        this._beforeChangeHooks,
+        this._hooks.beforeChange,
         route._beforeEnterHooks
       ).forEach(hook =>
         promise = promise.then(() =>
@@ -139,36 +137,6 @@ export default class {
     })
   }
 
-  _generateMeta(route) {
-    if (route._meta.length) {
-      route._meta.forEach(m => Object.assign(route.meta, m.constructor === Function ? m(route) : m))
-    }
-  }
-
-  _change(to) {
-    let promise = Promise.resolve(true)
-
-    this._afterChangeHooks.forEach(hook =>
-      promise = promise.then(() =>
-        Promise.resolve(hook(to.route, this.current)).then(result => {
-          if (result === false) throw result
-        })
-      )
-    )
-
-    promise.then(() => {
-      Promise.all(to.route._asyncComponents).then(() => {
-        Object.assign(this.current, to.route)
-      }).catch(e => this._handleError(e))
-    }).catch(e => {
-      if (e !== false) throw e
-    })
-  }
-
-  _handleError(e) {
-    this._errorHooks.forEach(hook => hook(e))
-  }
-
   _resolveRoute(route, depth) {
     const layout = {}
     let current = layout
@@ -176,11 +144,11 @@ export default class {
     for (const routerViews of depth) {
       current.children = {}
 
-      for (const routerView of routerViews) {
-        current.children[routerView.name || 'default'] = Object.assign({}, routerView)
+      for (const rv of routerViews) {
+        current.children[rv.name || 'default'] = Object.assign({}, rv) // clone
       }
 
-      current = current.children[routerViews[0].name || 'default']
+      current = current.children[routerViews[0].name || 'default'] // go deeper
     }
 
     delete current.path
@@ -192,34 +160,69 @@ export default class {
     const resolved = {}
 
     for (const name in routerViews) {
-      const routerView = routerViews[name]
+      const rv = routerViews[name]
 
-      if (routerView.constructor === Array || routerView.path) continue
+      if (rv.constructor === Array || rv.path) continue
 
-      const v = resolved[name] = { props: routerView.props }
+      const v = resolved[name] = { props: rv.props }
 
-      if (routerView.meta) {
-        route._meta.push(routerView.meta)
+      if (rv.meta) {
+        route._meta.push(rv.meta)
       }
 
-      if (routerView.beforeEnter) {
-        route._beforeEnterHooks.push(routerView.beforeEnter)
+      if (rv.beforeEnter) {
+        route._beforeEnterHooks.push(rv.beforeEnter)
       }
 
-      if (routerView.component && routerView.component.constructor === Function) {
+      if (rv.component && rv.component.constructor === Function) {
         route._asyncComponents.push(
-          routerView.component().then(m => v.component = m.__esModule ? m.default : m)
+          rv.component().then(m => v.component = m.__esModule ? m.default : m)
         )
       } else {
-        v.component = routerView.component
+        v.component = rv.component
       }
 
-      if (routerView.children) {
-        v.children = this._resolveRouterViews(route, routerView.children)
+      if (rv.children) {
+        v.children = this._resolveRouterViews(route, rv.children)
       }
     }
 
     return resolved
+  }
+
+  _generateMeta(route) {
+    if (route._meta.length) {
+      route._meta.forEach(m => Object.assign(route.meta, m.constructor === Function ? m(route) : m))
+    }
+  }
+
+  _change(to) {
+    let promise = Promise.resolve(true)
+
+    this._hooks.afterChange.forEach(hook =>
+      promise = promise.then(() =>
+        Promise.resolve(hook(to.route, this.current)).then(result => {
+          if (result === false) throw result
+        })
+      )
+    )
+
+    promise.then(() => {
+      Promise.all(to.route._asyncComponents).then(() => {
+        Object.assign(this.current, to.route)
+        // this._prefetch()
+      }).catch(e => this._handleError(e))
+    }).catch(e => {
+      if (e !== false) throw e
+    })
+  }
+
+  // _prefetch() {
+  //   this.current.
+  // }
+
+  _handleError(e) {
+    this._hooks.error.forEach(hook => hook(e))
   }
 
   start(loc) {

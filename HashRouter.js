@@ -774,9 +774,13 @@ var _class$2 = function () {
 
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
-    this._beforeChangeHooks = [];
-    this._afterChangeHooks = [];
-    this._errorHooks = [];
+
+    this._hooks = {
+      beforeChange: [],
+      afterChange: [],
+      load: [],
+      error: []
+    };
 
     this.current = {
       path: null,
@@ -789,43 +793,31 @@ var _class$2 = function () {
     };
   }
 
-  _class.prototype.beforeChange = function beforeChange(hook) {
-    this._beforeChangeHooks.push(hook);
-  };
-
-  _class.prototype.afterChange = function afterChange(hook) {
-    this._afterChangeHooks.push(hook);
-  };
-
-  _class.prototype.onError = function onError(hook) {
-    this._errorHooks.push(hook);
-  };
-
   _class.prototype._parseRoutes = function _parseRoutes(routerViews) {
     var _this2 = this;
 
     var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     var parsed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
-    var _loop = function _loop(routerView) {
-      if (routerView.constructor === Array) {
-        var names = routerView.map(function (c) {
+    var _loop = function _loop(rv) {
+      if (rv.constructor === Array) {
+        // a group of routerViews, override uppper level definitions
+        var names = rv.map(function (c) {
           return c.name;
         });
-        var children = [].concat(routerView, routerViews.filter(function (v) {
+        _this2._parseRoutes([].concat(rv, routerViews.filter(function (v) {
           return v.constructor !== Array && !v.path && !names.includes(v.name);
-        }));
-        _this2._parseRoutes(children, depth, parsed);
-      } else if (routerView.path) {
-        var _children = [routerView].concat(routerViews.filter(function (v) {
-          return v.constructor !== Array && !v.path && v.name !== routerView.name;
-        }));
-        parsed.push([routerView.path, [].concat(depth, [_children])]);
-      } else if (routerView.children) {
-        var _children2 = [routerView].concat(routerViews.filter(function (v) {
-          return v.constructor !== Array && !v.path && v.name !== routerView.name;
-        }));
-        _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
+        })), depth, parsed);
+      } else if (rv.path) {
+        // finally get the main router view
+        parsed.push([rv.path, [].concat(depth, [[rv].concat(routerViews.filter(function (v) {
+          return v.constructor !== Array && !v.path && v.name !== rv.name;
+        }))])]);
+      } else if (rv.children) {
+        // parent router view. look into it's children
+        _this2._parseRoutes(rv.children, [].concat(depth, [[rv].concat(routerViews.filter(function (v) {
+          return v.constructor !== Array && !v.path && v.name !== rv.name;
+        }))]), parsed);
       }
     };
 
@@ -841,12 +833,22 @@ var _class$2 = function () {
         _ref2 = _i.value;
       }
 
-      var routerView = _ref2;
+      var rv = _ref2;
 
-      _loop(routerView);
+      _loop(rv);
     }
 
     return parsed;
+  };
+
+  _class.prototype.on = function on(event, handler) {
+    this._hooks[event].push(handler);
+  };
+
+  _class.prototype.off = function off(event, handler) {
+    this._hooks[event] = this._hooks[event].filter(function (h) {
+      return h !== handler;
+    });
   };
 
   _class.prototype._beforeChange = function _beforeChange(to, from, op) {
@@ -867,7 +869,8 @@ var _class$2 = function () {
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
         _asyncComponents: [],
-        _meta: []
+        _meta: [],
+        _prefetch: []
       };
 
       route._layout = _this3._resolveRoute(route, _route.handler);
@@ -875,7 +878,7 @@ var _class$2 = function () {
       _this3._generateMeta(route);
 
       var promise = Promise.resolve(true);[].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
-      _this3._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
+      _this3._hooks.beforeChange, route._beforeEnterHooks).forEach(function (hook) {
         return promise = promise.then(function () {
           return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
@@ -890,44 +893,6 @@ var _class$2 = function () {
       }).then(function (result) {
         return resolve(result);
       });
-    });
-  };
-
-  _class.prototype._generateMeta = function _generateMeta(route) {
-    if (route._meta.length) {
-      route._meta.forEach(function (m) {
-        return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
-      });
-    }
-  };
-
-  _class.prototype._change = function _change(to) {
-    var _this4 = this;
-
-    var promise = Promise.resolve(true);
-
-    this._afterChangeHooks.forEach(function (hook) {
-      return promise = promise.then(function () {
-        return Promise.resolve(hook(to.route, _this4.current)).then(function (result) {
-          if (result === false) throw result;
-        });
-      });
-    });
-
-    promise.then(function () {
-      Promise.all(to.route._asyncComponents).then(function () {
-        Object.assign(_this4.current, to.route);
-      }).catch(function (e) {
-        return _this4._handleError(e);
-      });
-    }).catch(function (e) {
-      if (e !== false) throw e;
-    });
-  };
-
-  _class.prototype._handleError = function _handleError(e) {
-    this._errorHooks.forEach(function (hook) {
-      return hook(e);
     });
   };
 
@@ -963,9 +928,9 @@ var _class$2 = function () {
           _ref4 = _i3.value;
         }
 
-        var routerView = _ref4;
+        var rv = _ref4;
 
-        current.children[routerView.name || 'default'] = Object.assign({}, routerView);
+        current.children[rv.name || 'default'] = Object.assign({}, rv);
       }
 
       current = current.children[routerViews[0].name || 'default'];
@@ -977,35 +942,35 @@ var _class$2 = function () {
   };
 
   _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
-    var _this5 = this;
+    var _this4 = this;
 
     var resolved = {};
 
     var _loop2 = function _loop2(name) {
-      var routerView = routerViews[name];
+      var rv = routerViews[name];
 
-      if (routerView.constructor === Array || routerView.path) return 'continue';
+      if (rv.constructor === Array || rv.path) return 'continue';
 
-      var v = resolved[name] = { props: routerView.props };
+      var v = resolved[name] = { props: rv.props };
 
-      if (routerView.meta) {
-        route._meta.push(routerView.meta);
+      if (rv.meta) {
+        route._meta.push(rv.meta);
       }
 
-      if (routerView.beforeEnter) {
-        route._beforeEnterHooks.push(routerView.beforeEnter);
+      if (rv.beforeEnter) {
+        route._beforeEnterHooks.push(rv.beforeEnter);
       }
 
-      if (routerView.component && routerView.component.constructor === Function) {
-        route._asyncComponents.push(routerView.component().then(function (m) {
+      if (rv.component && rv.component.constructor === Function) {
+        route._asyncComponents.push(rv.component().then(function (m) {
           return v.component = m.__esModule ? m.default : m;
         }));
       } else {
-        v.component = routerView.component;
+        v.component = rv.component;
       }
 
-      if (routerView.children) {
-        v.children = _this5._resolveRouterViews(route, routerView.children);
+      if (rv.children) {
+        v.children = _this4._resolveRouterViews(route, rv.children);
       }
     };
 
@@ -1016,6 +981,49 @@ var _class$2 = function () {
     }
 
     return resolved;
+  };
+
+  _class.prototype._generateMeta = function _generateMeta(route) {
+    if (route._meta.length) {
+      route._meta.forEach(function (m) {
+        return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
+      });
+    }
+  };
+
+  _class.prototype._change = function _change(to) {
+    var _this5 = this;
+
+    var promise = Promise.resolve(true);
+
+    this._hooks.afterChange.forEach(function (hook) {
+      return promise = promise.then(function () {
+        return Promise.resolve(hook(to.route, _this5.current)).then(function (result) {
+          if (result === false) throw result;
+        });
+      });
+    });
+
+    promise.then(function () {
+      Promise.all(to.route._asyncComponents).then(function () {
+        Object.assign(_this5.current, to.route);
+        // this._prefetch()
+      }).catch(function (e) {
+        return _this5._handleError(e);
+      });
+    }).catch(function (e) {
+      if (e !== false) throw e;
+    });
+  };
+
+  // _prefetch() {
+  //   this.current.
+  // }
+
+  _class.prototype._handleError = function _handleError(e) {
+    this._hooks.error.forEach(function (hook) {
+      return hook(e);
+    });
   };
 
   _class.prototype.start = function start(loc) {
