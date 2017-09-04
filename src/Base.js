@@ -159,13 +159,22 @@ export default class {
 
       if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter)
 
+      let loadComponent, isAsyncComponent
+
       if (rv.component && rv.component.constructor === Function) {
-        route._asyncComponents.push(
-          rv.component().then(m => v.component = m.__esModule ? m.default : m)
-        )
+        isAsyncComponent = true
+        loadComponent = rv.component().then(m => m.__esModule ? m.default : m)
       } else {
-        v.component = rv.component
+        isAsyncComponent = false
+        loadComponent = Promise.resolve(rv.component)
       }
+
+      loadComponent = loadComponent.then(component => {
+        v.component = component
+        if (component.prefetch) route._prefetch.push(component.prefetch)
+      })
+
+      if (isAsyncComponent) route._asyncComponents.push(loadComponent)
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         const children = rv.children.filter(v => v.constructor !== Array && !v.path)

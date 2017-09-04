@@ -939,13 +939,25 @@ var _class$2 = function () {
 
       if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter);
 
+      var loadComponent = void 0,
+          isAsyncComponent = void 0;
+
       if (rv.component && rv.component.constructor === Function) {
-        route._asyncComponents.push(rv.component().then(function (m) {
-          return v.component = m.__esModule ? m.default : m;
-        }));
+        isAsyncComponent = true;
+        loadComponent = rv.component().then(function (m) {
+          return m.__esModule ? m.default : m;
+        });
       } else {
-        v.component = rv.component;
+        isAsyncComponent = false;
+        loadComponent = Promise.resolve(rv.component);
       }
+
+      loadComponent = loadComponent.then(function (component) {
+        v.component = component;
+        if (component.prefetch) route._prefetch.push(component.prefetch);
+      });
+
+      if (isAsyncComponent) route._asyncComponents.push(loadComponent);
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         var children = rv.children.filter(function (v) {
