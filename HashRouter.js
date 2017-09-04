@@ -801,7 +801,7 @@ var _class$2 = function () {
 
     var _loop = function _loop(rv) {
       if (rv.constructor === Array) {
-        // a group of routerViews, override uppper level definitions
+        // a group of routerViews, merge and override uppper level definitions
         var names = rv.map(function (c) {
           return c.name;
         });
@@ -914,52 +914,26 @@ var _class$2 = function () {
 
       var routerViews = _ref3;
 
-      current.children = {};
-
-      for (var _iterator3 = routerViews, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref4;
-
-        if (_isArray3) {
-          if (_i3 >= _iterator3.length) break;
-          _ref4 = _iterator3[_i3++];
-        } else {
-          _i3 = _iterator3.next();
-          if (_i3.done) break;
-          _ref4 = _i3.value;
-        }
-
-        var rv = _ref4;
-
-        current.children[rv.name || 'default'] = Object.assign({}, rv);
-      }
-
-      current = current.children[routerViews[0].name || 'default'];
+      current.children = this._resolveRouterViews(route, routerViews, routerViews !== depth[depth.length - 1]);
+      current = current.children[routerViews[0].name || 'default']; // go deeper
     }
 
-    delete current.path;
-
-    return this._resolveRouterViews(route, layout.children);
+    return layout.children;
   };
 
   _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
     var _this4 = this;
 
+    var skipFirstRouterViewChildren = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
     var resolved = {};
 
-    var _loop2 = function _loop2(name) {
-      var rv = routerViews[name];
+    var _loop2 = function _loop2(rv) {
+      var v = resolved[rv.name || 'default'] = { props: rv.props };
 
-      if (rv.constructor === Array || rv.path) return 'continue';
+      if (rv.meta) route._meta.push(rv.meta);
 
-      var v = resolved[name] = { props: rv.props };
-
-      if (rv.meta) {
-        route._meta.push(rv.meta);
-      }
-
-      if (rv.beforeEnter) {
-        route._beforeEnterHooks.push(rv.beforeEnter);
-      }
+      if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter);
 
       if (rv.component && rv.component.constructor === Function) {
         route._asyncComponents.push(rv.component().then(function (m) {
@@ -969,15 +943,29 @@ var _class$2 = function () {
         v.component = rv.component;
       }
 
-      if (rv.children) {
-        v.children = _this4._resolveRouterViews(route, rv.children);
+      if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
+        var children = rv.children.filter(function (v) {
+          return v.constructor !== Array && !v.path;
+        });
+        if (children.length) v.children = _this4._resolveRouterViews(route, children);
       }
     };
 
-    for (var name in routerViews) {
-      var _ret2 = _loop2(name);
+    for (var _iterator3 = routerViews, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+      var _ref4;
 
-      if (_ret2 === 'continue') continue;
+      if (_isArray3) {
+        if (_i3 >= _iterator3.length) break;
+        _ref4 = _iterator3[_i3++];
+      } else {
+        _i3 = _iterator3.next();
+        if (_i3.done) break;
+        _ref4 = _i3.value;
+      }
+
+      var rv = _ref4;
+
+      _loop2(rv);
     }
 
     return resolved;

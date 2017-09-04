@@ -70,7 +70,7 @@ export default class {
 
   _parseRoutes(routerViews, depth = [], parsed = []) {
     for (const rv of routerViews) {
-      if (rv.constructor === Array) { // a group of routerViews, override uppper level definitions
+      if (rv.constructor === Array) { // a group of routerViews, merge and override uppper level definitions
         const names = rv.map(c => c.name)
         this._parseRoutes([...rv, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))], depth, parsed)
       } else if (rv.path) { // finally get the main router view
@@ -142,37 +142,22 @@ export default class {
     let current = layout
 
     for (const routerViews of depth) {
-      current.children = {}
-
-      for (const rv of routerViews) {
-        current.children[rv.name || 'default'] = Object.assign({}, rv) // clone
-      }
-
+      current.children = this._resolveRouterViews(route, routerViews, routerViews !== depth[depth.length - 1])
       current = current.children[routerViews[0].name || 'default'] // go deeper
     }
 
-    delete current.path
-
-    return this._resolveRouterViews(route, layout.children)
+    return layout.children
   }
 
-  _resolveRouterViews(route, routerViews) {
+  _resolveRouterViews(route, routerViews, skipFirstRouterViewChildren = false) {
     const resolved = {}
 
-    for (const name in routerViews) {
-      const rv = routerViews[name]
+    for (const rv of routerViews) {
+      const v = resolved[rv.name || 'default'] = { props: rv.props }
 
-      if (rv.constructor === Array || rv.path) continue
+      if (rv.meta) route._meta.push(rv.meta)
 
-      const v = resolved[name] = { props: rv.props }
-
-      if (rv.meta) {
-        route._meta.push(rv.meta)
-      }
-
-      if (rv.beforeEnter) {
-        route._beforeEnterHooks.push(rv.beforeEnter)
-      }
+      if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter)
 
       if (rv.component && rv.component.constructor === Function) {
         route._asyncComponents.push(
@@ -182,8 +167,9 @@ export default class {
         v.component = rv.component
       }
 
-      if (rv.children) {
-        v.children = this._resolveRouterViews(route, rv.children)
+      if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
+        const children = rv.children.filter(v => v.constructor !== Array && !v.path)
+        if (children.length) v.children = this._resolveRouterViews(route, children)
       }
     }
 

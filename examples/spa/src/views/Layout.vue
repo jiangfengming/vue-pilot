@@ -4,6 +4,7 @@
     <nav>
       <ul>
         <li><router-link to="/">home</router-link></li>
+        <li><router-link to="/child-views">child views</router-link></li>
       </ul>
     </nav>
   </aside>
