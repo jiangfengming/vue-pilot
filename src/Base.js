@@ -30,11 +30,11 @@ export default class {
             }
 
             if (options.mixins) {
-              options.mixins.forEach(mixin => {
+              for (const mixin of options.mixins) {
                 if (mixin.beforeRouteLeave) {
                   hooks.push(mixin.beforeRouteLeave.bind(this))
                 }
-              })
+              }
             }
 
             if (options.beforeRouteLeave) {
@@ -117,18 +117,20 @@ export default class {
 
       let promise = Promise.resolve(true)
 
-      ;[].concat(
+      const beforeChangeHooks = [].concat(
         this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
         this._hooks.beforeChange,
         route._beforeEnterHooks
-      ).forEach(hook =>
+      )
+
+      for (const hook of beforeChangeHooks) {
         promise = promise.then(() =>
           Promise.resolve(hook(route, this.current, op)).then(result => {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result
           })
         )
-      )
+      }
 
       promise.catch(e => {
         if (e instanceof Error) throw e // encountered unexpected error
@@ -186,21 +188,21 @@ export default class {
   }
 
   _generateMeta(route) {
-    if (route._meta.length) {
-      route._meta.forEach(m => Object.assign(route.meta, m.constructor === Function ? m(route) : m))
+    for (const m of route._meta) {
+      Object.assign(route.meta, m.constructor === Function ? m(route) : m)
     }
   }
 
   _change(to) {
     let promise = Promise.resolve(true)
 
-    this._hooks.afterChange.forEach(hook =>
+    for (const hook of this._hooks.afterChange) {
       promise = promise.then(() =>
         Promise.resolve(hook(to.route, this.current)).then(result => {
           if (result === false) throw result
         })
       )
-    )
+    }
 
     promise.then(() => {
       Promise.all(to.route._asyncComponents).then(() => {
@@ -212,12 +214,12 @@ export default class {
     })
   }
 
-  // _prefetch() {
-  //   this.current.
-  // }
+  _prefetch() {
+    // this.current._prefetch
+  }
 
   _handleError(e) {
-    this._hooks.error.forEach(hook => hook(e))
+    for (const hook of this._hooks.error) hook(e)
   }
 
   start(loc) {
