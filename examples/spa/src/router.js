@@ -39,6 +39,13 @@ const router = new Router({
   ]
 })
 
-router.start()
+router.start({
+  path: location.href,
+  asyncData: [
+    {
+      foo: 1
+    }
+  ]
+})
 
 export default router

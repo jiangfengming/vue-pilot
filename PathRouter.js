@@ -733,8 +733,6 @@ var _class$2 = function () {
 
     Vue.mixin({
       beforeCreate: function beforeCreate() {
-        var _this = this;
-
         if (!this.$root.$options.router) return;
 
         if (this.$options.router) {
@@ -756,11 +754,24 @@ var _class$2 = function () {
             }
 
             if (options.mixins) {
-              options.mixins.forEach(function (mixin) {
-                if (mixin.beforeRouteLeave) {
-                  hooks.push(mixin.beforeRouteLeave.bind(_this));
+              for (var _iterator = options.mixins, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                var _ref;
+
+                if (_isArray) {
+                  if (_i >= _iterator.length) break;
+                  _ref = _iterator[_i++];
+                } else {
+                  _i = _iterator.next();
+                  if (_i.done) break;
+                  _ref = _i.value;
                 }
-              });
+
+                var mixin = _ref;
+
+                if (mixin.beforeRouteLeave) {
+                  hooks.push(mixin.beforeRouteLeave.bind(this));
+                }
+              }
             }
 
             if (options.beforeRouteLeave) {
@@ -772,8 +783,8 @@ var _class$2 = function () {
     });
   };
 
-  function _class(_ref) {
-    var routes = _ref.routes;
+  function _class(_ref2) {
+    var routes = _ref2.routes;
     classCallCheck(this, _class);
 
     this._routes = this._parseRoutes(routes);
@@ -798,7 +809,7 @@ var _class$2 = function () {
   }
 
   _class.prototype._parseRoutes = function _parseRoutes(routerViews) {
-    var _this2 = this;
+    var _this = this;
 
     var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     var parsed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
@@ -809,7 +820,7 @@ var _class$2 = function () {
         var names = rv.map(function (c) {
           return c.name;
         });
-        _this2._parseRoutes([].concat(rv, routerViews.filter(function (v) {
+        _this._parseRoutes([].concat(rv, routerViews.filter(function (v) {
           return v.constructor !== Array && !v.path && !names.includes(v.name);
         })), depth, parsed);
       } else if (rv.path) {
@@ -819,25 +830,25 @@ var _class$2 = function () {
         }))])]);
       } else if (rv.children) {
         // parent router view. look into it's children
-        _this2._parseRoutes(rv.children, [].concat(depth, [[rv].concat(routerViews.filter(function (v) {
+        _this._parseRoutes(rv.children, [].concat(depth, [[rv].concat(routerViews.filter(function (v) {
           return v.constructor !== Array && !v.path && v.name !== rv.name;
         }))]), parsed);
       }
     };
 
-    for (var _iterator = routerViews, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-      var _ref2;
+    for (var _iterator2 = routerViews, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref3;
 
-      if (_isArray) {
-        if (_i >= _iterator.length) break;
-        _ref2 = _iterator[_i++];
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref3 = _iterator2[_i2++];
       } else {
-        _i = _iterator.next();
-        if (_i.done) break;
-        _ref2 = _i.value;
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref3 = _i2.value;
       }
 
-      var rv = _ref2;
+      var rv = _ref3;
 
       _loop(rv);
     }
@@ -856,10 +867,11 @@ var _class$2 = function () {
   };
 
   _class.prototype._beforeChange = function _beforeChange(to, from, op) {
-    var _this3 = this;
+    var _this2 = this;
 
+    debugger;
     return new Promise(function (resolve) {
-      var _route = _this3._urlRouter.find(to.path);
+      var _route = _this2._urlRouter.find(to.path);
       if (!_route) return false;
 
       var route = to.route = {
@@ -872,24 +884,45 @@ var _class$2 = function () {
         meta: {},
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
-        _asyncComponents: [],
+        _loadComponents: [],
         _meta: [],
-        _prefetch: []
+        _asyncData: []
       };
 
-      route._layout = _this3._resolveRoute(route, _route.handler);
+      route._layout = _this2._resolveRoute(route, _route.handler);
 
-      _this3._generateMeta(route);
+      _this2._generateMeta(route);
 
-      var promise = Promise.resolve(true);[].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
-      _this3._hooks.beforeChange, route._beforeEnterHooks).forEach(function (hook) {
-        return promise = promise.then(function () {
-          return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
+      var promise = Promise.resolve(true);
+
+      var beforeChangeHooks = [].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], // not landing page
+      _this2._hooks.beforeChange, route._beforeEnterHooks);
+
+      var _loop2 = function _loop2(hook) {
+        promise = promise.then(function () {
+          return Promise.resolve(hook(route, _this2.current, op)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result;
           });
         });
-      });
+      };
+
+      for (var _iterator3 = beforeChangeHooks, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref4;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref4 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref4 = _i3.value;
+        }
+
+        var hook = _ref4;
+
+        _loop2(hook);
+      }
 
       promise.catch(function (e) {
         if (e instanceof Error) throw e; // encountered unexpected error
@@ -904,19 +937,19 @@ var _class$2 = function () {
     var layout = {};
     var current = layout;
 
-    for (var _iterator2 = depth, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-      var _ref3;
+    for (var _iterator4 = depth, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+      var _ref5;
 
-      if (_isArray2) {
-        if (_i2 >= _iterator2.length) break;
-        _ref3 = _iterator2[_i2++];
+      if (_isArray4) {
+        if (_i4 >= _iterator4.length) break;
+        _ref5 = _iterator4[_i4++];
       } else {
-        _i2 = _iterator2.next();
-        if (_i2.done) break;
-        _ref3 = _i2.value;
+        _i4 = _iterator4.next();
+        if (_i4.done) break;
+        _ref5 = _i4.value;
       }
 
-      var routerViews = _ref3;
+      var routerViews = _ref5;
 
       current.children = this._resolveRouterViews(route, routerViews, routerViews !== depth[depth.length - 1]);
       current = current.children[routerViews[0].name || 'default']; // go deeper
@@ -926,108 +959,154 @@ var _class$2 = function () {
   };
 
   _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
-    var _this4 = this;
+    var _this3 = this;
 
     var skipFirstRouterViewChildren = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
     var resolved = {};
 
-    var _loop2 = function _loop2(rv) {
+    var _loop3 = function _loop3(rv) {
       var v = resolved[rv.name || 'default'] = { props: rv.props };
 
       if (rv.meta) route._meta.push(rv.meta);
 
       if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter);
 
-      var loadComponent = void 0,
-          isAsyncComponent = void 0;
+      var loadComponent = void 0;
 
       if (rv.component && rv.component.constructor === Function) {
-        isAsyncComponent = true;
         loadComponent = rv.component().then(function (m) {
           return m.__esModule ? m.default : m;
         });
       } else {
-        isAsyncComponent = false;
         loadComponent = Promise.resolve(rv.component);
       }
 
       loadComponent = loadComponent.then(function (component) {
-        v.component = component;
-        if (component.prefetch) route._prefetch.push(component.prefetch);
+        if (component.asyncData) {
+          v.component = _extends({}, component, {
+            data: function data() {
+              return v.resolvedAsyncData;
+            }
+          });
+        } else {
+          v.component = component;
+        }
+
+        return component;
       });
 
-      if (isAsyncComponent) route._asyncComponents.push(loadComponent);
+      route._loadComponents.push(loadComponent);
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         var children = rv.children.filter(function (v) {
           return v.constructor !== Array && !v.path;
         });
-        if (children.length) v.children = _this4._resolveRouterViews(route, children);
+        if (children.length) v.children = _this3._resolveRouterViews(route, children);
       }
     };
 
-    for (var _iterator3 = routerViews, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-      var _ref4;
+    for (var _iterator5 = routerViews, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+      var _ref6;
 
-      if (_isArray3) {
-        if (_i3 >= _iterator3.length) break;
-        _ref4 = _iterator3[_i3++];
+      if (_isArray5) {
+        if (_i5 >= _iterator5.length) break;
+        _ref6 = _iterator5[_i5++];
       } else {
-        _i3 = _iterator3.next();
-        if (_i3.done) break;
-        _ref4 = _i3.value;
+        _i5 = _iterator5.next();
+        if (_i5.done) break;
+        _ref6 = _i5.value;
       }
 
-      var rv = _ref4;
+      var rv = _ref6;
 
-      _loop2(rv);
+      _loop3(rv);
     }
 
     return resolved;
   };
 
   _class.prototype._generateMeta = function _generateMeta(route) {
-    if (route._meta.length) {
-      route._meta.forEach(function (m) {
-        return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
-      });
+    for (var _iterator6 = route._meta, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
+      var _ref7;
+
+      if (_isArray6) {
+        if (_i6 >= _iterator6.length) break;
+        _ref7 = _iterator6[_i6++];
+      } else {
+        _i6 = _iterator6.next();
+        if (_i6.done) break;
+        _ref7 = _i6.value;
+      }
+
+      var m = _ref7;
+
+      Object.assign(route.meta, m.constructor === Function ? m(route) : m);
     }
   };
 
   _class.prototype._change = function _change(to) {
-    var _this5 = this;
+    var _this4 = this;
 
     var promise = Promise.resolve(true);
 
-    this._hooks.afterChange.forEach(function (hook) {
-      return promise = promise.then(function () {
-        return Promise.resolve(hook(to.route, _this5.current)).then(function (result) {
+    var _loop4 = function _loop4(hook) {
+      promise = promise.then(function () {
+        return Promise.resolve(hook(to.route, _this4.current)).then(function (result) {
           if (result === false) throw result;
         });
       });
-    });
+    };
+
+    for (var _iterator7 = this._hooks.afterChange, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
+      var _ref8;
+
+      if (_isArray7) {
+        if (_i7 >= _iterator7.length) break;
+        _ref8 = _iterator7[_i7++];
+      } else {
+        _i7 = _iterator7.next();
+        if (_i7.done) break;
+        _ref8 = _i7.value;
+      }
+
+      var hook = _ref8;
+
+      _loop4(hook);
+    }
 
     promise.then(function () {
-      Promise.all(to.route._asyncComponents).then(function () {
-        Object.assign(_this5.current, to.route);
+      Promise.all(to.route._loadComponents).then(function () {
+        Object.assign(_this4.current, to.route);
         // this._prefetch()
       }).catch(function (e) {
-        return _this5._handleError(e);
+        return _this4._handleError(e);
       });
     }).catch(function (e) {
       if (e !== false) throw e;
     });
   };
 
-  // _prefetch() {
-  //   this.current.
-  // }
+  _class.prototype._prefetch = function _prefetch() {
+    // this.current._prefetch
+  };
 
   _class.prototype._handleError = function _handleError(e) {
-    this._hooks.error.forEach(function (hook) {
-      return hook(e);
-    });
+    for (var _iterator8 = this._hooks.error, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+      var _ref9;
+
+      if (_isArray8) {
+        if (_i8 >= _iterator8.length) break;
+        _ref9 = _iterator8[_i8++];
+      } else {
+        _i8 = _iterator8.next();
+        if (_i8.done) break;
+        _ref9 = _i8.value;
+      }
+
+      var hook = _ref9;
+      hook(e);
+    }
   };
 
   _class.prototype.start = function start(loc) {

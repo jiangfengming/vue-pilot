@@ -106,9 +106,9 @@ export default class {
         meta: {},
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
-        _asyncComponents: [],
+        _loadComponents: [],
         _meta: [],
-        _prefetch: []
+        _asyncData: to.asyncData || []
       }
 
       route._layout = this._resolveRoute(route, _route.handler)
@@ -161,22 +161,30 @@ export default class {
 
       if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter)
 
-      let loadComponent, isAsyncComponent
+      let loadComponent
 
       if (rv.component && rv.component.constructor === Function) {
-        isAsyncComponent = true
         loadComponent = rv.component().then(m => m.__esModule ? m.default : m)
       } else {
-        isAsyncComponent = false
         loadComponent = Promise.resolve(rv.component)
       }
 
       loadComponent = loadComponent.then(component => {
-        v.component = component
-        if (component.prefetch) route._prefetch.push(component.prefetch)
+        if (component.asyncData) {
+          v.component = {
+            ...component,
+            data() {
+              return v.resolvedAsyncData
+            }
+          }
+        } else {
+          v.component = component
+        }
+
+        return component
       })
 
-      if (isAsyncComponent) route._asyncComponents.push(loadComponent)
+      route._loadComponents.push(loadComponent)
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         const children = rv.children.filter(v => v.constructor !== Array && !v.path)
@@ -205,17 +213,13 @@ export default class {
     }
 
     promise.then(() => {
-      Promise.all(to.route._asyncComponents).then(() => {
+      Promise.all(to.route._loadComponents).then(components => {
+        const asyncDataComponents = components.filter(comp => comp.asyncData)
         Object.assign(this.current, to.route)
-        // this._prefetch()
       }).catch(e => this._handleError(e))
     }).catch(e => {
       if (e !== false) throw e
     })
-  }
-
-  _prefetch() {
-    // this.current._prefetch
   }
 
   _handleError(e) {
