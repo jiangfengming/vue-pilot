@@ -46,9 +46,10 @@ export default class {
     })
   }
 
-  constructor({ routes }) {
+  constructor({ routes, context }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
+    this._asyncDataContext = context
 
     this._hooks = {
       beforeChange: [],
@@ -108,7 +109,7 @@ export default class {
         _beforeEnterHooks: [],
         _loadComponents: [],
         _meta: [],
-        _asyncData: to.asyncData || []
+        _asyncData: to.asyncData
       }
 
       route._layout = this._resolveRoute(route, _route.handler)
@@ -170,18 +171,8 @@ export default class {
       }
 
       loadComponent = loadComponent.then(component => {
-        if (component.asyncData) {
-          v.component = {
-            ...component,
-            data() {
-              return v.resolvedAsyncData
-            }
-          }
-        } else {
-          v.component = component
-        }
-
-        return component
+        v.component = component
+        return v
       })
 
       route._loadComponents.push(loadComponent)
@@ -213,8 +204,20 @@ export default class {
     }
 
     promise.then(() => {
-      Promise.all(to.route._loadComponents).then(components => {
-        const asyncDataComponents = components.filter(comp => comp.asyncData)
+      Promise.all(to.route._loadComponents).then(routerViews => {
+        const asyncDataViews = routerViews.filter(v => v.component.asyncData)
+
+        if (to.asyncData) {
+          asyncDataViews.forEach((v, i) => {
+            v.component = {
+              ...v.component,
+              data: () => to.asyncData[i]
+            }
+          })
+        } else {
+
+        }
+
         Object.assign(this.current, to.route)
       }).catch(e => this._handleError(e))
     }).catch(e => {
