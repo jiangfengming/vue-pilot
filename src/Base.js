@@ -49,7 +49,7 @@ export default class {
   constructor({ routes, context }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
-    this._asyncDataContext = context
+    this.context = context
 
     this._hooks = {
       beforeChange: [],
@@ -105,11 +105,11 @@ export default class {
         state: to.state,
         params: _route.params,
         meta: {},
+        asyncData: to.asyncData,
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
         _loadComponents: [],
-        _meta: [],
-        _asyncData: to.asyncData
+        _meta: []
       }
 
       route._layout = this._resolveRoute(route, _route.handler)
@@ -192,33 +192,40 @@ export default class {
     }
   }
 
-  _change(to) {
+  _change({ route }) {
     let promise = Promise.resolve(true)
 
     for (const hook of this._hooks.afterChange) {
       promise = promise.then(() =>
-        Promise.resolve(hook(to.route, this.current)).then(result => {
+        Promise.resolve(hook(route, this.current)).then(result => {
           if (result === false) throw result
         })
       )
     }
 
     promise.then(() => {
-      Promise.all(to.route._loadComponents).then(routerViews => {
+      Promise.all(route._loadComponents).then(routerViews => {
         const asyncDataViews = routerViews.filter(v => v.component.asyncData)
 
-        if (to.asyncData) {
+        let asyncDataPromise
+        if (!route.asyncData) {
+          asyncDataPromise = Promise.all(asyncDataViews.map(v => v.component.asyncData(route, this.context))).then(asyncData => route.asyncData = asyncData)
+        }
+
+        return Promise.resolve(route.asyncData || asyncDataPromise).then(asyncData => {
           asyncDataViews.forEach((v, i) => {
             v.component = {
               ...v.component,
-              data: () => to.asyncData[i]
+              data: () => asyncData[i]
             }
           })
-        } else {
 
-        }
+          Object.assign(this.current, route)
 
-        Object.assign(this.current, to.route)
+          for (const hook of this._hooks.load) {
+            hook(route)
+          }
+        })
       }).catch(e => this._handleError(e))
     }).catch(e => {
       if (e !== false) throw e

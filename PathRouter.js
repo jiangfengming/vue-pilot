@@ -784,11 +784,13 @@ var _class$2 = function () {
   };
 
   function _class(_ref2) {
-    var routes = _ref2.routes;
+    var routes = _ref2.routes,
+        context = _ref2.context;
     classCallCheck(this, _class);
 
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
+    this.context = context;
 
     this._hooks = {
       beforeChange: [],
@@ -869,7 +871,6 @@ var _class$2 = function () {
   _class.prototype._beforeChange = function _beforeChange(to, from, op) {
     var _this2 = this;
 
-    debugger;
     return new Promise(function (resolve) {
       var _route = _this2._urlRouter.find(to.path);
       if (!_route) return false;
@@ -882,11 +883,11 @@ var _class$2 = function () {
         state: to.state,
         params: _route.params,
         meta: {},
+        asyncData: to.asyncData,
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
         _loadComponents: [],
-        _meta: [],
-        _asyncData: []
+        _meta: []
       };
 
       route._layout = _this2._resolveRoute(route, _route.handler);
@@ -983,17 +984,8 @@ var _class$2 = function () {
       }
 
       loadComponent = loadComponent.then(function (component) {
-        if (component.asyncData) {
-          v.component = _extends({}, component, {
-            data: function data() {
-              return v.resolvedAsyncData;
-            }
-          });
-        } else {
-          v.component = component;
-        }
-
-        return component;
+        v.component = component;
+        return v;
       });
 
       route._loadComponents.push(loadComponent);
@@ -1045,40 +1037,81 @@ var _class$2 = function () {
     }
   };
 
-  _class.prototype._change = function _change(to) {
+  _class.prototype._change = function _change(_ref8) {
     var _this4 = this;
+
+    var route = _ref8.route;
 
     var promise = Promise.resolve(true);
 
     var _loop4 = function _loop4(hook) {
       promise = promise.then(function () {
-        return Promise.resolve(hook(to.route, _this4.current)).then(function (result) {
+        return Promise.resolve(hook(route, _this4.current)).then(function (result) {
           if (result === false) throw result;
         });
       });
     };
 
     for (var _iterator7 = this._hooks.afterChange, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
-      var _ref8;
+      var _ref9;
 
       if (_isArray7) {
         if (_i7 >= _iterator7.length) break;
-        _ref8 = _iterator7[_i7++];
+        _ref9 = _iterator7[_i7++];
       } else {
         _i7 = _iterator7.next();
         if (_i7.done) break;
-        _ref8 = _i7.value;
+        _ref9 = _i7.value;
       }
 
-      var hook = _ref8;
+      var hook = _ref9;
 
       _loop4(hook);
     }
 
     promise.then(function () {
-      Promise.all(to.route._loadComponents).then(function () {
-        Object.assign(_this4.current, to.route);
-        // this._prefetch()
+      Promise.all(route._loadComponents).then(function (routerViews) {
+        var asyncDataViews = routerViews.filter(function (v) {
+          return v.component.asyncData;
+        });
+
+        var asyncDataPromise = void 0;
+        if (!route.asyncData) {
+          asyncDataPromise = Promise.all(asyncDataViews.map(function (v) {
+            return v.component.asyncData(route, _this4.context);
+          })).then(function (asyncData) {
+            return route.asyncData = asyncData;
+          });
+        }
+
+        return Promise.resolve(route.asyncData || asyncDataPromise).then(function (asyncData) {
+          asyncDataViews.forEach(function (v, i) {
+            v.component = _extends({}, v.component, {
+              data: function data() {
+                return asyncData[i];
+              }
+            });
+          });
+
+          Object.assign(_this4.current, route);
+
+          for (var _iterator8 = _this4._hooks.load, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+            var _ref10;
+
+            if (_isArray8) {
+              if (_i8 >= _iterator8.length) break;
+              _ref10 = _iterator8[_i8++];
+            } else {
+              _i8 = _iterator8.next();
+              if (_i8.done) break;
+              _ref10 = _i8.value;
+            }
+
+            var hook = _ref10;
+
+            hook(route);
+          }
+        });
       }).catch(function (e) {
         return _this4._handleError(e);
       });
@@ -1087,24 +1120,20 @@ var _class$2 = function () {
     });
   };
 
-  _class.prototype._prefetch = function _prefetch() {
-    // this.current._prefetch
-  };
-
   _class.prototype._handleError = function _handleError(e) {
-    for (var _iterator8 = this._hooks.error, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
-      var _ref9;
+    for (var _iterator9 = this._hooks.error, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
+      var _ref11;
 
-      if (_isArray8) {
-        if (_i8 >= _iterator8.length) break;
-        _ref9 = _iterator8[_i8++];
+      if (_isArray9) {
+        if (_i9 >= _iterator9.length) break;
+        _ref11 = _iterator9[_i9++];
       } else {
-        _i8 = _iterator8.next();
-        if (_i8.done) break;
-        _ref9 = _i8.value;
+        _i9 = _iterator9.next();
+        if (_i9.done) break;
+        _ref11 = _i9.value;
       }
 
-      var hook = _ref9;
+      var hook = _ref11;
       hook(e);
     }
   };
