@@ -1,0 +1,86 @@
+{
+  "name": "vue-stateful-router-ssr-example",
+  "version": "0.1.0",
+  "description": "Vue stateful router SSR example",
+  "main": "server.js",
+  "scripts": {
+    "local": "npm run dev --config=local",
+    "dev": "run-p dev:client dev:server dev:mon",
+    "dev:brk": "run-p dev:client dev:server dev:mon:brk",
+    "dev:client": "webpack-dev-server -d --hot --config webpack.config.client.js --env.dev --env.config dev",
+    "dev:server": "webpack -w --config webpack.config.server.js --env.dev --env.config dev",
+    "dev:mon": "node -e \"setTimeout(()=>{}, 8000)\" && nodemon --inspect --ignore src/ server.js -- --dev --config dev",
+    "dev:mon:brk": "node -e \"setTimeout(()=>{}, 8000)\" && nodemon --inspect --debug-brk --ignore src/ server.js -- --dev --config dev",
+    "build": "webpack --config webpack.config.server.js && webpack -p --config webpack.config.client.js",
+    "start": "node server.js"
+  },
+  "author": "Jiang Fengming",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "7.1.2",
+    "babel-core": "6.26.0",
+    "babel-eslint": "7.2.3",
+    "babel-loader": "7.1.2",
+    "babel-preset-latest": "6.24.1",
+    "babel-preset-stage-2": "6.24.1",
+    "css-loader": "0.28.5",
+    "eslint": "4.5.0",
+    "eslint-config-enough": "0.2.8",
+    "eslint-loader": "1.9.0",
+    "eslint-plugin-html": "3.2.0",
+    "extract-text-webpack-plugin": "3.0.0",
+    "file-loader": "0.11.2",
+    "html-loader": "0.5.1",
+    "html-webpack-plugin": "2.30.1",
+    "nodemon": "1.11.0",
+    "npm-run-all": "4.0.2",
+    "postcss-loader": "2.0.6",
+    "rimraf": "2.6.1",
+    "url-loader": "0.5.9",
+    "vue-loader": "13.0.4",
+    "vue-template-compiler": "2.4.2",
+    "webpack": "3.5.5",
+    "webpack-dev-server": "2.7.1",
+    "write-file-webpack-plugin": "4.1.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "latest",
+        {
+          "es2015": {
+            "loose": true,
+            "modules": false
+          }
+        }
+      ],
+      "stage-2"
+    ]
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "enough",
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "plugins": [
+      "html"
+    ],
+    "globals": {
+      "DEBUG": false,
+      "TARGET": false,
+      "CONFIG": false
+    }
+  },
+  "dependencies": {
+    "koa": "2.3.0",
+    "koa-mount": "3.0.0",
+    "koa-static": "4.0.1",
+    "regenerator-runtime": "0.11.0",
+    "vue": "2.4.2",
+    "vue-light-store": "0.2.4",
+    "vue-server-renderer": "2.4.2",
+    "yargs": "8.0.2"
+  }
+}
