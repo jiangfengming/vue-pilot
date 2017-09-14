@@ -92,6 +92,15 @@ export default class {
     this._hooks[event] = this._hooks[event].filter(h => h !== handler)
   }
 
+  once(event, handler) {
+    const delegate = (...args) => {
+      this.off(event, delegate)
+      return handler(...args)
+    }
+
+    this.on(event, delegate)
+  }
+
   _beforeChange(to, from, op) {
     return new Promise(resolve => {
       const _route = this._urlRouter.find(to.path)

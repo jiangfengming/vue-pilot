@@ -96,6 +96,12 @@ module.exports = (options = {}) => {
         template: 'src/index.html'
       }),
 
+      new HtmlWebpackPlugin({
+        template: 'src/index-ssr.html',
+        filename: 'index-ssr.html',
+        inject: false
+      }),
+
       new webpack.optimize.CommonsChunkPlugin({
         names: ['vendor', 'manifest']
       }),

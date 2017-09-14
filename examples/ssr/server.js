@@ -46,7 +46,7 @@ app.use(async ctx => {
     if (err) {
       if (err.code === 404) {
         ctx.status = 404
-      } else {
+      } else if (err.code !== 0) {
         ctx.status = 500
 
         console.error(`error during render : ${ctx.url}`) // eslint-disable-line
