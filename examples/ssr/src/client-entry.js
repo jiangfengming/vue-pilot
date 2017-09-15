@@ -9,3 +9,5 @@ const store = createStore()
 router.once('load', () => {
   new Vue({ ...App, router, store }).$mount('#app')
 })
+
+router.start()

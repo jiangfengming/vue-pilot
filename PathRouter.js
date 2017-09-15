@@ -868,11 +868,22 @@ var _class$2 = function () {
     });
   };
 
-  _class.prototype._beforeChange = function _beforeChange(to, from, op) {
+  _class.prototype.once = function once(event, handler) {
     var _this2 = this;
 
+    var delegate = function delegate() {
+      _this2.off(event, delegate);
+      return handler.apply(undefined, arguments);
+    };
+
+    this.on(event, delegate);
+  };
+
+  _class.prototype._beforeChange = function _beforeChange(to, from, op) {
+    var _this3 = this;
+
     return new Promise(function (resolve) {
-      var _route = _this2._urlRouter.find(to.path);
+      var _route = _this3._urlRouter.find(to.path);
       if (!_route) return false;
 
       var route = to.route = {
@@ -890,18 +901,18 @@ var _class$2 = function () {
         _meta: []
       };
 
-      route._layout = _this2._resolveRoute(route, _route.handler);
+      route._layout = _this3._resolveRoute(route, _route.handler);
 
-      _this2._generateMeta(route);
+      _this3._generateMeta(route);
 
       var promise = Promise.resolve(true);
 
-      var beforeChangeHooks = [].concat(_this2.current.path ? _this2.current._beforeLeaveHooksInComp : [], // not landing page
-      _this2._hooks.beforeChange, route._beforeEnterHooks);
+      var beforeChangeHooks = [].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
+      _this3._hooks.beforeChange, route._beforeEnterHooks);
 
       var _loop2 = function _loop2(hook) {
         promise = promise.then(function () {
-          return Promise.resolve(hook(route, _this2.current, op)).then(function (result) {
+          return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (!(result === true || result == null)) throw result;
           });
@@ -960,7 +971,7 @@ var _class$2 = function () {
   };
 
   _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
-    var _this3 = this;
+    var _this4 = this;
 
     var skipFirstRouterViewChildren = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
@@ -994,7 +1005,7 @@ var _class$2 = function () {
         var children = rv.children.filter(function (v) {
           return v.constructor !== Array && !v.path;
         });
-        if (children.length) v.children = _this3._resolveRouterViews(route, children);
+        if (children.length) v.children = _this4._resolveRouterViews(route, children);
       }
     };
 
@@ -1038,7 +1049,7 @@ var _class$2 = function () {
   };
 
   _class.prototype._change = function _change(_ref8) {
-    var _this4 = this;
+    var _this5 = this;
 
     var route = _ref8.route;
 
@@ -1046,7 +1057,7 @@ var _class$2 = function () {
 
     var _loop4 = function _loop4(hook) {
       promise = promise.then(function () {
-        return Promise.resolve(hook(route, _this4.current)).then(function (result) {
+        return Promise.resolve(hook(route, _this5.current)).then(function (result) {
           if (result === false) throw result;
         });
       });
@@ -1078,7 +1089,7 @@ var _class$2 = function () {
         var asyncDataPromise = void 0;
         if (!route.asyncData) {
           asyncDataPromise = Promise.all(asyncDataViews.map(function (v) {
-            return v.component.asyncData(route, _this4.context);
+            return v.component.asyncData(route, _this5.context);
           })).then(function (asyncData) {
             return route.asyncData = asyncData;
           });
@@ -1093,9 +1104,9 @@ var _class$2 = function () {
             });
           });
 
-          Object.assign(_this4.current, route);
+          Object.assign(_this5.current, route);
 
-          for (var _iterator8 = _this4._hooks.load, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+          for (var _iterator8 = _this5._hooks.load, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
             var _ref10;
 
             if (_isArray8) {
@@ -1113,7 +1124,7 @@ var _class$2 = function () {
           }
         });
       }).catch(function (e) {
-        return _this4._handleError(e);
+        return _this5._handleError(e);
       });
     }).catch(function (e) {
       if (e !== false) throw e;
