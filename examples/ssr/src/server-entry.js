@@ -5,10 +5,12 @@ import createStore from './store'
 
 export default context =>
   new Promise((resolve, reject) => {
+    console.log(1)
     const router = context.router = createRouter()
     const store = context.store = createStore()
 
     router.on('beforeChange', to => {
+      console.log('to', to)
       if (to.meta.httpStatus === 404) {
         reject({ code: 404 })
         return false
@@ -29,6 +31,7 @@ export default context =>
     })
 
     router.on('error', e => {
+      console.log('e', e)
       reject(e)
     })
 

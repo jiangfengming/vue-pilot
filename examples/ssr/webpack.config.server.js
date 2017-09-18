@@ -30,6 +30,19 @@ module.exports = (options = {}) => {
         },
 
         {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                presets: ['stage-2']
+              }
+            }
+          ]
+        },
+
+        {
           test: /\.(png|jpg|jpeg|gif|eot|ttf|woff|woff2|svg|svgz)(\?.+)?$/,
           use: [
             {

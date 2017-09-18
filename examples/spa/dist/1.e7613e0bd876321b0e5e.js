@@ -1,0 +1,2 @@
+webpackJsonp([1],{Hp0R:function(e,n,t){"use strict";var r=function(){var e=this,n=e.$createElement;return(e._self._c||n)("div",[e._v("secondary child")])},l=[],c={render:r,staticRenderFns:l};n.a=c},hcqG:function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var r=t("Hp0R"),l=t("VU/8"),c=l(null,r.a,null,null,null);n.default=c.exports}});
+//# sourceMappingURL=1.e7613e0bd876321b0e5e.js.map

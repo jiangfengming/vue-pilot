@@ -1,0 +1,2 @@
+webpackJsonp([2],{"28sJ":function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var r=t("B4xg"),u=t("VU/8"),l=u(null,r.a,null,null,null);n.default=l.exports},B4xg:function(e,n,t){"use strict";var r=function(){var e=this,n=e.$createElement,t=e._self._c||n;return t("div",[t("p",[e._v("secondary")]),e._v(" "),t("router-view")],1)},u=[],l={render:r,staticRenderFns:u};n.a=l}});
+//# sourceMappingURL=2.eb9f5e00f4eff309fcdc.js.map

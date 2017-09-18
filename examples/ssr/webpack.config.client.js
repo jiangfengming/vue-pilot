@@ -42,7 +42,27 @@ module.exports = (options = {}) => {
         {
           test: /\.js$/,
           exclude: /node_modules/,
-          use: ['babel-loader', 'eslint-loader']
+          use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                presets: [
+                  [
+                    'latest',
+                    {
+                      es2015: {
+                        loose: true,
+                        modules: false
+                      }
+                    }
+                  ],
+                  'stage-2'
+                ]
+              }
+            },
+
+            'eslint-loader'
+          ]
         },
 
         {
