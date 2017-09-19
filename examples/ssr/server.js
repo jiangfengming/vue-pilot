@@ -7,6 +7,8 @@ const serveStatic = require('koa-static')
 const mount = require('koa-mount')
 const { createBundleRenderer } = require('vue-server-renderer')
 
+global.URL = require('url').URL
+
 let distDir
 if (argv.dev) {
   process.env.NODE_ENV = 'development'
@@ -38,7 +40,7 @@ if (config.serveStaticMountPath) {
 }
 
 app.use(ctx =>
-  new Promise((resolve, reject) => {
+  new Promise(resolve => {
     const context = {
       url: ctx.url
     }
@@ -59,6 +61,8 @@ app.use(ctx =>
       } else {
         ctx.body = html
       }
+
+      resolve()
     })
   })
 )
