@@ -27,36 +27,28 @@ module.exports = (options = {}) => {
       rules: [
         {
           test: /\.vue$/,
-          use: [
-            {
-              loader: 'vue-loader',
-              options: {
-                esModule: false
-              }
-            },
-
-            'eslint-loader'
-          ]
+          use: ['vue-loader', 'eslint-loader']
         },
 
         {
           test: /\.js$/,
-          exclude: /node_modules/,
+          include: resolve(__dirname, 'src'),
           use: [
             {
               loader: 'babel-loader',
               options: {
                 presets: [
                   [
-                    'latest',
+                    'env',
                     {
-                      es2015: {
-                        loose: true,
-                        modules: false
-                      }
+                      loose: true,
+                      modules: false
                     }
                   ],
                   'stage-2'
+                ],
+                plugins: [
+                  'transform-vue-jsx'
                 ]
               }
             },

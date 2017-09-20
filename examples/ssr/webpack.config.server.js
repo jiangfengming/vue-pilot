@@ -31,12 +31,13 @@ module.exports = (options = {}) => {
 
         {
           test: /\.js$/,
-          exclude: /node_modules/,
+          include: resolve(__dirname, 'src'),
           use: [
             {
               loader: 'babel-loader',
               options: {
-                presets: ['stage-2']
+                presets: ['stage-2'],
+                plugins: ['transform-vue-jsx']
               }
             }
           ]

@@ -57,7 +57,11 @@ app.use(ctx =>
         }
 
         // let client to render the error page
-        ctx.body = clientTemplate
+        ctx.body = clientTemplate.replace('<!--vue-ssr-state-->', `
+          <script>
+          window.__INITIAL_STATE__ = ${JSON.stringify({ code: err.code, redirect: err.redirect, routeState: err.routeState })}
+          </script>
+        `)
       } else {
         ctx.body = html
       }

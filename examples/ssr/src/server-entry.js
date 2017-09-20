@@ -22,8 +22,10 @@ export default context =>
 
     router.on('load', route => {
       const app = new Vue({ ...App, router, store })
-      context.asyncData = route.asyncData
-      context.state = store.$state
+      context.state = {
+        asyncData: route.asyncData,
+        storeState: store.$state
+      }
       context.title = app.title
       resolve(app)
     })
