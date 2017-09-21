@@ -15,14 +15,17 @@ export default class {
           this.$router = this.$options.router
 
           // make current route reactive
+          const privates = this.$router.current._privates
+          delete this.$router.current._privates
           this.$route = new Vue({
             data: { route: this.$router.current }
           }).route
+          this.$router.current._privates = privates
         } else {
           this.$router = this.$root.$router
 
           if (this.$vnode && this.$vnode.data._routerView) {
-            const hooks = this.$root.$route._beforeLeaveHooksInComp
+            const hooks = this.$root.$route._privates.beforeLeaveHooksInComp
             const options = this.constructor.extendOptions
 
             if (options.extends && options.extends.beforeRouteLeave) {
@@ -114,23 +117,26 @@ export default class {
         state: to.state,
         params: _route.params,
         meta: {},
-        asyncData: to.asyncData,
-        _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: [],
-        _loadComponents: [],
-        _meta: []
+        _privates: {
+          layout: null,
+          asyncData: to.asyncData,
+          beforeLeaveHooksInComp: [],
+          beforeEnterHooks: [],
+          loadComponents: [],
+          meta: []
+        }
       }
 
-      route._layout = this._resolveRoute(route, _route.handler)
+      route._privates.layout = this._resolveRoute(route, _route.handler)
 
       this._generateMeta(route)
 
       let promise = Promise.resolve(true)
 
       const beforeChangeHooks = [].concat(
-        this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
+        this.current.path ? this.current._privates.beforeLeaveHooksInComp : [], // not landing page
         this._hooks.beforeChange,
-        route._beforeEnterHooks
+        route._privates.beforeEnterHooks
       )
 
       for (const hook of beforeChangeHooks) {
@@ -167,9 +173,9 @@ export default class {
     for (const rv of routerViews) {
       const v = resolved[rv.name || 'default'] = { props: rv.props }
 
-      if (rv.meta) route._meta.push(rv.meta)
+      if (rv.meta) route._privates.meta.push(rv.meta)
 
-      if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter)
+      if (rv.beforeEnter) route._privates.beforeEnterHooks.push(rv.beforeEnter)
 
       let loadComponent
 
@@ -184,7 +190,7 @@ export default class {
         return v
       })
 
-      route._loadComponents.push(loadComponent)
+      route._privates.loadComponents.push(loadComponent)
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         const children = rv.children.filter(v => v.constructor !== Array && !v.path)
@@ -196,7 +202,7 @@ export default class {
   }
 
   _generateMeta(route) {
-    for (const m of route._meta) {
+    for (const m of route._privates.meta) {
       Object.assign(route.meta, m.constructor === Function ? m(route) : m)
     }
   }
@@ -213,18 +219,18 @@ export default class {
     }
 
     promise.then(() => {
-      Promise.all(route._loadComponents).then(routerViews => {
+      Promise.all(route._privates.loadComponents).then(routerViews => {
         const asyncDataViews = routerViews.filter(v => v.component.asyncData)
 
         let asyncDataPromise
         if (!route.asyncData) {
-          asyncDataPromise = Promise.all(asyncDataViews.map(v => v.component.asyncData(route, this.context))).then(asyncData => route.asyncData = asyncData)
+          asyncDataPromise = Promise.all(asyncDataViews.map(v => v.component.asyncData(route, this.context))).then(asyncData => route._privates.asyncData = asyncData)
         }
 
-        return Promise.resolve(route.asyncData || asyncDataPromise).then(asyncData => {
+        return Promise.resolve(route._privates.asyncData || asyncDataPromise).then(asyncData => {
           asyncDataViews.forEach((v, i) => {
             v.component = {
-              ...v.component,
+              extends: v.component,
               data: () => asyncData[i]
             }
           })

@@ -1,27 +1,22 @@
 <template>
-  <div class="foo">
-    <p>Hello world!</p>
-    <p>this.a: {{a}}</p>
-    <p><router-link :to="{ name: 'foo', params: { id: 123 } }">goto /foo/123</router-link></p>
-    <p><router-link to="/page-not-exist">goto /page-not-exist</router-link></p>
-    <p><router-link to="/show-error-page">goto /show-error-page</router-link></p>
-  </div>
+<div>
+  <h1>home</h1>
+  <p>foo: {{ foo }}</p>
+</div>
 </template>
 
 <script>
 export default {
-  data: () => ({
-    a: 0
-  }),
-
-  // will be called on server side. check your console
-  created() {
-    console.log(this.a) //eslint-disable-line
-  },
-
-  // won't run on server side
-  beforeMount() {
-    console.log(this.a) //eslint-disable-line
+  asyncData() {
+    return new Promise(resolve => {
+      setTimeout(() => resolve({ foo: 1 }), 1)
+    })
   }
 }
 </script>
+
+<style scoped>
+h1 {
+  color: red;
+}
+</style>

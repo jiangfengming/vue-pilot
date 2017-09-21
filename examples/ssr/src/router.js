@@ -6,8 +6,14 @@ Vue.use(Router)
 const routes = [
   {
     path: '/',
-    component: () => import('./views/home'),
+    component: () => import('./views/Index'),
     meta: { ssr: true }
+  },
+
+  {
+    path: '/articles/:id',
+    component: () => import('./views/Article'),
+    props: ({ params }) => ({ id: params.id })
   },
 
   {

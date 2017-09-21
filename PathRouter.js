@@ -603,7 +603,7 @@ var RouterView = {
       } else if (parent.$parent) {
         parent = parent.$parent;
       } else {
-        data._routerView = parent.$route._layout[props.name];
+        data._routerView = parent.$route._privates.layout[props.name];
         break;
       }
     }
@@ -739,14 +739,17 @@ var _class$2 = function () {
           this.$router = this.$options.router;
 
           // make current route reactive
+          var privates = this.$router.current._privates;
+          delete this.$router.current._privates;
           this.$route = new Vue({
             data: { route: this.$router.current }
           }).route;
+          this.$router.current._privates = privates;
         } else {
           this.$router = this.$root.$router;
 
           if (this.$vnode && this.$vnode.data._routerView) {
-            var hooks = this.$root.$route._beforeLeaveHooksInComp;
+            var hooks = this.$root.$route._privates.beforeLeaveHooksInComp;
             var options = this.constructor.extendOptions;
 
             if (options.extends && options.extends.beforeRouteLeave) {
@@ -894,21 +897,24 @@ var _class$2 = function () {
         state: to.state,
         params: _route.params,
         meta: {},
-        asyncData: to.asyncData,
-        _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: [],
-        _loadComponents: [],
-        _meta: []
+        _privates: {
+          layout: null,
+          asyncData: to.asyncData,
+          beforeLeaveHooksInComp: [],
+          beforeEnterHooks: [],
+          loadComponents: [],
+          meta: []
+        }
       };
 
-      route._layout = _this3._resolveRoute(route, _route.handler);
+      route._privates.layout = _this3._resolveRoute(route, _route.handler);
 
       _this3._generateMeta(route);
 
       var promise = Promise.resolve(true);
 
-      var beforeChangeHooks = [].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
-      _this3._hooks.beforeChange, route._beforeEnterHooks);
+      var beforeChangeHooks = [].concat(_this3.current.path ? _this3.current._privates.beforeLeaveHooksInComp : [], // not landing page
+      _this3._hooks.beforeChange, route._privates.beforeEnterHooks);
 
       var _loop2 = function _loop2(hook) {
         promise = promise.then(function () {
@@ -980,9 +986,9 @@ var _class$2 = function () {
     var _loop3 = function _loop3(rv) {
       var v = resolved[rv.name || 'default'] = { props: rv.props };
 
-      if (rv.meta) route._meta.push(rv.meta);
+      if (rv.meta) route._privates.meta.push(rv.meta);
 
-      if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter);
+      if (rv.beforeEnter) route._privates.beforeEnterHooks.push(rv.beforeEnter);
 
       var loadComponent = void 0;
 
@@ -999,7 +1005,7 @@ var _class$2 = function () {
         return v;
       });
 
-      route._loadComponents.push(loadComponent);
+      route._privates.loadComponents.push(loadComponent);
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         var children = rv.children.filter(function (v) {
@@ -1030,7 +1036,7 @@ var _class$2 = function () {
   };
 
   _class.prototype._generateMeta = function _generateMeta(route) {
-    for (var _iterator6 = route._meta, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
+    for (var _iterator6 = route._privates.meta, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
       var _ref7;
 
       if (_isArray6) {
@@ -1081,7 +1087,7 @@ var _class$2 = function () {
     }
 
     promise.then(function () {
-      Promise.all(route._loadComponents).then(function (routerViews) {
+      Promise.all(route._privates.loadComponents).then(function (routerViews) {
         var asyncDataViews = routerViews.filter(function (v) {
           return v.component.asyncData;
         });
@@ -1091,17 +1097,18 @@ var _class$2 = function () {
           asyncDataPromise = Promise.all(asyncDataViews.map(function (v) {
             return v.component.asyncData(route, _this5.context);
           })).then(function (asyncData) {
-            return route.asyncData = asyncData;
+            return route._privates.asyncData = asyncData;
           });
         }
 
-        return Promise.resolve(route.asyncData || asyncDataPromise).then(function (asyncData) {
+        return Promise.resolve(route._privates.asyncData || asyncDataPromise).then(function (asyncData) {
           asyncDataViews.forEach(function (v, i) {
-            v.component = _extends({}, v.component, {
+            v.component = {
+              extends: v.component,
               data: function data() {
                 return asyncData[i];
               }
-            });
+            };
           });
 
           Object.assign(_this5.current, route);
