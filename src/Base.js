@@ -4,6 +4,26 @@ import RouterLink from './RouterLink'
 
 const IS_BROWSER = typeof window === 'object'
 
+function getMergedOption(options, name) {
+  const a = []
+
+  if (options.extends) {
+    a.push(...getMergedOption(options.extends, name))
+  }
+
+  if (options.mixins) {
+    for (const mixin of options.mixins) {
+      a.push(...getMergedOption(mixin, name))
+    }
+  }
+
+  if (options[name]) {
+    a.push(options[name])
+  }
+
+  return a
+}
+
 export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
@@ -27,24 +47,7 @@ export default class {
           this.$router = this.$root.$router
 
           if (this.$vnode && this.$vnode.data._routerView) {
-            const hooks = this.$root.$route._privates.beforeLeaveHooksInComp
-            const options = this.constructor.extendOptions
-
-            if (options.extends && options.extends.beforeRouteLeave) {
-              hooks.push(options.extends.beforeRouteLeave.bind(this))
-            }
-
-            if (options.mixins) {
-              for (const mixin of options.mixins) {
-                if (mixin.beforeRouteLeave) {
-                  hooks.push(mixin.beforeRouteLeave.bind(this))
-                }
-              }
-            }
-
-            if (options.beforeRouteLeave) {
-              hooks.push(options.beforeRouteLeave.bind(this))
-            }
+            this.$root.$route._privates.beforeLeaveHooksInComp.push(...getMergedOption(this.constructor.extendOptions, 'beforeRouteLeave'))
           }
         }
       }

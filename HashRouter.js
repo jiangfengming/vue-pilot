@@ -740,6 +740,40 @@ var RouterLink = {
 
 var IS_BROWSER = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object';
 
+function getMergedOption(options, name) {
+  debugger; // eslint-disable-line
+  var a = [];
+
+  if (options.extends) {
+    a.push.apply(a, getMergedOption(options.extends, name));
+  }
+
+  if (options.mixins) {
+    for (var _iterator = options.mixins, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+      var _ref;
+
+      if (_isArray) {
+        if (_i >= _iterator.length) break;
+        _ref = _iterator[_i++];
+      } else {
+        _i = _iterator.next();
+        if (_i.done) break;
+        _ref = _i.value;
+      }
+
+      var mixin = _ref;
+
+      a.push.apply(a, getMergedOption(mixin, name));
+    }
+  }
+
+  if (options[name]) {
+    a.push(options[name]);
+  }
+
+  return a;
+}
+
 var _class$2 = function () {
   _class.install = function install(Vue) {
     Vue.component('router-view', RouterView);
@@ -763,37 +797,9 @@ var _class$2 = function () {
           this.$router = this.$root.$router;
 
           if (this.$vnode && this.$vnode.data._routerView) {
-            var hooks = this.$root.$route._privates.beforeLeaveHooksInComp;
-            var options = this.constructor.extendOptions;
+            var _$root$$route$_privat;
 
-            if (options.extends && options.extends.beforeRouteLeave) {
-              hooks.push(options.extends.beforeRouteLeave.bind(this));
-            }
-
-            if (options.mixins) {
-              for (var _iterator = options.mixins, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                var _ref;
-
-                if (_isArray) {
-                  if (_i >= _iterator.length) break;
-                  _ref = _iterator[_i++];
-                } else {
-                  _i = _iterator.next();
-                  if (_i.done) break;
-                  _ref = _i.value;
-                }
-
-                var mixin = _ref;
-
-                if (mixin.beforeRouteLeave) {
-                  hooks.push(mixin.beforeRouteLeave.bind(this));
-                }
-              }
-            }
-
-            if (options.beforeRouteLeave) {
-              hooks.push(options.beforeRouteLeave.bind(this));
-            }
+            (_$root$$route$_privat = this.$root.$route._privates.beforeLeaveHooksInComp).push.apply(_$root$$route$_privat, getMergedOption(this.constructor.extendOptions, 'beforeRouteLeave'));
           }
         }
       }
