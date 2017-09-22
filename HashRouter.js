@@ -741,7 +741,6 @@ var RouterLink = {
 var IS_BROWSER = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object';
 
 function getMergedOption(options, name) {
-  debugger; // eslint-disable-line
   var a = [];
 
   if (options.extends) {
