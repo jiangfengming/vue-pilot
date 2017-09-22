@@ -7,6 +7,9 @@
 </template>
 
 <script>
+// won't load on server side
+console.log(1) // eslint-disable-line
+
 export default {
   props: ['id']
 }

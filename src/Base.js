@@ -2,6 +2,8 @@ import UrlRouter from 'url-router'
 import RouterView from './RouterView'
 import RouterLink from './RouterLink'
 
+const IS_BROWSER = typeof window === 'object'
+
 export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
@@ -122,7 +124,7 @@ export default class {
           asyncData: to.asyncData,
           beforeLeaveHooksInComp: [],
           beforeEnterHooks: [],
-          loadComponents: [],
+          routerViewLoaders: [],
           meta: []
         }
       }
@@ -177,20 +179,16 @@ export default class {
 
       if (rv.beforeEnter) route._privates.beforeEnterHooks.push(rv.beforeEnter)
 
-      let loadComponent
+      const loader = () =>
+        (rv.component && rv.component.constructor === Function
+          ? rv.component().then(m => m.__esModule ? m.default : m)
+          : Promise.resolve(rv.component)
+        ).then(component => {
+          v.component = component
+          return v
+        })
 
-      if (rv.component && rv.component.constructor === Function) {
-        loadComponent = rv.component().then(m => m.__esModule ? m.default : m)
-      } else {
-        loadComponent = Promise.resolve(rv.component)
-      }
-
-      loadComponent = loadComponent.then(component => {
-        v.component = component
-        return v
-      })
-
-      route._privates.loadComponents.push(loadComponent)
+      route._privates.routerViewLoaders.push(IS_BROWSER ? loader() : loader)
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         const children = rv.children.filter(v => v.constructor !== Array && !v.path)
@@ -219,7 +217,7 @@ export default class {
     }
 
     promise.then(() => {
-      Promise.all(route._privates.loadComponents).then(routerViews => {
+      Promise.all(route._privates.routerViewLoaders.map(rv => rv.constructor === Function ? rv() : rv)).then(routerViews => {
         const asyncDataViews = routerViews.filter(v => v.component.asyncData)
 
         let asyncDataPromise

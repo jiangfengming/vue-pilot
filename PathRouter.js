@@ -619,6 +619,22 @@ var RouterView = {
   }
 };
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -725,6 +741,8 @@ var RouterLink = {
     }), children);
   }
 };
+
+var IS_BROWSER = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object';
 
 var _class$2 = function () {
   _class.install = function install(Vue) {
@@ -902,7 +920,7 @@ var _class$2 = function () {
           asyncData: to.asyncData,
           beforeLeaveHooksInComp: [],
           beforeEnterHooks: [],
-          loadComponents: [],
+          routerViewLoaders: [],
           meta: []
         }
       };
@@ -990,22 +1008,16 @@ var _class$2 = function () {
 
       if (rv.beforeEnter) route._privates.beforeEnterHooks.push(rv.beforeEnter);
 
-      var loadComponent = void 0;
-
-      if (rv.component && rv.component.constructor === Function) {
-        loadComponent = rv.component().then(function (m) {
+      var loader = function loader() {
+        return (rv.component && rv.component.constructor === Function ? rv.component().then(function (m) {
           return m.__esModule ? m.default : m;
+        }) : Promise.resolve(rv.component)).then(function (component) {
+          v.component = component;
+          return v;
         });
-      } else {
-        loadComponent = Promise.resolve(rv.component);
-      }
+      };
 
-      loadComponent = loadComponent.then(function (component) {
-        v.component = component;
-        return v;
-      });
-
-      route._privates.loadComponents.push(loadComponent);
+      route._privates.routerViewLoaders.push(IS_BROWSER ? loader() : loader);
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         var children = rv.children.filter(function (v) {
@@ -1087,7 +1099,9 @@ var _class$2 = function () {
     }
 
     promise.then(function () {
-      Promise.all(route._privates.loadComponents).then(function (routerViews) {
+      Promise.all(route._privates.routerViewLoaders.map(function (rv) {
+        return rv.constructor === Function ? rv() : rv;
+      })).then(function (routerViews) {
         var asyncDataViews = routerViews.filter(function (v) {
           return v.component.asyncData;
         });
