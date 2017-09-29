@@ -5,8 +5,8 @@ import createStore from './store'
 
 export default context =>
   new Promise((resolve, reject) => {
-    const router = context.router = createRouter()
     const store = context.store = createStore()
+    const router = context.router = createRouter({ store })
 
     router.on('beforeChange', to => {
       if (to.meta.httpStatus === 404) {

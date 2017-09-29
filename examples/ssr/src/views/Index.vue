@@ -2,6 +2,7 @@
 <div>
   <h1>home</h1>
   <p>foo: {{ foo }}</p>
+  <p>$state.foo.a: {{ $state.foo.a }} <button @click="$store.foo.setA($state.foo.a + 1)">+</button></p>
   <p><router-link to="/articles/1">/articles/1</router-link></p>
 </div>
 </template>
@@ -38,9 +39,12 @@ export default {
     console.log('beforeRouteLeave') // eslint-disable-line
   },
 
-  asyncData() {
+  asyncData(route, { store }) {
     return new Promise(resolve => {
-      setTimeout(() => resolve({ foo: 1 }), 1)
+      setTimeout(() => {
+        store.foo.setA(234)
+        resolve({ foo: 1 })
+      }, 1)
     })
   }
 }

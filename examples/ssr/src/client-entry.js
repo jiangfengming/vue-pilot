@@ -3,8 +3,8 @@ import App from './App'
 import createStore from './store'
 import createRouter from './router'
 
-const router = createRouter()
 const store = createStore()
+const router = createRouter({ store })
 
 const ssrData = window.__INITIAL_STATE__ || {}
 if (ssrData.storeState) store.$setState(ssrData.storeState)

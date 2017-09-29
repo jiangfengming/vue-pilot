@@ -23,6 +23,6 @@ const routes = [
   }
 ]
 
-export default function() {
-  return new Router({ routes })
+export default function(context) {
+  return new Router({ routes, context })
 }
