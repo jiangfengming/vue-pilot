@@ -13,7 +13,7 @@ const routes = [
   {
     path: '/articles/:id',
     component: () => import('./views/Article'),
-    props: ({ params }) => ({ id: params.id })
+    props: ({ params: { id } }) => ({ id })
   },
 
   {

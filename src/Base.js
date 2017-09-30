@@ -122,9 +122,9 @@ export default class {
         state: to.state,
         params: _route.params,
         meta: {},
+        asyncData: to.asyncData,
         _privates: {
           layout: null,
-          asyncData: to.asyncData,
           beforeLeaveHooksInComp: [],
           beforeEnterHooks: [],
           routerViewLoaders: [],
@@ -225,10 +225,10 @@ export default class {
 
         let asyncDataPromise
         if (!route.asyncData) {
-          asyncDataPromise = Promise.all(asyncDataViews.map(v => v.component.asyncData(route, this.context))).then(asyncData => route._privates.asyncData = asyncData)
+          asyncDataPromise = Promise.all(asyncDataViews.map(v => v.component.asyncData(route, this.context))).then(asyncData => route.asyncData = asyncData)
         }
 
-        return Promise.resolve(route._privates.asyncData || asyncDataPromise).then(asyncData => {
+        return Promise.resolve(route.asyncData || asyncDataPromise).then(asyncData => {
           asyncDataViews.forEach((v, i) => {
             v.component = {
               extends: v.component,

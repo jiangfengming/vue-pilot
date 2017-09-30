@@ -916,9 +916,9 @@ var _class$2 = function () {
         state: to.state,
         params: _route.params,
         meta: {},
+        asyncData: to.asyncData,
         _privates: {
           layout: null,
-          asyncData: to.asyncData,
           beforeLeaveHooksInComp: [],
           beforeEnterHooks: [],
           routerViewLoaders: [],
@@ -1112,11 +1112,11 @@ var _class$2 = function () {
           asyncDataPromise = Promise.all(asyncDataViews.map(function (v) {
             return v.component.asyncData(route, _this5.context);
           })).then(function (asyncData) {
-            return route._privates.asyncData = asyncData;
+            return route.asyncData = asyncData;
           });
         }
 
-        return Promise.resolve(route._privates.asyncData || asyncDataPromise).then(function (asyncData) {
+        return Promise.resolve(route.asyncData || asyncDataPromise).then(function (asyncData) {
           asyncDataViews.forEach(function (v, i) {
             v.component = {
               extends: v.component,
