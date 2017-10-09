@@ -2,6 +2,7 @@ const { resolve } = require('path')
 const webpack = require('webpack')
 const VueSSRServerPlugin = require('vue-server-renderer/server-plugin')
 const { execSync } = require('child_process')
+const { readdirSync } = require('fs')
 
 module.exports = (options = {}) => {
   const env = require('./config/' + (process.env.npm_config_config || options.config || 'default'))
@@ -77,7 +78,7 @@ module.exports = (options = {}) => {
       }
     },
 
-    externals: /^[a-z0-9].*$/,
+    externals: readdirSync('node_modules').filter(x => x !== '.bin'),
     performance: { hints: false }
   }
 }

@@ -7,10 +7,25 @@
 </template>
 
 <script>
-// won't load on server side
-console.log(1) // eslint-disable-line
+import titleMixin from 'src/shared/titleMixin'
 
 export default {
-  props: ['id']
+  mixins: [titleMixin],
+
+  props: ['id'],
+
+  watch: {
+    id: 'load'
+  },
+
+  created() {
+    this.load()
+  },
+
+  methods: {
+    load() {
+      this.setDocumentTitle('article ' + this.id)
+    }
+  }
 }
 </script>

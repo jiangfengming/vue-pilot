@@ -13,7 +13,8 @@ const routes = [
   {
     path: '/articles/:id',
     component: () => import('./views/Article'),
-    props: ({ params: { id } }) => ({ id })
+    props: ({ params: { id } }) => ({ id }),
+    meta: { ssr: true }
   },
 
   {
