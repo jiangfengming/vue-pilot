@@ -67,6 +67,7 @@
     "koa-static": "4.0.1",
     "regenerator-runtime": "0.11.0",
     "vue": "2.4.4",
+    "vue-head-mixin": "0.1.1",
     "vue-light-store": "0.2.4",
     "vue-server-renderer": "2.4.4",
     "yargs": "9.0.1"

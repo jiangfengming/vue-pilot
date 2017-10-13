@@ -42,7 +42,9 @@ if (config.serveStaticMountPath) {
 app.use(ctx =>
   new Promise(resolve => {
     const context = {
-      url: ctx.url
+      url: ctx.url,
+      title: '',
+      meta: ''
     }
 
     renderer.renderToString(context, (err, html) => {

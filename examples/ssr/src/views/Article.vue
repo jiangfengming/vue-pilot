@@ -7,10 +7,10 @@
 </template>
 
 <script>
-import titleMixin from 'src/shared/titleMixin'
+import headMixin from 'src/shared/headMixin'
 
 export default {
-  mixins: [titleMixin],
+  mixins: [headMixin],
 
   props: ['id'],
 
@@ -25,6 +25,10 @@ export default {
   methods: {
     load() {
       this.setDocumentTitle('article ' + this.id)
+      this.setDocumentMeta([
+        { name: 'description', content: 'contains a short and accurate summary of the content of the page. Several browsers, like Firefox and Opera, use this as the default description of bookmarked pages.' },
+        { name: 'author', content: 'John Smitch' }
+      ])
     }
   }
 }

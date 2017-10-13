@@ -4,25 +4,23 @@
 
 
 # Vue SSR Boilerplate
-Vue.js Server Side Rendering Boilerplate without Polluting Vuex
+A progressive Vue.js Server Side Rendering Boilerplate.
 
 
 ## Features:
-* Doesn't dependent on Vuex. Putting every thing into Vuex is so ugly.
-* Vuex is there, global states can still put into Vuex store.
+* Doesn't dependent on global data store, component's data still in component as usual.
 * Customizable webpack config.
 * Hot module replacement.
 * Codes can run with or without SSR.
 * Lazy loading routes.
-* And so on.
 
 
 ## Environments
-* Node.js >= 7 (maybe node 6 will work, haven't tested)
+* Node.js >= 7
 
 
 ## Initialize
-First, download or clone this project.
+Firstly, download or clone this project.
 
 Then install npm packages via `npm install`.
 
@@ -59,15 +57,22 @@ When you start the project, you can visit http://localhost:8100 or http://localh
 
 
 ## How to Write Pages
-Every thing is the same as developing a SPA, except one thing, you need to define a `prefetch` method in your component. `prefetch` must return a `Promise`, the resolved result will be merge into `this.$data` during rendering.
+Every thing is the same as developing a SPA, except one thing, you need to define a `asyncData` method in your component instead of `data`. `asyncData` must return a `Promise` that finally resolve to a data object. You can think it's the async version of `data`
 
 ```js
 {
-  prefetch(route, store) {
-    // return promise
+  asyncData(route, context) {
+    return new Promise(resolve => {
+      resolve({
+        foo: 1
+      })
+    })
   }
 }
 ```
+
+
+
 
 The first argument of `prefetch` is the [router.currentRoute](https://router.vuejs.org/en/api/router-instance.html).
 
