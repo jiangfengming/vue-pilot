@@ -469,6 +469,10 @@ router.onError(error => {
 })
 ```
 
+
+## Server-Side Rendering (SSR)
+
+
 ## Dependencies
 - [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL)
 - [Object.assign()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
