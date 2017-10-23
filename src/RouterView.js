@@ -22,7 +22,7 @@ export default {
       } else if (parent.$parent) {
         parent = parent.$parent
       } else {
-        data._routerView = parent.$route._privates.layout[props.name]
+        data._routerView = parent.$route._layout[props.name]
         break
       }
     }

@@ -603,7 +603,7 @@ var RouterView = {
       } else if (parent.$parent) {
         parent = parent.$parent;
       } else {
-        data._routerView = parent.$route._privates.layout[props.name];
+        data._routerView = parent.$route._layout[props.name];
         break;
       }
     }
@@ -790,19 +790,27 @@ var _class$2 = function () {
           this.$router = this.$options.router;
 
           // make current route reactive
-          var privates = this.$router.current._privates;
-          delete this.$router.current._privates;
-          this.$route = new Vue({
-            data: { route: this.$router.current }
-          }).route;
-          this.$router.current._privates = privates;
+          var route = this.$router.current;
+
+          // temporary delete properties that don't need to watch
+          var watch = ['path', 'fullPath', 'query', 'hash', 'state', 'params', 'meta'];
+          var unwatch = {};
+          for (var k in route) {
+            if (!watch.includes(k)) {
+              unwatch[k] = route[k];
+              delete route[k];
+            }
+          }
+          this.$route = new Vue({ data: { route: route } }).route;
+          // add back
+          Object.assign(route, unwatch);
         } else {
           this.$router = this.$root.$router;
 
           if (this.$vnode && this.$vnode.data._routerView) {
-            var _$root$$route$_privat;
+            var _$root$$route$_before;
 
-            (_$root$$route$_privat = this.$root.$route._privates.beforeLeaveHooksInComp).push.apply(_$root$$route$_privat, getMergedOption(this.constructor.extendOptions, 'beforeRouteLeave'));
+            (_$root$$route$_before = this.$root.$route._beforeLeaveHooksInComp).push.apply(_$root$$route$_before, getMergedOption(this.constructor.extendOptions, 'beforeRouteLeave'));
           }
         }
       }
@@ -827,9 +835,9 @@ var _class$2 = function () {
 
     this.current = {
       path: null,
+      fullPath: null,
       query: null,
       hash: null,
-      fullPath: null,
       state: null,
       params: null,
       meta: null
@@ -920,24 +928,24 @@ var _class$2 = function () {
         state: to.state,
         params: _route.params,
         meta: {},
+        router: _this3,
+        context: _this3.context,
         asyncData: to.asyncData,
-        _privates: {
-          layout: null,
-          beforeLeaveHooksInComp: [],
-          beforeEnterHooks: [],
-          routerViewLoaders: [],
-          meta: []
-        }
+        _layout: null,
+        _beforeLeaveHooksInComp: [],
+        _beforeEnterHooks: [],
+        _routerViewLoaders: [],
+        _meta: []
       };
 
-      route._privates.layout = _this3._resolveRoute(route, _route.handler);
+      route._layout = _this3._resolveRoute(route, _route.handler);
 
       _this3._generateMeta(route);
 
       var promise = Promise.resolve(true);
 
-      var beforeChangeHooks = [].concat(_this3.current.path ? _this3.current._privates.beforeLeaveHooksInComp : [], // not landing page
-      _this3._hooks.beforeChange, route._privates.beforeEnterHooks);
+      var beforeChangeHooks = [].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
+      _this3._hooks.beforeChange, route._beforeEnterHooks);
 
       var _loop2 = function _loop2(hook) {
         promise = promise.then(function () {
@@ -1009,9 +1017,9 @@ var _class$2 = function () {
     var _loop3 = function _loop3(rv) {
       var v = resolved[rv.name || 'default'] = { props: rv.props };
 
-      if (rv.meta) route._privates.meta.push(rv.meta);
+      if (rv.meta) route._meta.push(rv.meta);
 
-      if (rv.beforeEnter) route._privates.beforeEnterHooks.push(rv.beforeEnter);
+      if (rv.beforeEnter) route._beforeEnterHooks.push(rv.beforeEnter);
 
       var loader = function loader() {
         return (rv.component && rv.component.constructor === Function ? rv.component().then(function (m) {
@@ -1022,7 +1030,7 @@ var _class$2 = function () {
         });
       };
 
-      route._privates.routerViewLoaders.push(IS_BROWSER ? loader() : loader);
+      route._routerViewLoaders.push(IS_BROWSER ? loader() : loader);
 
       if (rv.children && (!skipFirstRouterViewChildren || rv !== routerViews[0])) {
         var children = rv.children.filter(function (v) {
@@ -1053,7 +1061,7 @@ var _class$2 = function () {
   };
 
   _class.prototype._generateMeta = function _generateMeta(route) {
-    for (var _iterator6 = route._privates.meta, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
+    for (var _iterator6 = route._meta, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
       var _ref7;
 
       if (_isArray6) {
@@ -1104,7 +1112,7 @@ var _class$2 = function () {
     }
 
     promise.then(function () {
-      Promise.all(route._privates.routerViewLoaders.map(function (rv) {
+      Promise.all(route._routerViewLoaders.map(function (rv) {
         return rv.constructor === Function ? rv() : rv;
       })).then(function (routerViews) {
         var asyncDataViews = routerViews.filter(function (v) {
@@ -1114,7 +1122,7 @@ var _class$2 = function () {
         var asyncDataPromise = void 0;
         if (!route.asyncData) {
           asyncDataPromise = Promise.all(asyncDataViews.map(function (v) {
-            return v.component.asyncData(route, _this5.context);
+            return v.component.asyncData(route);
           })).then(function (asyncData) {
             return route.asyncData = asyncData;
           });
