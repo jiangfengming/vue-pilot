@@ -21,7 +21,7 @@
   "author": "Jiang Fengming",
   "license": "MIT",
   "dependencies": {
-    "spa-history": "^0.6.0",
+    "spa-history": "^0.6.1",
     "url-router": "^5.0.0"
   },
   "devDependencies": {
