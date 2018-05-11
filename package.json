@@ -1,13 +1,14 @@
 {
   "name": "vue-stateful-router",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "description": "A vue router with the power of history.state",
-  "main": "",
+  "main": "dist/vueStatefulRouter.umd.js",
+  "module": "dist/vueStatefulRouter.esm.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.HashRouter.js && rollup -c rollup.config.PathRouter.js"
+    "build": "rollup -c rollup.config.esm.js && rollup -c rollup.config.umd.js"
   },
   "repository": {
     "type": "git",
@@ -19,27 +20,30 @@
   ],
   "author": "Jiang Fengming",
   "license": "MIT",
+  "dependencies": {
+    "spa-history": "^0.6.0",
+    "url-router": "^5.0.0"
+  },
   "devDependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "eslint": "^4.19.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "eslint": "^4.19.1",
     "eslint-config-enough": "^0.3.0",
-    "rollup": "^0.57.1",
-    "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup": "^0.58.2",
+    "rollup-plugin-babel": "^3.0.4",
     "rollup-plugin-node-resolve": "^3.3.0"
   },
   "eslintConfig": {
-    "extends": "enough"
+    "extends": "enough",
+    "env": {
+      "browser": true,
+      "node": true
+    }
   },
   "bugs": {
     "url": "https://github.com/fenivana/vue-stateful-router/issues"
   },
-  "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
-  "dependencies": {
-    "spa-history": "^0.5.12",
-    "url-router": "^4.0.0"
-  }
+  "homepage": "https://github.com/fenivana/vue-stateful-router#readme"
 }

@@ -17,6 +17,13 @@ export default {
   },
 
   render(h, { parent, props, children, listeners, data }) {
+    function click(e) {
+      if (!e.defaultPrevented) {
+        e.preventDefault()
+        parent.$router[props.method](props.to)
+      }
+    }
+
     return h(
       props.tag,
 
@@ -30,13 +37,7 @@ export default {
 
         on: {
           ...listeners,
-
-          click(e) {
-            e.preventDefault()
-            parent.$router[props.method](props.to)
-
-            if (listeners.click) listeners.click(e)
-          }
+          click: listeners.click ? [].concat(listeners.click, click) : click
         }
       },
 

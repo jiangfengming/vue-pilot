@@ -22,15 +22,17 @@
   <router-link to="/404">/404</router-link><br>
   <router-link to="/undefined-component">/undefined-component</router-link><br>
   <router-link to="/undefined-children">/undefined-children</router-link><br>
+  <router-link to="/" @click.prevent>preventDefault</router-link>
   <div @click="$router.captureLinkClickEvent($event)"><a href="#/capture-link">/capture-link</a></div>
 
   <router-view foo="hello" class="foo"></router-view>
 </div>
 
 <script src="https://unpkg.com/vue"></script>
-<script src="../HashRouter.js"></script>
+<script src="../dist/vueStatefulRouter.umd.js"></script>
 <script>
-Vue.use(HashRouter)
+const Router = vueStatefulRouter.HashRouter
+Vue.use(Router)
 
 // async
 const VFoo = () => Promise.resolve({
@@ -215,7 +217,7 @@ const routes = [
   }
 ]
 
-const router = new HashRouter({ routes })
+const router = new Router({ routes })
 
 router.beforeChange((to, from) => {
   if (from && from.path === '/layout/foo') return confirm('Leave?')
