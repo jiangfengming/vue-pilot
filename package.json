@@ -30,7 +30,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^6.24.1",
     "eslint": "^4.19.1",
-    "eslint-config-enough": "^0.3.0",
+    "eslint-config-enough": "^0.3.1",
     "rollup": "^0.58.2",
     "rollup-plugin-babel": "^3.0.4",
     "rollup-plugin-node-resolve": "^3.3.0"
