@@ -55,12 +55,12 @@ export default class {
 
     this.current = {
       path: null,
-      query: null,
+      query: {},
       hash: null,
       fullPath: null,
-      state: null,
-      params: null,
-      meta: null,
+      state: {},
+      params: {},
+      meta: {},
       _routerViews: null
     }
   }
@@ -81,13 +81,33 @@ export default class {
     for (const routerView of routerViews) {
       if (routerView.constructor === Array) {
         const names = routerView.map(c => c.name)
-        const children = [...routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))]
+        const children = [
+          ...routerView,
+          ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))
+        ]
         this._parseRoutes(children, depth, parsed)
       } else if (routerView.path) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
-        parsed.push([routerView.path, [...depth, children]])
+        const children = [
+          routerView,
+          ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
+        ]
+
+        parsed.push([
+          'GET',
+          routerView.path,
+          [...depth, children],
+          (matchedRoute, { to, from, op }) => {
+            to.params = matchedRoute.params
+            to._layout = this._resolveRoute(to, matchedRoute.handler)
+            this._generateMeta(to)
+            return routerView.test ? routerView.test(to, from, op) : true
+          }
+        ])
       } else if (routerView.children) {
-        const children = [routerView, ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)]
+        const children = [
+          routerView,
+          ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
+        ]
         this._parseRoutes(routerView.children, [...depth, children], parsed)
       }
     }
@@ -97,16 +117,12 @@ export default class {
 
   _beforeChange(to, from, op) {
     return new Promise(resolve => {
-      const _route = this._urlRouter.find(to.path)
-      if (!_route) return false
-
       const route = to.route = {
         path: to.path,
         fullPath: to.fullPath,
         query: to.query,
         hash: to.hash,
         state: to.state,
-        params: _route.params,
         meta: {},
         _beforeLeaveHooksInComp: [],
         _beforeEnterHooks: [],
@@ -114,9 +130,13 @@ export default class {
         _meta: []
       }
 
-      route._layout = this._resolveRoute(route, _route.handler)
+      const _route = this._urlRouter.find('GET', to.path, {
+        to: route,
+        from: this.current,
+        op
+      })
 
-      this._generateMeta(route)
+      if (!_route) return false
 
       let promise = Promise.resolve(true)
 
@@ -158,7 +178,7 @@ export default class {
     )
 
     promise.then(() => {
-      Promise.all(to.route._asyncComponents).then(() => {
+      Promise.all(to.route._asyncComponents.map(comp => comp())).then(() => {
         Object.assign(this.current, to.route)
       }).catch(e => this._handleError(e))
     }).catch(e => {
@@ -208,9 +228,7 @@ export default class {
       }
 
       if (routerView.component && routerView.component.constructor === Function) {
-        route._asyncComponents.push(
-          routerView.component().then(m => v.component = m.__esModule ? m.default : m)
-        )
+        route._asyncComponents.push(() => routerView.component().then(m => v.component = m.__esModule ? m.default : m))
       } else {
         v.component = routerView.component
       }

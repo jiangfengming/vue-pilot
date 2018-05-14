@@ -121,6 +121,17 @@ const routes = [
     props: route => ({ foo: route.params.$1 })
   },
 
+  {
+    path: '/route-test',
+
+    // only matched if test() returns true
+    test(to, from, op) {
+      return true
+    },
+
+    component: VFoo,
+  },
+
   // define hooks
   {
     path: '/login',

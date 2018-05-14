@@ -22,6 +22,7 @@
   <router-link to="/404">/404</router-link><br>
   <router-link to="/undefined-component">/undefined-component</router-link><br>
   <router-link to="/undefined-children">/undefined-children</router-link><br>
+  <router-link to="/test-func">/test-func</router-link><br>
   <router-link to="/" @click.prevent>preventDefault</router-link>
   <div @click="$router.captureLinkClickEvent($event)"><a href="#/capture-link">/capture-link</a></div>
 
@@ -205,6 +206,16 @@ const routes = [
     path: '/capture-link',
     component: {
       template: '<div>capture link</div>'
+    }
+  },
+
+  {
+    path: '/test-func',
+    test(to, from, op) {
+      return from.path !== null
+    },
+    component: {
+      template: '<div>test-func</div>'
     }
   },
 
