@@ -7,7 +7,7 @@ A vue router with the power of history.state
 
 ```js
 import Vue from 'vue'
-import HashRouter from 'vue-stateful-router/HashRouter'
+import { HashRouter } from 'vue-stateful-router'
 
 Vue.use(HashRouter)
 
@@ -37,7 +37,7 @@ router.start()
 
 ```js
 import Vue from 'vue'
-import PathRouter from 'vue-stateful-router/PathRouter'
+import { PathRouter } from 'vue-stateful-router'
 
 Vue.use(PathRouter)
 
@@ -492,10 +492,15 @@ Or use the <a href="https://polyfill.io/">polyfill.io</a> service:
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 ```
 
+## Example
+```
+npm run example
+```
+
 ## Build
 ```
 npm run build
 ```
 
 ## License
-MIT
+[MIT](LICENSE)

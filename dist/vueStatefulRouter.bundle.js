@@ -4,105 +4,102 @@
   (factory((global.vueStatefulRouter = {})));
 }(this, (function (exports) { 'use strict';
 
+  function _extends() {
+    _extends = Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+
+      return target;
+    };
+
+    return _extends.apply(this, arguments);
+  }
+
+  function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _inheritsLoose$1(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
+  }
+
   function appendSearchParams(searchParams, q) {
     switch (q.constructor) {
       case Object:
         for (var name in q) {
           searchParams.append(name, q[name]);
-        }break;
+        }
+
+        break;
+
       case String:
         q = new URLSearchParams(q);
       // falls through
+
       case URLSearchParams:
         q = Array.from(q);
       // falls through
+
       case Array:
         for (var _iterator = q, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref2;
+          var _ref;
 
           if (_isArray) {
             if (_i >= _iterator.length) break;
-            _ref2 = _iterator[_i++];
+            _ref = _iterator[_i++];
           } else {
             _i = _iterator.next();
             if (_i.done) break;
-            _ref2 = _i.value;
+            _ref = _i.value;
           }
 
-          var _ref = _ref2;
-          var _name = _ref[0];
-          var value = _ref[1];
+          var _ref2 = _ref,
+              _name = _ref2[0],
+              value = _ref2[1];
           searchParams.append(_name, value);
-        }break;
+        }
+
+        break;
     }
   }
 
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  };
-
-  var classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  var _extends = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-
-  var inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-  };
-
-  var possibleConstructorReturn = function (self, call) {
-    if (!self) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return call && (typeof call === "object" || typeof call === "function") ? call : self;
-  };
-
-  var SUPPORT_HISTORY_API = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.history && window.history.pushState;
+  var SUPPORT_HISTORY_API = typeof window === 'object' && window.history && window.history.pushState;
   var SUPPORT_HISTORY_ERR = 'Current environment doesn\'t support History API';
 
-  var _class = function () {
-    function _class(_ref) {
+  var _default =
+  /*#__PURE__*/
+  function () {
+    function _default(_ref) {
       var _ref$beforeChange = _ref.beforeChange,
-          beforeChange = _ref$beforeChange === undefined ? function () {} : _ref$beforeChange,
+          beforeChange = _ref$beforeChange === void 0 ? function () {} : _ref$beforeChange,
           change = _ref.change;
-      classCallCheck(this, _class);
-
       this.beforeChange = beforeChange;
       this.change = change;
       this.current = null;
     }
 
-    _class.prototype.start = function start(loc) {
+    var _proto = _default.prototype;
+
+    _proto.start = function start(loc) {
       var _this = this;
 
       if (!loc && SUPPORT_HISTORY_API) loc = this._getCurrentLocationFromBrowser();else loc = this.normalize(loc);
@@ -118,17 +115,18 @@
       }
     };
 
-    _class.prototype.url = function url(loc) {
+    _proto.url = function url(loc) {
       if (loc.constructor === Object) loc = this.normalize(loc).fullPath;
       return this._url(loc);
     };
 
-    _class.prototype.normalize = function normalize(loc) {
+    _proto.normalize = function normalize(loc) {
       if (loc.constructor === String) {
-        loc = { path: loc };
+        loc = {
+          path: loc
+        };
       } else {
         loc = Object.assign({}, loc);
-
         if (loc.fullPath) return loc; // normalized
       }
 
@@ -140,24 +138,23 @@
       var url = new URL(loc.path, 'file://');
       if (loc.query) appendSearchParams(url.searchParams, loc.query);
       if (loc.hash) url.hash = loc.hash;
-
       return Object.assign(loc, {
         path: url.pathname,
         query: url.searchParams,
         hash: url.hash,
         fullPath: url.pathname + url.search + url.hash,
         state: loc.state ? JSON.parse(JSON.stringify(loc.state)) : {} // dereferencing
+
       });
     };
 
-    _class.prototype._getCurrentLocationFromBrowser = function _getCurrentLocationFromBrowser() {
+    _proto._getCurrentLocationFromBrowser = function _getCurrentLocationFromBrowser() {
       var state = window.history.state || {};
       var loc = this.normalize(state.path || this._extractPathFromExternalURL(window.location));
       loc.state = state.state || {};
       if (state.path) loc.hidden = true;
       return loc;
     };
-
     /*
       init
       success: nop                       fail: _beforeChange('replace', current)       redirect: _beforeChange('replace', redirect)
@@ -172,19 +169,20 @@
     */
 
 
-    _class.prototype._beforeChange = function _beforeChange(op, to) {
+    _proto._beforeChange = function _beforeChange(op, to) {
       var _this2 = this;
 
       // to is the same as current and op is push, set op to replace
       if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') op = 'replace';
-
       Promise.resolve(this.beforeChange(to, this.current, op)).then(function (ret) {
         if (ret == null || ret === true) {
           if (op === 'push' || op === 'replace') _this2.__changeHistory(op, to);
           _this2.current = to;
+
           _this2.change(to);
         } else if (ret.constructor === String || ret.constructor === Object) {
           if (op === 'init') op = 'replace';else if (op === 'popstate') op = 'push';else if (ret.method) op = ret.method;
+
           _this2._beforeChange(op, _this2.normalize(ret));
         } else if (ret === false) {
           if (op === 'popstate') _this2.__changeHistory('push', _this2.current);
@@ -192,11 +190,11 @@
       });
     };
 
-    _class.prototype.dispatch = function dispatch(to) {
+    _proto.dispatch = function dispatch(to) {
       to = this.normalize(to);
+
       this._beforeChange('dispatch', to);
     };
-
     /*
       {
         path,
@@ -208,36 +206,39 @@
     */
 
 
-    _class.prototype.push = function push(to) {
+    _proto.push = function push(to) {
       this._changeHistory('push', to);
     };
 
-    _class.prototype.replace = function replace(to) {
+    _proto.replace = function replace(to) {
       this._changeHistory('replace', to);
     };
 
-    _class.prototype.setState = function setState(state) {
+    _proto.setState = function setState(state) {
       Object.assign(this.current.state, JSON.parse(JSON.stringify(state))); // dereferencing
+
       this.__changeHistory('replace', this.current);
     };
 
-    _class.prototype._changeHistory = function _changeHistory(method, to) {
+    _proto._changeHistory = function _changeHistory(method, to) {
       to = this.normalize(to);
+
       if (to.silent) {
         this.__changeHistory(method, to);
+
         this.current = to;
       } else {
         this._beforeChange(method, to);
       }
     };
 
-    _class.prototype.__changeHistory = function __changeHistory(method, to) {
+    _proto.__changeHistory = function __changeHistory(method, to) {
       if (!SUPPORT_HISTORY_API) return;
-
       var state = {};
       if (to.state) state.state = to.state;
 
       var url = this._url(to.fullPath);
+
       if (to.hidden) {
         state.path = to.fullPath;
         url = to.appearPath && this.url(to.appearPath);
@@ -246,14 +247,14 @@
       window.history[method + 'State'](Object.keys(state).length ? state : null, '', url);
     };
 
-    _class.prototype.go = function go(n) {
+    _proto.go = function go(n, _temp) {
       var _this3 = this;
 
-      var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+      var _ref2 = _temp === void 0 ? {} : _temp,
           _ref2$state = _ref2.state,
-          state = _ref2$state === undefined ? null : _ref2$state,
+          state = _ref2$state === void 0 ? null : _ref2$state,
           _ref2$silent = _ref2.silent,
-          silent = _ref2$silent === undefined ? false : _ref2$silent;
+          silent = _ref2$silent === void 0 ? false : _ref2$silent;
 
       return new Promise(function (resolve, reject) {
         if (!SUPPORT_HISTORY_API) return reject(new Error(SUPPORT_HISTORY_ERR));
@@ -266,106 +267,104 @@
 
           if (state) {
             Object.assign(to.state, state);
+
             _this3.__changeHistory('replace', to);
           }
 
           if (silent) _this3.current = to;else _this3._beforeChange('popstate', to);
-
           resolve();
         };
 
         window.removeEventListener('popstate', _this3._onpopstate);
         window.addEventListener('popstate', onpopstate);
-
         window.history.go(n);
       });
     };
 
-    _class.prototype.back = function back(opts) {
+    _proto.back = function back(opts) {
       return this.go(-1, opts);
     };
 
-    _class.prototype.forward = function forward(opts) {
+    _proto.forward = function forward(opts) {
       return this.go(1, opts);
     };
 
-    _class.prototype.captureLinkClickEvent = function captureLinkClickEvent(e) {
-      var a = e.target.closest('a');
+    _proto.captureLinkClickEvent = function captureLinkClickEvent(e) {
+      var a = e.target.closest('a'); // force not handle the <a> element
 
-      // force not handle the <a> element
-      if (!a || a.getAttribute('spa-history-skip') != null) return;
+      if (!a || a.getAttribute('spa-history-skip') != null) return; // open new window
 
-      // open new window
       var target = a.getAttribute('target');
-      if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in { _self: 1, _blank: 1, _parent: 1, _top: 1 }) && target !== window.name)) return;
+      if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in {
+        _self: 1,
+        _blank: 1,
+        _parent: 1,
+        _top: 1
+      }) && target !== window.name)) return; // out of app
 
-      // out of app
       if (a.href.indexOf(location.origin + this.url('/')) !== 0) return;
+      var to = this.normalize(a.href); // hash change
 
-      var to = this.normalize(a.href);
-
-      // hash change
       if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) return;
-
       e.preventDefault();
       this.push(to);
     };
 
-    return _class;
+    return _default;
   }();
 
-  var _class$1 = function (_Base) {
-    inherits(_class$$1, _Base);
+  var _default$1 =
+  /*#__PURE__*/
+  function (_Base) {
+    _inheritsLoose$1(_default$$1, _Base);
 
-    function _class$$1(args) {
-      classCallCheck(this, _class$$1);
+    function _default$$1(args) {
+      var _this;
 
-      var _this = possibleConstructorReturn(this, _Base.call(this, args));
-
+      _this = _Base.call(this, args) || this;
       _this.base = args.base || '/';
       return _this;
     }
 
-    _class$$1.prototype._extractPathFromExternalURL = function _extractPathFromExternalURL(url) {
+    var _proto = _default$$1.prototype;
+
+    _proto._extractPathFromExternalURL = function _extractPathFromExternalURL(url) {
       return url.pathname.replace(this.base, '/') + url.search + url.hash;
     };
 
-    _class$$1.prototype._url = function _url(loc) {
+    _proto._url = function _url(loc) {
       return this.base + loc.slice(1);
     };
 
-    return _class$$1;
-  }(_class);
+    return _default$$1;
+  }(_default);
 
-  var _class$2 = function (_Base) {
-    inherits(_class$$1, _Base);
+  var _default$2 =
+  /*#__PURE__*/
+  function (_Base) {
+    _inheritsLoose$1(_default$$1, _Base);
 
-    function _class$$1() {
-      classCallCheck(this, _class$$1);
-      return possibleConstructorReturn(this, _Base.apply(this, arguments));
+    function _default$$1() {
+      return _Base.apply(this, arguments) || this;
     }
 
-    _class$$1.prototype._extractPathFromExternalURL = function _extractPathFromExternalURL(url) {
+    var _proto = _default$$1.prototype;
+
+    _proto._extractPathFromExternalURL = function _extractPathFromExternalURL(url) {
       return url.hash.slice(1) || '/';
     };
 
-    _class$$1.prototype._url = function _url(loc) {
+    _proto._url = function _url(loc) {
       return loc === '/' ? location.pathname + location.search : '#' + loc;
     };
 
-    return _class$$1;
-  }(_class);
+    return _default$$1;
+  }(_default);
 
-  var classCallCheck$1 = function classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  var Router = function () {
+  var Router =
+  /*#__PURE__*/
+  function () {
     function Router(routes) {
-      classCallCheck$1(this, Router);
-
       this._routes = {};
 
       if (routes) {
@@ -382,16 +381,26 @@
           }
 
           var route = _ref;
-
           this.add.apply(this, route);
         }
       }
     }
 
-    Router.prototype.add = function add(method, path, handler, test) {
+    var _proto = Router.prototype;
+
+    _proto.add = function add(method, path, handler, test) {
+      // method is omitted
+      // defaults to 'GET'
+      if (!['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+        var _ref2 = ['GET', method, path, handler];
+        method = _ref2[0];
+        path = _ref2[1];
+        handler = _ref2[2];
+        test = _ref2[3];
+      }
+
       method = method.toUpperCase();
       if (!this._routes[method]) this._routes[method] = [];
-
       var table = this._routes[method];
 
       if (path.constructor === RegExp) {
@@ -410,15 +419,13 @@
           });
         } else {
           var params = [];
-
           var regex = path.replace(/[\\&()+.[?^{|]/g, '\\$&').replace(/:(\w+)/g, function (str, key) {
             params.push(key);
             return '([^/]+)';
           }).replace(/\*/g, '.*');
-
           table.push({
             path: path,
-            regex: new RegExp('^' + regex + '$'),
+            regex: new RegExp("^" + regex + "$"),
             handler: handler,
             params: params,
             test: test
@@ -427,82 +434,98 @@
       }
     };
 
-    Router.prototype.get = function get$$1(path, handler, test) {
+    _proto.get = function get(path, handler, test) {
       return this.add('GET', path, handler, test);
     };
 
-    Router.prototype.post = function post(path, handler, test) {
+    _proto.post = function post(path, handler, test) {
       return this.add('POST', path, handler, test);
     };
 
-    Router.prototype.put = function put(path, handler, test) {
+    _proto.put = function put(path, handler, test) {
       return this.add('PUT', path, handler, test);
     };
 
-    Router.prototype.delete = function _delete(path, handler, test) {
+    _proto.delete = function _delete(path, handler, test) {
       return this.add('DELETE', path, handler, test);
     };
 
-    Router.prototype.head = function head(path, handler, test) {
+    _proto.head = function head(path, handler, test) {
       return this.add('HEAD', path, handler, test);
     };
 
-    Router.prototype.connect = function connect(path, handler, test) {
+    _proto.connect = function connect(path, handler, test) {
       return this.add('CONNECT', path, handler, test);
     };
 
-    Router.prototype.options = function options(path, handler, test) {
+    _proto.options = function options(path, handler, test) {
       return this.add('OPTIONS', path, handler, test);
     };
 
-    Router.prototype.trace = function trace(path, handler, test) {
+    _proto.trace = function trace(path, handler, test) {
       return this.add('TRACE', path, handler, test);
     };
 
-    Router.prototype.patch = function patch(path, handler, test) {
+    _proto.patch = function patch(path, handler, test) {
       return this.add('PATCH', path, handler, test);
     };
 
-    Router.prototype.find = function find(method, path, testArg) {
+    _proto.find = function find(method, path, testArg) {
+      // method is omitted
+      // defaults to 'GET'
+      if (!['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+        var _ref3 = ['GET', method, path];
+        method = _ref3[0];
+        path = _ref3[1];
+        testArg = _ref3[2];
+      }
+
       method = method.toUpperCase();
       var table = this._routes[method];
 
       for (var _iterator2 = table, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-        var _ref2;
+        var _ref4;
 
         if (_isArray2) {
           if (_i2 >= _iterator2.length) break;
-          _ref2 = _iterator2[_i2++];
+          _ref4 = _iterator2[_i2++];
         } else {
           _i2 = _iterator2.next();
           if (_i2.done) break;
-          _ref2 = _i2.value;
+          _ref4 = _i2.value;
         }
 
-        var route = _ref2;
-
+        var route = _ref4;
         var resolved = void 0;
 
         if (route.regex) {
           (function () {
             var matches = path.match(route.regex);
+
             if (matches) {
               var handler = route.handler;
+
               if (handler.constructor === String && handler.includes('$')) {
                 handler = handler === '$&' ? path : path.replace(route.regex, handler);
               }
 
-              matches.shift();
-              var params = {};
+              var params;
 
-              if (route.params) {
-                route.params.forEach(function (v, i) {
-                  return params[v] = matches[i];
-                });
+              if (matches.groups) {
+                params = matches.groups;
               } else {
-                matches.forEach(function (v, i) {
-                  return params['$' + (i + 1)] = v;
-                });
+                params = {};
+                matches.shift();
+
+                if (route.params) {
+                  route.params.forEach(function (v, i) {
+                    return params[v] = matches[i];
+                  });
+                } else {
+                  matches.forEach(function (v, i) {
+                    return params['$' + (i + 1)] = v;
+                  });
+                }
               }
 
               resolved = {
@@ -528,6 +551,8 @@
           return resolved;
         }
       }
+
+      return null;
     };
 
     return Router;
@@ -535,20 +560,17 @@
 
   var RouterView = {
     functional: true,
-
     props: {
       name: {
         type: String,
         default: 'default'
       }
     },
-
     render: function render(h, _ref) {
       var props = _ref.props,
           children = _ref.children,
           parent = _ref.parent,
           data = _ref.data;
-
       if (!parent.$root.$route.path) return;
 
       while (parent) {
@@ -570,7 +592,9 @@
       if (data._routerView.component) {
         if (data._routerView.props) {
           var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
-          Object.assign(data, { props: viewProps });
+          Object.assign(data, {
+            props: viewProps
+          });
         }
 
         return h(data._routerView.component, data, children);
@@ -580,22 +604,19 @@
 
   var RouterLink = {
     functional: true,
-
     props: {
       tag: {
         default: 'a'
       },
-
       to: {
         type: [String, Object]
       },
-
       method: {
         type: String,
         default: 'push' // push, replace, dispatch
+
       }
     },
-
     render: function render(h, _ref) {
       var parent = _ref.parent,
           props = _ref.props,
@@ -611,11 +632,9 @@
       }
 
       return h(props.tag, _extends({}, data, {
-
         attrs: _extends({}, data.attrs, {
           href: parent.$router.url(props.to)
         }),
-
         on: _extends({}, listeners, {
           click: listeners.click ? [].concat(listeners.click, click) : click
         })
@@ -623,11 +642,12 @@
     }
   };
 
-  var _class$3 = function () {
-    _class.install = function install(Vue) {
+  var _default$3 =
+  /*#__PURE__*/
+  function () {
+    _default.install = function install(Vue) {
       Vue.component('router-view', RouterView);
       Vue.component('router-link', RouterLink);
-
       Vue.mixin({
         beforeCreate: function beforeCreate() {
           var _this = this;
@@ -635,11 +655,12 @@
           if (!this.$root.$options.router) return;
 
           if (this.$options.router) {
-            this.$router = this.$options.router;
+            this.$router = this.$options.router; // make current route reactive
 
-            // make current route reactive
             this.$route = new Vue({
-              data: { route: this.$router.current }
+              data: {
+                route: this.$router.current
+              }
             }).route;
           } else {
             this.$router = this.$root.$router;
@@ -669,16 +690,13 @@
       });
     };
 
-    function _class(_ref) {
+    function _default(_ref) {
       var routes = _ref.routes;
-      classCallCheck(this, _class);
-
       this._routes = this._parseRoutes(routes);
       this._urlRouter = new Router(this._routes);
       this._beforeChangeHooks = [];
       this._afterChangeHooks = [];
       this._errorHooks = [];
-
       this.current = {
         path: null,
         query: {},
@@ -691,77 +709,89 @@
       };
     }
 
-    _class.prototype.beforeChange = function beforeChange(hook) {
+    var _proto = _default.prototype;
+
+    _proto.beforeChange = function beforeChange(hook) {
       this._beforeChangeHooks.push(hook);
     };
 
-    _class.prototype.afterChange = function afterChange(hook) {
+    _proto.afterChange = function afterChange(hook) {
       this._afterChangeHooks.push(hook);
     };
 
-    _class.prototype.onError = function onError(hook) {
+    _proto.onError = function onError(hook) {
       this._errorHooks.push(hook);
     };
 
-    _class.prototype._parseRoutes = function _parseRoutes(routerViews) {
+    _proto._parseRoutes = function _parseRoutes(routerViews, depth, parsed) {
       var _this2 = this;
 
-      var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-      var parsed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+      if (depth === void 0) {
+        depth = [];
+      }
 
-      var _loop = function _loop(routerView) {
+      if (parsed === void 0) {
+        parsed = [];
+      }
+
+      var _loop = function _loop() {
+        if (_isArray) {
+          if (_i >= _iterator.length) return "break";
+          _ref2 = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) return "break";
+          _ref2 = _i.value;
+        }
+
+        var routerView = _ref2;
+
         if (routerView.constructor === Array) {
           var names = routerView.map(function (c) {
             return c.name;
           });
-          var children = [].concat(routerView, routerViews.filter(function (v) {
+          var children = routerView.concat(routerViews.filter(function (v) {
             return v.constructor !== Array && !v.path && !names.includes(v.name);
           }));
+
           _this2._parseRoutes(children, depth, parsed);
         } else if (routerView.path) {
           var _children = [routerView].concat(routerViews.filter(function (v) {
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
 
-          parsed.push(['GET', routerView.path, [].concat(depth, [_children]), function (matchedRoute, _ref3) {
+          parsed.push(['GET', routerView.path, depth.concat([_children]), function (matchedRoute, _ref3) {
             var to = _ref3.to,
                 from = _ref3.from,
                 op = _ref3.op;
-
             to.params = matchedRoute.params;
             to._layout = _this2._resolveRoute(to, matchedRoute.handler);
+
             _this2._generateMeta(to);
+
             return routerView.test ? routerView.test(to, from, op) : true;
           }]);
         } else if (routerView.children) {
           var _children2 = [routerView].concat(routerViews.filter(function (v) {
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
-          _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
+
+          _this2._parseRoutes(routerView.children, depth.concat([_children2]), parsed);
         }
       };
 
       for (var _iterator = routerViews, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
         var _ref2;
 
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref2 = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref2 = _i.value;
-        }
+        var _ret = _loop();
 
-        var routerView = _ref2;
-
-        _loop(routerView);
+        if (_ret === "break") break;
       }
 
       return parsed;
     };
 
-    _class.prototype._beforeChange = function _beforeChange(to, from, op) {
+    _proto._beforeChange = function _beforeChange(to, from, op) {
       var _this3 = this;
 
       return new Promise(function (resolve) {
@@ -785,8 +815,8 @@
         });
 
         if (!_route) return false;
-
-        var promise = Promise.resolve(true);[].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
+        var promise = Promise.resolve(true);
+        [].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
         _this3._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
           return promise = promise.then(function () {
             return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
@@ -795,7 +825,6 @@
             });
           });
         });
-
         promise.catch(function (e) {
           if (e instanceof Error) throw e; // encountered unexpected error
           else return e; // the result of cancelled promise
@@ -805,7 +834,7 @@
       });
     };
 
-    _class.prototype._generateMeta = function _generateMeta(route) {
+    _proto._generateMeta = function _generateMeta(route) {
       if (route._meta.length) {
         route._meta.forEach(function (m) {
           return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
@@ -813,7 +842,7 @@
       }
     };
 
-    _class.prototype._change = function _change(to) {
+    _proto._change = function _change(to) {
       var _this4 = this;
 
       var promise = Promise.resolve(true);
@@ -839,13 +868,13 @@
       });
     };
 
-    _class.prototype._handleError = function _handleError(e) {
+    _proto._handleError = function _handleError(e) {
       this._errorHooks.forEach(function (hook) {
         return hook(e);
       });
     };
 
-    _class.prototype._resolveRoute = function _resolveRoute(route, depth) {
+    _proto._resolveRoute = function _resolveRoute(route, depth) {
       var layout = {};
       var current = layout;
 
@@ -862,7 +891,6 @@
         }
 
         var routerViews = _ref4;
-
         current.children = {};
 
         for (var _iterator3 = routerViews, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
@@ -878,7 +906,6 @@
           }
 
           var routerView = _ref5;
-
           current.children[routerView.name || 'default'] = Object.assign({}, routerView);
         }
 
@@ -886,21 +913,20 @@
       }
 
       delete current.path;
-
       return this._resolveRouterViews(route, layout.children);
     };
 
-    _class.prototype._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
+    _proto._resolveRouterViews = function _resolveRouterViews(route, routerViews) {
       var _this5 = this;
 
       var resolved = {};
 
       var _loop2 = function _loop2(name) {
         var routerView = routerViews[name];
-
-        if (routerView.constructor === Array || routerView.path) return 'continue';
-
-        var v = resolved[name] = { props: routerView.props };
+        if (routerView.constructor === Array || routerView.path) return "continue";
+        var v = resolved[name] = {
+          props: routerView.props
+        };
 
         if (routerView.meta) {
           route._meta.push(routerView.meta);
@@ -928,106 +954,107 @@
       for (var name in routerViews) {
         var _ret2 = _loop2(name);
 
-        if (_ret2 === 'continue') continue;
+        if (_ret2 === "continue") continue;
       }
 
       return resolved;
     };
 
-    _class.prototype.start = function start(loc) {
+    _proto.start = function start(loc) {
       return this._history.start(loc);
     };
 
-    _class.prototype.normalize = function normalize(loc) {
+    _proto.normalize = function normalize(loc) {
       return this._history.normalize(loc);
     };
 
-    _class.prototype.url = function url(loc) {
+    _proto.url = function url(loc) {
       return this._history.url(loc);
     };
 
-    _class.prototype.dispatch = function dispatch(loc) {
+    _proto.dispatch = function dispatch(loc) {
       return this._history.dispatch(loc);
     };
 
-    _class.prototype.push = function push(loc) {
+    _proto.push = function push(loc) {
       return this._history.push(loc);
     };
 
-    _class.prototype.replace = function replace(loc) {
+    _proto.replace = function replace(loc) {
       return this._history.replace(loc);
     };
 
-    _class.prototype.setState = function setState(state) {
-      this._history.setState(state);
-
-      // Vue can not react if add new prop into state
+    _proto.setState = function setState(state) {
+      this._history.setState(state); // Vue can not react if add new prop into state
       // so we replace it with a new state object
-      this.current.state = _extends({}, this._history.current.state);
 
-      // meta factory function may use state object to generate meta object
+
+      this.current.state = _extends({}, this._history.current.state); // meta factory function may use state object to generate meta object
       // so we need to re-generate a new meta
+
       this._generateMeta(this.current);
     };
 
-    _class.prototype.go = function go(n, opts) {
+    _proto.go = function go(n, opts) {
       return this._history.go(n, opts);
     };
 
-    _class.prototype.back = function back(opts) {
+    _proto.back = function back(opts) {
       return this._history.back(opts);
     };
 
-    _class.prototype.forward = function forward(opts) {
+    _proto.forward = function forward(opts) {
       return this._history.forward(opts);
     };
 
-    _class.prototype.captureLinkClickEvent = function captureLinkClickEvent(e) {
+    _proto.captureLinkClickEvent = function captureLinkClickEvent(e) {
       return this._history.captureLinkClickEvent(e);
     };
 
-    return _class;
+    return _default;
   }();
 
-  var _class$4 = function (_Base) {
-    inherits(_class, _Base);
+  var _default$4 =
+  /*#__PURE__*/
+  function (_Base) {
+    _inheritsLoose(_default, _Base);
 
-    function _class(args) {
-      classCallCheck(this, _class);
+    function _default(args) {
+      var _this;
 
-      var _this = possibleConstructorReturn(this, _Base.call(this, args));
-
-      _this._history = new _class$1({
+      _this = _Base.call(this, args) || this;
+      _this._history = new _default$1({
         base: args.base,
-        beforeChange: _this._beforeChange.bind(_this),
-        change: _this._change.bind(_this)
+        beforeChange: _this._beforeChange.bind(_assertThisInitialized(_assertThisInitialized(_this))),
+        change: _this._change.bind(_assertThisInitialized(_assertThisInitialized(_this)))
       });
       return _this;
     }
 
-    return _class;
-  }(_class$3);
+    return _default;
+  }(_default$3);
 
-  var _class$5 = function (_Base) {
-    inherits(_class, _Base);
+  var _default$5 =
+  /*#__PURE__*/
+  function (_Base) {
+    _inheritsLoose(_default, _Base);
 
-    function _class(args) {
-      classCallCheck(this, _class);
+    function _default(args) {
+      var _this;
 
-      var _this = possibleConstructorReturn(this, _Base.call(this, args));
-
-      _this._history = new _class$2({
-        beforeChange: _this._beforeChange.bind(_this),
-        change: _this._change.bind(_this)
+      _this = _Base.call(this, args) || this;
+      _this._history = new _default$2({
+        beforeChange: _this._beforeChange.bind(_assertThisInitialized(_assertThisInitialized(_this))),
+        change: _this._change.bind(_assertThisInitialized(_assertThisInitialized(_this)))
       });
       return _this;
     }
 
-    return _class;
-  }(_class$3);
+    return _default;
+  }(_default$3);
 
-  exports.PathRouter = _class$4;
-  exports.HashRouter = _class$5;
+  exports.PathRouter = _default$4;
+  exports.HashRouter = _default$5;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

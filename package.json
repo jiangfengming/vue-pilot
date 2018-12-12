@@ -2,13 +2,14 @@
   "name": "vue-stateful-router",
   "version": "0.7.0",
   "description": "A vue router with the power of history.state",
-  "main": "dist/vueStatefulRouter.umd.js",
-  "module": "dist/vueStatefulRouter.esm.js",
+  "main": "dist/vueStatefulRouter.js",
+  "module": "dist/vueStatefulRouter.mjs",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.esm.js && rollup -c rollup.config.umd.js"
+    "build": "rollup -c rollup.config.esm.mjs && rollup -c rollup.config.umd.mjs && rollup -c rollup.config.umd.bundle.mjs",
+    "example": "ws --spa example.html"
   },
   "repository": {
     "type": "git",
@@ -20,30 +21,40 @@
   ],
   "author": "Jiang Fengming",
   "license": "MIT",
+  "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
+  "bugs": {
+    "url": "https://github.com/fenivana/vue-stateful-router/issues"
+  },
   "dependencies": {
     "spa-history": "^0.6.1",
-    "url-router": "^6.0.0"
+    "url-router": "^7.0.1"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-3": "^6.24.1",
-    "eslint": "^4.19.1",
+    "@babel/core": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.10.0",
     "eslint-config-enough": "^0.3.1",
-    "rollup": "^0.58.2",
-    "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-node-resolve": "^3.3.0"
+    "local-web-server": "^2.6.0",
+    "rollup": "^0.67.4",
+    "rollup-plugin-babel": "^4.1.0",
+    "rollup-plugin-node-resolve": "^4.0.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "loose": true,
+          "modules": false
+        }
+      ]
+    ]
   },
   "eslintConfig": {
     "extends": "enough",
     "env": {
-      "browser": true,
-      "node": true
+      "browser": true
     }
-  },
-  "bugs": {
-    "url": "https://github.com/fenivana/vue-stateful-router/issues"
-  },
-  "homepage": "https://github.com/fenivana/vue-stateful-router#readme"
+  }
 }

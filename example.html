@@ -30,9 +30,14 @@
 </div>
 
 <script src="https://unpkg.com/vue"></script>
-<script src="../dist/vueStatefulRouter.umd.js"></script>
+<script src="/dist/vueStatefulRouter.bundle.js"></script>
+
 <script>
-const Router = vueStatefulRouter.HashRouter
+// PathRouter can't be used in local file: protocol
+const Router = location.protocol.slice(0, 4) === 'http' && confirm('Use PathRouter?')
+  ? vueStatefulRouter.PathRouter
+  : vueStatefulRouter.HashRouter
+
 Vue.use(Router)
 
 // async

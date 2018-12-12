@@ -1,4 +1,4 @@
-import { PathHistory } from 'spa-history/src'
+import { PathHistory } from 'spa-history'
 import Base from './Base'
 
 export default class extends Base {

@@ -1,4 +1,4 @@
-import { HashHistory } from 'spa-history/src'
+import { HashHistory } from 'spa-history'
 import Base from './Base'
 
 export default class extends Base {
