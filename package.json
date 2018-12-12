@@ -13,17 +13,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fenivana/vue-stateful-router.git"
+    "url": "git+https://github.com/jiangfengming/vue-stateful-router.git"
   },
   "keywords": [
     "vue",
     "router"
   ],
-  "author": "Jiang Fengming",
+  "author": "Jiang Fengming <jiangfengming87@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/fenivana/vue-stateful-router#readme",
+  "homepage": "https://github.com/jiangfengming/vue-stateful-router#readme",
   "bugs": {
-    "url": "https://github.com/fenivana/vue-stateful-router/issues"
+    "url": "https://github.com/jiangfengming/vue-stateful-router/issues"
   },
   "dependencies": {
     "spa-history": "^0.6.1",
