@@ -1,5 +1,5 @@
-import UrlRouter from 'url-router';
 import { PathHistory, HashHistory } from 'spa-history';
+import UrlRouter from 'url-router';
 
 function _extends() {
   _extends = Object.assign || function (target) {

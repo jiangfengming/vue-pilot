@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('url-router'), require('spa-history')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'url-router', 'spa-history'], factory) :
-  (factory((global.vueStatefulRouter = {}),global.UrlRouter,global.spaHistory));
-}(this, (function (exports,UrlRouter,spaHistory) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('spa-history'), require('url-router')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'spa-history', 'url-router'], factory) :
+  factory(global.vueStatefulRouter = {},global.spaHistory,global.UrlRouter);
+}(typeof self !== 'undefined' ? self : this, function (exports,spaHistory,UrlRouter) { 'use strict';
 
   UrlRouter = UrlRouter && UrlRouter.hasOwnProperty('default') ? UrlRouter['default'] : UrlRouter;
 
@@ -538,4 +538,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
