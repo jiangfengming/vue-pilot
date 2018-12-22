@@ -120,6 +120,7 @@ export default class {
       const route = to.route = {
         path: to.path,
         fullPath: to.fullPath,
+        url: to.url,
         query: to.query,
         hash: to.hash,
         state: to.state,

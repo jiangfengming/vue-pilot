@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('spa-history'), require('url-router')) :
   typeof define === 'function' && define.amd ? define(['exports', 'spa-history', 'url-router'], factory) :
-  factory(global.vueStatefulRouter = {},global.spaHistory,global.UrlRouter);
-}(typeof self !== 'undefined' ? self : this, function (exports,spaHistory,UrlRouter) { 'use strict';
+  (global = global || self, factory(global.vueStatefulRouter = {}, global.spaHistory, global.UrlRouter));
+}(this, function (exports, spaHistory, UrlRouter) { 'use strict';
 
   UrlRouter = UrlRouter && UrlRouter.hasOwnProperty('default') ? UrlRouter['default'] : UrlRouter;
 
@@ -230,7 +230,7 @@
           var names = routerView.map(function (c) {
             return c.name;
           });
-          var children = routerView.concat(routerViews.filter(function (v) {
+          var children = [].concat(routerView, routerViews.filter(function (v) {
             return v.constructor !== Array && !v.path && !names.includes(v.name);
           }));
 
@@ -240,7 +240,7 @@
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
 
-          parsed.push(['GET', routerView.path, depth.concat([_children]), function (matchedRoute, _ref3) {
+          parsed.push(['GET', routerView.path, [].concat(depth, [_children]), function (matchedRoute, _ref3) {
             var to = _ref3.to,
                 from = _ref3.from,
                 op = _ref3.op;
@@ -256,7 +256,7 @@
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
 
-          _this2._parseRoutes(routerView.children, depth.concat([_children2]), parsed);
+          _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
         }
       };
 
@@ -278,6 +278,7 @@
         var route = to.route = {
           path: to.path,
           fullPath: to.fullPath,
+          url: to.url,
           query: to.query,
           hash: to.hash,
           state: to.state,

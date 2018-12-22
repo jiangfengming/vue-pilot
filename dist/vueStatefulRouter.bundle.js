@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  factory(global.vueStatefulRouter = {});
-}(typeof self !== 'undefined' ? self : this, function (exports) { 'use strict';
+  (global = global || self, factory(global.vueStatefulRouter = {}));
+}(this, function (exports) { 'use strict';
 
   function _extends() {
     _extends = Object.assign || function (target) {
@@ -127,7 +127,6 @@
         };
       } else {
         loc = Object.assign({}, loc);
-        if (loc.fullPath) return loc; // normalized
       }
 
       if (loc.external || /^\w+:\/\//.test(loc.path)) {
@@ -138,7 +137,7 @@
       var url = new URL(loc.path, 'file://');
       if (loc.query) appendSearchParams(url.searchParams, loc.query);
       if (loc.hash) url.hash = loc.hash;
-      return Object.assign(loc, {
+      Object.assign(loc, {
         path: url.pathname,
         query: url.searchParams,
         hash: url.hash,
@@ -146,6 +145,8 @@
         state: loc.state ? JSON.parse(JSON.stringify(loc.state)) : {} // dereferencing
 
       });
+      loc.url = this._url(loc.fullPath);
+      return loc;
     };
 
     _proto._getCurrentLocationFromBrowser = function _getCurrentLocationFromBrowser() {
@@ -154,7 +155,7 @@
       loc.state = state.state || {};
       if (state.path) loc.hidden = true;
       return loc;
-    };
+    }
     /*
       init
       success: nop                       fail: _beforeChange('replace', current)       redirect: _beforeChange('replace', redirect)
@@ -167,7 +168,7 @@
        dispatch
       success: nop                       fail: nop                                     redirect: _beforeChange('dispatch', redirect)
     */
-
+    ;
 
     _proto._beforeChange = function _beforeChange(op, to) {
       var _this2 = this;
@@ -194,7 +195,7 @@
       to = this.normalize(to);
 
       this._beforeChange('dispatch', to);
-    };
+    }
     /*
       {
         path,
@@ -204,7 +205,7 @@
         hidden
       }
     */
-
+    ;
 
     _proto.push = function push(to) {
       this._changeHistory('push', to);
@@ -750,7 +751,7 @@
           var names = routerView.map(function (c) {
             return c.name;
           });
-          var children = routerView.concat(routerViews.filter(function (v) {
+          var children = [].concat(routerView, routerViews.filter(function (v) {
             return v.constructor !== Array && !v.path && !names.includes(v.name);
           }));
 
@@ -760,7 +761,7 @@
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
 
-          parsed.push(['GET', routerView.path, depth.concat([_children]), function (matchedRoute, _ref3) {
+          parsed.push(['GET', routerView.path, [].concat(depth, [_children]), function (matchedRoute, _ref3) {
             var to = _ref3.to,
                 from = _ref3.from,
                 op = _ref3.op;
@@ -776,7 +777,7 @@
             return v.constructor !== Array && !v.path && v.name !== routerView.name;
           }));
 
-          _this2._parseRoutes(routerView.children, depth.concat([_children2]), parsed);
+          _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
         }
       };
 
@@ -798,6 +799,7 @@
         var route = to.route = {
           path: to.path,
           fullPath: to.fullPath,
+          url: to.url,
           query: to.query,
           hash: to.hash,
           state: to.state,

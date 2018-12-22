@@ -219,11 +219,12 @@ const routes = [
 {
   path, // router internal path, which has stripped the protocol, host, and base path.
   query, // URLSearchParams object. https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-  hash,
+  hash, // url hash
   fullPath, // path + query + hash
+  url, // PathRouter: base + path + query + hash; HashRouter: '#' + path + query + hash
   state, // state object
-  params,
-  meta
+  params, // path params
+  meta // meta collected from route definition
 }
 ```
 
@@ -235,6 +236,7 @@ const routes = [
   query,
   hash,
   fullPath,
+  url,
   state,
   hidden // Boolean. Indicate whether it is a hidden history entry. see history.push() for detail.
 }

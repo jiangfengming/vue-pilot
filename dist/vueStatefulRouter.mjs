@@ -225,7 +225,7 @@ function () {
         var names = routerView.map(function (c) {
           return c.name;
         });
-        var children = routerView.concat(routerViews.filter(function (v) {
+        var children = [].concat(routerView, routerViews.filter(function (v) {
           return v.constructor !== Array && !v.path && !names.includes(v.name);
         }));
 
@@ -235,7 +235,7 @@ function () {
           return v.constructor !== Array && !v.path && v.name !== routerView.name;
         }));
 
-        parsed.push(['GET', routerView.path, depth.concat([_children]), function (matchedRoute, _ref3) {
+        parsed.push(['GET', routerView.path, [].concat(depth, [_children]), function (matchedRoute, _ref3) {
           var to = _ref3.to,
               from = _ref3.from,
               op = _ref3.op;
@@ -251,7 +251,7 @@ function () {
           return v.constructor !== Array && !v.path && v.name !== routerView.name;
         }));
 
-        _this2._parseRoutes(routerView.children, depth.concat([_children2]), parsed);
+        _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
       }
     };
 
@@ -273,6 +273,7 @@ function () {
       var route = to.route = {
         path: to.path,
         fullPath: to.fullPath,
+        url: to.url,
         query: to.query,
         hash: to.hash,
         state: to.state,
