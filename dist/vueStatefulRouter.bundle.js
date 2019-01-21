@@ -529,6 +529,10 @@
                 }
               }
 
+              for (var k in params) {
+                params[k] = decodeURIComponent(params[k]);
+              }
+
               resolved = {
                 method: method,
                 path: path,
