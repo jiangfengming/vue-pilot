@@ -493,40 +493,40 @@ function () {
 var _default$1 =
 /*#__PURE__*/
 function (_Base) {
-  _inheritsLoose(_default$$1, _Base);
+  _inheritsLoose(_default, _Base);
 
-  function _default$$1(args) {
+  function _default(args) {
     var _this;
 
     _this = _Base.call(this, args) || this;
     _this._history = new PathHistory({
       base: args.base,
-      beforeChange: _this._beforeChange.bind(_assertThisInitialized(_assertThisInitialized(_this))),
-      change: _this._change.bind(_assertThisInitialized(_assertThisInitialized(_this)))
+      beforeChange: _this._beforeChange.bind(_assertThisInitialized(_this)),
+      change: _this._change.bind(_assertThisInitialized(_this))
     });
     return _this;
   }
 
-  return _default$$1;
+  return _default;
 }(_default);
 
 var _default$2 =
 /*#__PURE__*/
 function (_Base) {
-  _inheritsLoose(_default$$1, _Base);
+  _inheritsLoose(_default, _Base);
 
-  function _default$$1(args) {
+  function _default(args) {
     var _this;
 
     _this = _Base.call(this, args) || this;
     _this._history = new HashHistory({
-      beforeChange: _this._beforeChange.bind(_assertThisInitialized(_assertThisInitialized(_this))),
-      change: _this._change.bind(_assertThisInitialized(_assertThisInitialized(_this)))
+      beforeChange: _this._beforeChange.bind(_assertThisInitialized(_this)),
+      change: _this._change.bind(_assertThisInitialized(_this))
     });
     return _this;
   }
 
-  return _default$$1;
+  return _default;
 }(_default);
 
 export { _default$1 as PathRouter, _default$2 as HashRouter };
