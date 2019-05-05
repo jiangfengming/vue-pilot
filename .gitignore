@@ -1,7 +1,10 @@
 .vscode
+
+# Package lock files
 package-lock.json
 yarn.lock
 shrinkwrap.yaml
+pnpm-lock.yaml
 
 # Logs
 logs

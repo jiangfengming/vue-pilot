@@ -3,12 +3,12 @@ import resolve from 'rollup-plugin-node-resolve'
 
 export default {
   input: 'src/index.mjs',
+
   plugins: [
     resolve(),
-    babel({
-      exclude: 'node_modules/**'
-    })
+    babel()
   ],
+
   output: {
     format: 'umd',
     name: 'vueStatefulRouter',

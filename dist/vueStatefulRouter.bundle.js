@@ -129,14 +129,23 @@
         loc = Object.assign({}, loc);
       }
 
-      if (loc.external || /^\w+:\/\//.test(loc.path)) {
-        loc.path = this._extractPathFromExternalURL(new URL(loc.path, 'http://a.a'));
+      var hasOrigin = /^\w+:\/\//.test(loc.path);
+
+      if (loc.external || hasOrigin) {
+        loc.path = this._extractPathFromExternalURL(new URL(hasOrigin ? loc.path : 'http://a.a' + loc.path));
         delete loc.external;
       }
 
-      var url = new URL(loc.path, 'http://a.a');
-      if (loc.query) appendSearchParams(url.searchParams, loc.query);
-      if (loc.hash) url.hash = loc.hash;
+      var url = new URL('http://a.a' + loc.path);
+
+      if (loc.query) {
+        appendSearchParams(url.searchParams, loc.query);
+      }
+
+      if (loc.hash) {
+        url.hash = loc.hash;
+      }
+
       Object.assign(loc, {
         path: url.pathname,
         query: url.searchParams,
@@ -171,9 +180,9 @@
     ;
 
     _proto._beforeChange = function _beforeChange(op, to) {
-      var _this2 = this;
+      var _this2 = this; // to is the same as current and op is push, set op to replace
 
-      // to is the same as current and op is push, set op to replace
+
       if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') op = 'replace';
       Promise.resolve(this.beforeChange(to, this.current, op)).then(function (ret) {
         if (ret == null || ret === true) {
@@ -390,9 +399,8 @@
     var _proto = Router.prototype;
 
     _proto.add = function add(method, path, handler, test) {
-      // method is omitted
-      // defaults to 'GET'
-      if (!['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+      // if method is omitted, defaults to 'GET'
+      if (method.constructor !== String || !['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
         var _ref2 = ['GET', method, path, handler];
         method = _ref2[0];
         path = _ref2[1];
@@ -400,8 +408,10 @@
         test = _ref2[3];
       }
 
-      method = method.toUpperCase();
-      if (!this._routes[method]) this._routes[method] = [];
+      if (!this._routes[method]) {
+        this._routes[method] = [];
+      }
+
       var table = this._routes[method];
 
       if (path.constructor === RegExp) {
@@ -433,6 +443,8 @@
           });
         }
       }
+
+      return this;
     };
 
     _proto.get = function get(path, handler, test) {
@@ -447,16 +459,16 @@
       return this.add('PUT', path, handler, test);
     };
 
-    _proto.delete = function _delete(path, handler, test) {
+    _proto["delete"] = function _delete(path, handler, test) {
       return this.add('DELETE', path, handler, test);
+    };
+
+    _proto.patch = function patch(path, handler, test) {
+      return this.add('PATCH', path, handler, test);
     };
 
     _proto.head = function head(path, handler, test) {
       return this.add('HEAD', path, handler, test);
-    };
-
-    _proto.connect = function connect(path, handler, test) {
-      return this.add('CONNECT', path, handler, test);
     };
 
     _proto.options = function options(path, handler, test) {
@@ -467,22 +479,20 @@
       return this.add('TRACE', path, handler, test);
     };
 
-    _proto.patch = function patch(path, handler, test) {
-      return this.add('PATCH', path, handler, test);
-    };
-
     _proto.find = function find(method, path, testArg) {
-      // method is omitted
-      // defaults to 'GET'
-      if (!['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+      // if method is omitted, defaults to 'GET'
+      if (method.constructor !== String || !['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
         var _ref3 = ['GET', method, path];
         method = _ref3[0];
         path = _ref3[1];
         testArg = _ref3[2];
       }
 
-      method = method.toUpperCase();
       var table = this._routes[method];
+
+      if (!table) {
+        return null;
+      }
 
       for (var _iterator2 = table, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
         var _ref4;
@@ -568,7 +578,7 @@
     props: {
       name: {
         type: String,
-        default: 'default'
+        "default": 'default'
       }
     },
     render: function render(h, _ref) {
@@ -611,14 +621,14 @@
     functional: true,
     props: {
       tag: {
-        default: 'a'
+        "default": 'a'
       },
       to: {
         type: [String, Object]
       },
       method: {
         type: String,
-        default: 'push' // push, replace, dispatch
+        "default": 'push' // push, replace, dispatch
 
       }
     },
@@ -674,8 +684,8 @@
               var hooks = this.$root.$route._beforeLeaveHooksInComp;
               var options = this.constructor.extendOptions;
 
-              if (options.extends && options.extends.beforeRouteLeave) {
-                hooks.push(options.extends.beforeRouteLeave.bind(this));
+              if (options["extends"] && options["extends"].beforeRouteLeave) {
+                hooks.push(options["extends"].beforeRouteLeave.bind(this));
               }
 
               if (options.mixins) {
@@ -831,7 +841,7 @@
             });
           });
         });
-        promise.catch(function (e) {
+        promise["catch"](function (e) {
           if (e instanceof Error) throw e; // encountered unexpected error
           else return e; // the result of cancelled promise
         }).then(function (result) {
@@ -866,10 +876,10 @@
           return comp();
         })).then(function () {
           Object.assign(_this4.current, to.route);
-        }).catch(function (e) {
+        })["catch"](function (e) {
           return _this4._handleError(e);
         });
-      }).catch(function (e) {
+      })["catch"](function (e) {
         if (e !== false) throw e;
       });
     };
@@ -945,7 +955,7 @@
         if (routerView.component && routerView.component.constructor === Function) {
           route._asyncComponents.push(function () {
             return routerView.component().then(function (m) {
-              return v.component = m.__esModule ? m.default : m;
+              return v.component = m.__esModule ? m["default"] : m;
             });
           });
         } else {
@@ -1059,8 +1069,8 @@
     return _default;
   }(_default$3);
 
-  exports.PathRouter = _default$4;
   exports.HashRouter = _default$5;
+  exports.PathRouter = _default$4;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

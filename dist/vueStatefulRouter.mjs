@@ -38,7 +38,7 @@ var RouterView = {
   props: {
     name: {
       type: String,
-      default: 'default'
+      "default": 'default'
     }
   },
   render: function render(h, _ref) {
@@ -81,14 +81,14 @@ var RouterLink = {
   functional: true,
   props: {
     tag: {
-      default: 'a'
+      "default": 'a'
     },
     to: {
       type: [String, Object]
     },
     method: {
       type: String,
-      default: 'push' // push, replace, dispatch
+      "default": 'push' // push, replace, dispatch
 
     }
   },
@@ -144,8 +144,8 @@ function () {
             var hooks = this.$root.$route._beforeLeaveHooksInComp;
             var options = this.constructor.extendOptions;
 
-            if (options.extends && options.extends.beforeRouteLeave) {
-              hooks.push(options.extends.beforeRouteLeave.bind(this));
+            if (options["extends"] && options["extends"].beforeRouteLeave) {
+              hooks.push(options["extends"].beforeRouteLeave.bind(this));
             }
 
             if (options.mixins) {
@@ -301,7 +301,7 @@ function () {
           });
         });
       });
-      promise.catch(function (e) {
+      promise["catch"](function (e) {
         if (e instanceof Error) throw e; // encountered unexpected error
         else return e; // the result of cancelled promise
       }).then(function (result) {
@@ -336,10 +336,10 @@ function () {
         return comp();
       })).then(function () {
         Object.assign(_this4.current, to.route);
-      }).catch(function (e) {
+      })["catch"](function (e) {
         return _this4._handleError(e);
       });
-    }).catch(function (e) {
+    })["catch"](function (e) {
       if (e !== false) throw e;
     });
   };
@@ -415,7 +415,7 @@ function () {
       if (routerView.component && routerView.component.constructor === Function) {
         route._asyncComponents.push(function () {
           return routerView.component().then(function (m) {
-            return v.component = m.__esModule ? m.default : m;
+            return v.component = m.__esModule ? m["default"] : m;
           });
         });
       } else {
@@ -529,4 +529,4 @@ function (_Base) {
   return _default;
 }(_default);
 
-export { _default$1 as PathRouter, _default$2 as HashRouter };
+export { _default$2 as HashRouter, _default$1 as PathRouter };

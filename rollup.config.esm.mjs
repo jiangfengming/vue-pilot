@@ -3,15 +3,16 @@ import resolve from 'rollup-plugin-node-resolve'
 
 export default {
   input: 'src/index.mjs',
+
   plugins: [
     resolve(),
-    babel({
-      exclude: 'node_modules/**'
-    })
+    babel()
   ],
+
   output: {
-    format: 'es',
+    format: 'esm',
     file: 'dist/vueStatefulRouter.mjs'
   },
+
   external: ['spa-history', 'url-router']
 }
