@@ -29,14 +29,11 @@
   <router-view foo="hello" class="foo"></router-view>
 </div>
 
-<script src="https://unpkg.com/vue"></script>
-<script src="/dist/vueStatefulRouter.bundle.js"></script>
+<script type="module">
+import Vue from 'https://unpkg.com/vue/dist/vue.esm.browser.js'
+import { PathRouter, HashRouter } from './dist/vueStatefulRouter.bundle.mjs'
 
-<script>
-// PathRouter can't be used in local file: protocol
-const Router = location.protocol.slice(0, 4) === 'http' && confirm('Use PathRouter?')
-  ? vueStatefulRouter.PathRouter
-  : vueStatefulRouter.HashRouter
+const Router = confirm('Use PathRouter ?') ? PathRouter : HashRouter
 
 Vue.use(Router)
 

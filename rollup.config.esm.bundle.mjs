@@ -10,8 +10,7 @@ export default {
   ],
 
   output: {
-    format: 'umd',
-    name: 'vueStatefulRouter',
-    file: 'dist/vueStatefulRouter.bundle.js'
+    format: 'esm',
+    file: 'dist/vueStatefulRouter.bundle.mjs'
   }
 }

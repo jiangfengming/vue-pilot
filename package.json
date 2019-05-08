@@ -7,7 +7,7 @@
     "example": "examples"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.esm.mjs && rollup -c rollup.config.umd.mjs && rollup -c rollup.config.umd.bundle.mjs",
+    "build": "rollup -c rollup.config.esm.mjs && rollup -c rollup.config.cjs.mjs && rollup -c rollup.config.esm.bundle.mjs",
     "example": "ws --spa example.html"
   },
   "repository": {

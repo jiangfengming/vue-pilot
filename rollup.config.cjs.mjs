@@ -10,8 +10,7 @@ export default {
   ],
 
   output: {
-    format: 'umd',
-    name: 'vueStatefulRouter',
+    format: 'cjs',
     file: 'dist/vueStatefulRouter.js'
   },
 
