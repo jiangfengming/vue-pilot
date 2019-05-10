@@ -47,7 +47,11 @@ const routes = [
 
 const router = new PathRouter({
   routes,
-  base: '/app/' // default: '/'
+
+  // default: ''
+  // If you want the root path doesn't contain ending slash,
+  // you can set the base without ending slash, like '/app'
+  base: '/app/'
 })
 ```
 
@@ -213,7 +217,9 @@ const routes = [
 ]
 ```
 
-## The Route Object
+## Route Object
+A route object contains the information of the matched route. It can be get from route hooks,
+`router.beforeChange()`, `router.afterChange()`, `vm.$root.$route`, `router.current`, etc.
 
 ```js
 {
@@ -221,14 +227,19 @@ const routes = [
   query, // URLSearchParams object. https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
   hash, // url hash
   fullPath, // path + query + hash
-  url, // PathRouter: base + path + query + hash; HashRouter: '#' + path + query + hash
+
+  // PathRouter: base + path + query + hash
+  // HashRouter: '#' + path + query + hash
+  url,
+
   state, // state object
   params, // path params
   meta // meta collected from route definition
 }
 ```
 
-## The Location Object
+## Location Object
+A location object is used for changing the current address. It can be used in `<router-link>`, `router.push()`, `router.replace()`, `router.dispatch()`, etc.
 
 ```js
 {
@@ -256,7 +267,9 @@ The `<router-link>` is a navigation component, it usally renders an `<a>` elemen
 
 
 ## APIs
-Mose of the APIs are proxied to [spa-history](https://github.com/fenivana/spa-history)
+Mose of the APIs are proxied to [spa-history](https://github.com/jiangfengming/spa-history).
+
+In the vue instance, you can get the router object from `this.$router`.
 
 - [router.current](#routercurrent)
 - [router.start(URL string | location)](#routerstarturl-string--location)
@@ -487,11 +500,12 @@ router.onError(error => {
 - [Object.assign()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 - [Element.closest()](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest)
 
-You can use <a href="http://babeljs.io/docs/usage/polyfill/">babel-polyfill</a> and <a href="https://github.com/WebReflection/dom4">dom4</a> to meet the requirements.
+You can use [@babel/polyfill](https://babeljs.io/docs/en/babel-polyfill/) and
+[dom4](https://github.com/WebReflection/dom4) to meet the requirements.
 
-Or use the <a href="https://polyfill.io/">polyfill.io</a> service:
+Or use the [polyfill.io](https://polyfill.io/) service:
 ```html
-<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js"></script>
 ```
 
 ## Example
