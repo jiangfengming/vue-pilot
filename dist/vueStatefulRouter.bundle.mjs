@@ -96,7 +96,11 @@ function () {
   _proto.start = function start(loc) {
     var _this = this;
 
-    if (!loc && SUPPORT_HISTORY_API) loc = this._getCurrentLocationFromBrowser();else loc = this.normalize(loc);
+    if (!loc && SUPPORT_HISTORY_API) {
+      loc = this._getCurrentLocationFromBrowser();
+    } else {
+      loc = this.normalize(loc);
+    }
 
     this._beforeChange('init', loc);
 
@@ -110,8 +114,7 @@ function () {
   };
 
   _proto.url = function url(loc) {
-    if (loc.constructor === Object) loc = this.normalize(loc).fullPath;
-    return this._url(loc);
+    return this.normalize(loc).url;
   };
 
   _proto.normalize = function normalize(loc) {
@@ -148,7 +151,7 @@ function () {
       state: loc.state ? JSON.parse(JSON.stringify(loc.state)) : {} // dereferencing
 
     });
-    loc.url = this._url(loc.fullPath);
+    loc.url = this._url(loc);
     return loc;
   };
 
@@ -177,19 +180,33 @@ function () {
     var _this2 = this; // to is the same as current and op is push, set op to replace
 
 
-    if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') op = 'replace';
+    if (this.current && to.path === this.current.path && to.query.toString() === this.current.query.toString() && op === 'push') {
+      op = 'replace';
+    }
+
     Promise.resolve(this.beforeChange(to, this.current, op)).then(function (ret) {
       if (ret == null || ret === true) {
-        if (op === 'push' || op === 'replace') _this2.__changeHistory(op, to);
+        if (op === 'push' || op === 'replace') {
+          _this2.__changeHistory(op, to);
+        }
+
         _this2.current = to;
 
         _this2.change(to);
       } else if (ret.constructor === String || ret.constructor === Object) {
-        if (op === 'init') op = 'replace';else if (op === 'popstate') op = 'push';else if (ret.method) op = ret.method;
+        if (op === 'init') {
+          op = 'replace';
+        } else if (op === 'popstate') {
+          op = 'push';
+        } else if (ret.method) {
+          op = ret.method;
+        }
 
         _this2._beforeChange(op, _this2.normalize(ret));
       } else if (ret === false) {
-        if (op === 'popstate') _this2.__changeHistory('push', _this2.current);
+        if (op === 'popstate') {
+          _this2.__changeHistory('push', _this2.current);
+        }
       }
     });
   };
@@ -237,11 +254,17 @@ function () {
   };
 
   _proto.__changeHistory = function __changeHistory(method, to) {
-    if (!SUPPORT_HISTORY_API) return;
-    var state = {};
-    if (to.state) state.state = to.state;
+    if (!SUPPORT_HISTORY_API) {
+      return;
+    }
 
-    var url = this._url(to.fullPath);
+    var state = {};
+
+    if (to.state) {
+      state.state = to.state;
+    }
+
+    var url = to.url;
 
     if (to.hidden) {
       state.path = to.fullPath;
@@ -261,7 +284,9 @@ function () {
         silent = _ref2$silent === void 0 ? false : _ref2$silent;
 
     return new Promise(function (resolve, reject) {
-      if (!SUPPORT_HISTORY_API) return reject(new Error(SUPPORT_HISTORY_ERR));
+      if (!SUPPORT_HISTORY_API) {
+        return reject(new Error(SUPPORT_HISTORY_ERR));
+      }
 
       var onpopstate = function onpopstate() {
         window.removeEventListener('popstate', onpopstate);
@@ -275,7 +300,12 @@ function () {
           _this3.__changeHistory('replace', to);
         }
 
-        if (silent) _this3.current = to;else _this3._beforeChange('popstate', to);
+        if (silent) {
+          _this3.current = to;
+        } else {
+          _this3._beforeChange('popstate', to);
+        }
+
         resolve();
       };
 
@@ -296,20 +326,33 @@ function () {
   _proto.captureLinkClickEvent = function captureLinkClickEvent(e) {
     var a = e.target.closest('a'); // force not handle the <a> element
 
-    if (!a || a.getAttribute('spa-history-skip') != null) return; // open new window
+    if (!a || a.getAttribute('spa-history-skip') != null) {
+      return;
+    } // open new window
+
 
     var target = a.getAttribute('target');
+
     if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in {
       _self: 1,
       _blank: 1,
       _parent: 1,
       _top: 1
-    }) && target !== window.name)) return; // out of app
+    }) && target !== window.name)) {
+      return;
+    } // out of app
 
-    if (a.href.indexOf(location.origin + this.url('/')) !== 0) return;
+
+    if (!a.href.startsWith(location.origin + this.url('/'))) {
+      return;
+    }
+
     var to = this.normalize(a.href); // hash change
 
-    if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) return;
+    if (to.path === this.current.path && to.query.toString() === this.current.query.toString() && to.hash && to.hash !== this.current.hash) {
+      return;
+    }
+
     e.preventDefault();
     this.push(to);
   };
@@ -326,7 +369,7 @@ function (_Base) {
     var _this;
 
     _this = _Base.call(this, args) || this;
-    _this.base = args.base || '/';
+    _this.base = args.base || '';
     return _this;
   }
 
@@ -335,10 +378,12 @@ function (_Base) {
   _proto._extractPathFromExternalURL = function _extractPathFromExternalURL(url) {
     var path = url.pathname;
 
-    if (path.startsWith(this.base)) {
+    if (this.base && this.base !== '/' && path.startsWith(this.base)) {
       path = path.replace(this.base, '');
 
-      if (path[0] !== '/') {
+      if (!path) {
+        path = '/';
+      } else if (this.base.endsWith('/')) {
         path = '/' + path;
       }
     }
@@ -347,7 +392,13 @@ function (_Base) {
   };
 
   _proto._url = function _url(loc) {
-    return this.base + (this.base.slice(-1) === '/' ? loc.slice(1) : loc);
+    // if base is not end with /
+    // do not append / if is the root path
+    if (loc.path === '/' && this.base && !this.base.endsWith('/')) {
+      return this.base + loc.fullPath.slice(1);
+    }
+
+    return (this.base && this.base.endsWith('/') ? this.base.slice(0, -1) : this.base) + loc.fullPath;
   };
 
   return _default;
@@ -369,7 +420,7 @@ function (_Base) {
   };
 
   _proto._url = function _url(loc) {
-    return loc === '/' ? location.pathname + location.search : '#' + loc;
+    return loc.fullPath === '/' ? location.pathname + location.search : '#' + loc.fullPath;
   };
 
   return _default;
