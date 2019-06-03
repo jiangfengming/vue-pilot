@@ -3,9 +3,6 @@
   "version": "0.11.2",
   "description": "A vue router with the power of history.state",
   "main": "dist/vueStatefulRouter",
-  "directories": {
-    "example": "examples"
-  },
   "scripts": {
     "build": "rollup -c rollup.config.esm.js && rollup -c rollup.config.cjs.js && rollup -c rollup.config.esm.bundle.js",
     "example": "ws --spa example.html"
@@ -29,15 +26,14 @@
     "url-router": "^7.1.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "babel-eslint": "^10.0.1",
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
     "eslint": "^5.16.0",
-    "eslint-config-enough": "^0.3.4",
+    "eslint-config-enough": "^0.3.5",
     "local-web-server": "^2.6.1",
-    "rollup": "^1.11.3",
+    "rollup": "^1.13.1",
     "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-node-resolve": "^4.2.3"
+    "rollup-plugin-node-resolve": "^5.0.1"
   },
   "babel": {
     "presets": [
