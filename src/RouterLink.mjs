@@ -18,7 +18,7 @@ export default {
 
   render(h, { parent, props, children, listeners, data }) {
     function click(e) {
-      if (!e.defaultPrevented) {
+      if (!e.defaultPrevented && props.to) {
         e.preventDefault()
         parent.$router[props.method](props.to)
       }
@@ -32,7 +32,7 @@ export default {
 
         attrs: {
           ...data.attrs,
-          href: parent.$router.url(props.to)
+          href: props.to ? parent.$router.url(props.to) : 'javascript:'
         },
 
         on: {

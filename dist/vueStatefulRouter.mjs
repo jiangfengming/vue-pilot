@@ -100,7 +100,7 @@ var RouterLink = {
         data = _ref.data;
 
     function click(e) {
-      if (!e.defaultPrevented) {
+      if (!e.defaultPrevented && props.to) {
         e.preventDefault();
         parent.$router[props.method](props.to);
       }
@@ -108,7 +108,7 @@ var RouterLink = {
 
     return h(props.tag, _extends({}, data, {
       attrs: _extends({}, data.attrs, {
-        href: parent.$router.url(props.to)
+        href: props.to ? parent.$router.url(props.to) : 'javascript:'
       }),
       on: _extends({}, listeners, {
         click: listeners.click ? [].concat(listeners.click, click) : click
