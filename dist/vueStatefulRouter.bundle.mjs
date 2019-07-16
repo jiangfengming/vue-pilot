@@ -194,12 +194,12 @@ function () {
 
         _this2.change(to);
       } else if (ret.constructor === String || ret.constructor === Object) {
-        if (op === 'init') {
+        if (ret.method) {
+          op = ret.method;
+        } else if (op === 'init') {
           op = 'replace';
         } else if (op === 'popstate') {
           op = 'push';
-        } else if (ret.method) {
-          op = ret.method;
         }
 
         _this2._beforeChange(op, _this2.normalize(ret));
