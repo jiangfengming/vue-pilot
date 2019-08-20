@@ -457,8 +457,9 @@ Arguments:
     dispatch: router.dispatch() is called.
 
 Returns:
-  true | undefined | null: The navigation is confirmed.
+  true | undefined: The navigation is confirmed.
   false: Prevent the navigation.
+  null: Do nothing.
   location: Redirect to this location.
             You can override the history manipulate method by providing location.method property, values are: 'push', 'replace', 'dispatch'.
 
