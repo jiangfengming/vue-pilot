@@ -9,7 +9,9 @@ export default class {
 
     Vue.mixin({
       beforeCreate() {
-        if (!this.$root.$options.router) return
+        if (!this.$root.$options.router) {
+          return
+        }
 
         if (this.$options.router) {
           this.$router = this.$options.router
@@ -18,7 +20,9 @@ export default class {
           this.$route = new Vue({
             data: { route: this.$router.current }
           }).route
-        } else {
+        }
+
+        else {
           this.$router = this.$root.$router
 
           if (this.$vnode && this.$vnode.data._routerView) {
@@ -81,10 +85,12 @@ export default class {
     for (const routerView of routerViews) {
       if (routerView.constructor === Array) {
         const names = routerView.map(c => c.name)
+
         const children = [
           ...routerView,
           ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))
         ]
+
         this._parseRoutes(children, depth, parsed)
       }
 
@@ -98,6 +104,7 @@ export default class {
           'GET',
           routerView.path,
           [...depth, children],
+
           (matchedRoute, { to, from, op }) => {
             to.params = matchedRoute.params
             to._layout = this._resolveRoute(to, matchedRoute.handler)
@@ -112,6 +119,7 @@ export default class {
           routerView,
           ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
         ]
+
         this._parseRoutes(routerView.children, [...depth, children], parsed)
       }
     }
@@ -141,7 +149,9 @@ export default class {
         op
       })
 
-      if (!_route) return false
+      if (!_route) {
+        return false
+      }
 
       let promise = Promise.resolve(true)
 
@@ -153,14 +163,19 @@ export default class {
         promise = promise.then(() =>
           Promise.resolve(hook(route, this.current, op)).then(result => {
             // if the hook abort or redirect the navigation, cancel the promise chain.
-            if (!(result === true || result == null)) throw result
+            if (result !== undefined && result !== true) {
+              throw result
+            }
           })
         )
       )
 
       promise.catch(e => {
-        if (e instanceof Error) throw e // encountered unexpected error
-        else return e // the result of cancelled promise
+        if (e instanceof Error) {
+          throw e // encountered unexpected error
+        } else {
+          return e // the result of cancelled promise
+        }
       }).then(result => resolve(result))
     })
   }
@@ -177,7 +192,9 @@ export default class {
     this._afterChangeHooks.forEach(hook =>
       promise = promise.then(() =>
         Promise.resolve(hook(to.route, this.current)).then(result => {
-          if (result === false) throw result
+          if (result === false) {
+            throw result
+          }
         })
       )
     )
@@ -187,7 +204,9 @@ export default class {
         Object.assign(this.current, to.route)
       }).catch(e => this._handleError(e))
     }).catch(e => {
-      if (e !== false) throw e
+      if (e !== false) {
+        throw e
+      }
     })
   }
 
@@ -220,7 +239,9 @@ export default class {
     for (const name in routerViews) {
       const routerView = routerViews[name]
 
-      if (routerView.constructor === Array || routerView.path) continue
+      if (routerView.constructor === Array || routerView.path) {
+        continue
+      }
 
       const v = resolved[name] = { props: routerView.props }
 

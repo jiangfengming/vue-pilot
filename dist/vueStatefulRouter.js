@@ -133,7 +133,9 @@ function () {
       beforeCreate: function beforeCreate() {
         var _this = this;
 
-        if (!this.$root.$options.router) return;
+        if (!this.$root.$options.router) {
+          return;
+        }
 
         if (this.$options.router) {
           this.$router = this.$options.router; // make current route reactive
@@ -296,20 +298,28 @@ function () {
         op: op
       });
 
-      if (!_route) return false;
+      if (!_route) {
+        return false;
+      }
+
       var promise = Promise.resolve(true);
       [].concat(_this3.current.path ? _this3.current._beforeLeaveHooksInComp : [], // not landing page
       _this3._beforeChangeHooks, route._beforeEnterHooks).forEach(function (hook) {
         return promise = promise.then(function () {
           return Promise.resolve(hook(route, _this3.current, op)).then(function (result) {
             // if the hook abort or redirect the navigation, cancel the promise chain.
-            if (!(result === true || result == null)) throw result;
+            if (result !== undefined && result !== true) {
+              throw result;
+            }
           });
         });
       });
       promise["catch"](function (e) {
-        if (e instanceof Error) throw e; // encountered unexpected error
-        else return e; // the result of cancelled promise
+        if (e instanceof Error) {
+          throw e; // encountered unexpected error
+        } else {
+            return e; // the result of cancelled promise
+          }
       }).then(function (result) {
         return resolve(result);
       });
@@ -332,7 +342,9 @@ function () {
     this._afterChangeHooks.forEach(function (hook) {
       return promise = promise.then(function () {
         return Promise.resolve(hook(to.route, _this4.current)).then(function (result) {
-          if (result === false) throw result;
+          if (result === false) {
+            throw result;
+          }
         });
       });
     });
@@ -346,7 +358,9 @@ function () {
         return _this4._handleError(e);
       });
     })["catch"](function (e) {
-      if (e !== false) throw e;
+      if (e !== false) {
+        throw e;
+      }
     });
   };
 
@@ -405,7 +419,11 @@ function () {
 
     var _loop2 = function _loop2(name) {
       var routerView = routerViews[name];
-      if (routerView.constructor === Array || routerView.path) return "continue";
+
+      if (routerView.constructor === Array || routerView.path) {
+        return "continue";
+      }
+
       var v = resolved[name] = {
         props: routerView.props
       };
