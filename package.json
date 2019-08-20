@@ -22,16 +22,16 @@
     "url": "https://github.com/jiangfengming/vue-stateful-router/issues"
   },
   "dependencies": {
-    "spa-history": "^0.8.3",
+    "spa-history": "^0.9.0",
     "url-router": "^7.1.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.4",
-    "@babel/preset-env": "^7.5.4",
-    "eslint": "^5.16.0",
-    "eslint-config-enough": "^0.3.5",
-    "local-web-server": "^3.0.4",
-    "rollup": "^1.17.0",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "eslint": "^6.2.0",
+    "eslint-config-enough": "^0.3.6",
+    "local-web-server": "^3.0.7",
+    "rollup": "^1.19.4",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-node-resolve": "^5.2.0"
   },

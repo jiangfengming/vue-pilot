@@ -86,7 +86,9 @@ export default class {
           ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))
         ]
         this._parseRoutes(children, depth, parsed)
-      } else if (routerView.path) {
+      }
+
+      else if (routerView.path) {
         const children = [
           routerView,
           ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
@@ -103,7 +105,9 @@ export default class {
             return routerView.test ? routerView.test(to, from, op) : true
           }
         ])
-      } else if (routerView.children) {
+      }
+
+      else if (routerView.children) {
         const children = [
           routerView,
           ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)

@@ -185,7 +185,7 @@ function () {
     }
 
     Promise.resolve(this.beforeChange(to, this.current, op)).then(function (ret) {
-      if (ret == null || ret === true) {
+      if (ret === undefined || ret === true) {
         if (op === 'push' || op === 'replace') {
           _this2.__changeHistory(op, to);
         }
@@ -193,21 +193,24 @@ function () {
         _this2.current = to;
 
         _this2.change(to);
-      } else if (ret.constructor === String || ret.constructor === Object) {
-        if (ret.method) {
-          op = ret.method;
-        } else if (op === 'init') {
-          op = 'replace';
-        } else if (op === 'popstate') {
-          op = 'push';
-        }
-
-        _this2._beforeChange(op, _this2.normalize(ret));
       } else if (ret === false) {
         if (op === 'popstate') {
           _this2.__changeHistory('push', _this2.current);
         }
-      }
+      } // do nothing if returns null
+      else if (ret === null) {
+          return;
+        } else if (ret.constructor === String || ret.constructor === Object) {
+          if (ret.method) {
+            op = ret.method;
+          } else if (op === 'init') {
+            op = 'replace';
+          } else if (op === 'popstate') {
+            op = 'push';
+          }
+
+          _this2._beforeChange(op, _this2.normalize(ret));
+        }
     });
   };
 
