@@ -82,13 +82,13 @@ const routes = [
     path: '/props-func/:bar',
     component: VFoo,
     meta: { baz: 'one' },
-    props: route => ({ foo: route.query.get('foo'), bar: route.params.bar, baz: route.meta.baz })
+    props: route => ({ foo: route.query.string('foo'), bar: route.params.string('bar'), baz: route.meta.baz })
   },
 
   {
     path: /^\/regex\/(\d+)$/,
     component: VFoo,
-    props: route => ({ foo: route.params.$1 })
+    props: route => ({ foo: route.params.int('$1') })
   },
 
   {

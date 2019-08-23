@@ -106,8 +106,8 @@ const routes = [
     // props can be a factory function, it receives the current route object as the first argument.
     // see route object definition below to see what info can get.
     props: route => ({
-      articleId: route.params.id,
-      foo: route.query.get('foo'),
+      articleId: route.params.int('id'),
+      foo: route.query.string('foo'),
       bar: route.state.bar
     }),
 
@@ -121,8 +121,8 @@ const routes = [
     // path can be RegExp
     path: /^\/regex\/(\d+)$/,
     component: VFoo,
-    // the subexpressions are stored as route.params.$1, route.params.$2, ...
-    props: route => ({ foo: route.params.$1 })
+    // the subexpressions are stored as $1, $2, ...
+    props: route => ({ foo: route.params.int('$1') })
   },
 
   {
@@ -200,7 +200,7 @@ const routes = [
           component: { /* ... */},
 
           // meta can be a factory function, the first argument is the current route object
-          meta: route => ({ activeTab: route.query.get('active') })
+          meta: route => ({ activeTab: route.query.string('active') })
         },
 
         // define a catch-all route
@@ -224,7 +224,7 @@ A route object contains the information of the matched route. It can be get from
 ```js
 {
   path, // router internal path, which has stripped the protocol, host, and base path.
-  query, // URLSearchParams object. https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+  query, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
   hash, // url hash
   fullPath, // path + query + hash
 
@@ -233,7 +233,7 @@ A route object contains the information of the matched route. It can be get from
   url,
 
   state, // state object
-  params, // path params
+  params, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
   meta // meta collected from route definition
 }
 ```
@@ -307,7 +307,7 @@ router.normalize('http://www.example.com/foo/bar/home?a=1#b')
 /*
   {
     path: '/home',
-    query: new URLSearchParams('a=1'),
+    query: new StringCaster(new URLSearchParams('a=1')),
     hash: '#b',
     fullPath: '/home?a=1#b',
     state: {}
