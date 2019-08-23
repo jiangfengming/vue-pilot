@@ -17,8 +17,8 @@
   <router-link to="/layout/foo">/layout/foo</router-link><br>
   <router-link to="/layout/bar">/layout/bar</router-link><br>
   <router-link :to="{ path: '/', hidden: true }">hidden /</router-link><br>
-  <router-link :to="{ path: '/' }" method="replace">replace /</router-link><br>
-  <router-link :to="{ path: '/' }" method="dispatch">dispatch /</router-link><br>
+  <router-link :to="{ path: '/' }" action="replace">replace /</router-link><br>
+  <router-link :to="{ path: '/' }" action="dispatch">dispatch /</router-link><br>
   <router-link to="/404">/404</router-link><br>
   <router-link to="/undefined-component">/undefined-component</router-link><br>
   <router-link to="/undefined-children">/undefined-children</router-link><br>
@@ -31,7 +31,7 @@
 
 <script type="module">
 import Vue from 'https://unpkg.com/vue/dist/vue.esm.browser.js'
-import { PathRouter, HashRouter } from './dist/vueStatefulRouter.bundle.mjs'
+import { PathRouter, HashRouter } from '/dist/vueStatefulRouter.bundle.mjs'
 
 const Router = confirm('Use PathRouter ?') ? PathRouter : HashRouter
 
@@ -71,9 +71,9 @@ const routes = [
     path: '/props-obj',
     component: VFoo,
     props: { foo: 'hallo' },
-    beforeEnter(to, from, op) {
-      if (op === 'push') {
-        return Object.assign({}, to, { method: 'replace' })
+    beforeEnter(to, from, action) {
+      if (action === 'push') {
+        return Object.assign({}, to, { action: 'replace' })
       }
     }
   },
@@ -213,7 +213,7 @@ const routes = [
 
   {
     path: '/test-func',
-    test(to, from, op) {
+    test(to, from, action) {
       return from.path !== null
     },
     component: {

@@ -9,7 +9,9 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    if (!parent.$root.$route.path) return
+    if (!parent.$root.$route.path) {
+      return
+    }
 
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
@@ -29,7 +31,10 @@ export default {
 
     if (data._routerView.component) {
       if (data._routerView.props) {
-        const viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props
+        const viewProps = data._routerView.props instanceof Function
+          ? data._routerView.props(parent.$root.$route)
+          : data._routerView.props
+
         Object.assign(data, { props: viewProps })
       }
 

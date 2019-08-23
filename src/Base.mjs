@@ -83,12 +83,12 @@ export default class {
 
   _parseRoutes(routerViews, depth = [], parsed = []) {
     for (const routerView of routerViews) {
-      if (routerView.constructor === Array) {
+      if (routerView instanceof Array) {
         const names = routerView.map(c => c.name)
 
         const children = [
           ...routerView,
-          ...routerViews.filter(v => v.constructor !== Array && !v.path && !names.includes(v.name))
+          ...routerViews.filter(v => !(v instanceof Array) && !v.path && !names.includes(v.name))
         ]
 
         this._parseRoutes(children, depth, parsed)
@@ -97,7 +97,7 @@ export default class {
       else if (routerView.path) {
         const children = [
           routerView,
-          ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
+          ...routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
         ]
 
         parsed.push([
@@ -117,7 +117,7 @@ export default class {
       else if (routerView.children) {
         const children = [
           routerView,
-          ...routerViews.filter(v => v.constructor !== Array && !v.path && v.name !== routerView.name)
+          ...routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
         ]
 
         this._parseRoutes(routerView.children, [...depth, children], parsed)
@@ -182,7 +182,7 @@ export default class {
 
   _generateMeta(route) {
     if (route._meta.length) {
-      route._meta.forEach(m => Object.assign(route.meta, m.constructor === Function ? m(route) : m))
+      route._meta.forEach(m => Object.assign(route.meta, m instanceof Function ? m(route) : m))
     }
   }
 
@@ -239,7 +239,7 @@ export default class {
     for (const name in routerViews) {
       const routerView = routerViews[name]
 
-      if (routerView.constructor === Array || routerView.path) {
+      if (routerView instanceof Array || routerView.path) {
         continue
       }
 
@@ -253,7 +253,7 @@ export default class {
         route._beforeEnterHooks.push(routerView.beforeEnter)
       }
 
-      if (routerView.component && routerView.component.constructor === Function) {
+      if (routerView.component && routerView.component instanceof Function) {
         route._asyncComponents.push(() => routerView.component().then(m => v.component = m.__esModule ? m.default : m))
       } else {
         v.component = routerView.component

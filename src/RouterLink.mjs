@@ -10,7 +10,7 @@ export default {
       type: [String, Object]
     },
 
-    method: {
+    action: {
       type: String,
       default: 'push' // push, replace, dispatch
     }
@@ -20,7 +20,7 @@ export default {
     function click(e) {
       if (!e.defaultPrevented && props.to) {
         e.preventDefault()
-        parent.$router[props.method](props.to)
+        parent.$router[props.action](props.to)
       }
     }
 

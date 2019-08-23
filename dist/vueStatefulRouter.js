@@ -52,7 +52,10 @@ var RouterView = {
         children = _ref.children,
         parent = _ref.parent,
         data = _ref.data;
-    if (!parent.$root.$route.path) return;
+
+    if (!parent.$root.$route.path) {
+      return;
+    }
 
     while (parent) {
       if (parent.$vnode && parent.$vnode.data._routerView) {
@@ -72,7 +75,7 @@ var RouterView = {
 
     if (data._routerView.component) {
       if (data._routerView.props) {
-        var viewProps = data._routerView.props.constructor === Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
+        var viewProps = data._routerView.props instanceof Function ? data._routerView.props(parent.$root.$route) : data._routerView.props;
         Object.assign(data, {
           props: viewProps
         });
@@ -92,7 +95,7 @@ var RouterLink = {
     to: {
       type: [String, Object]
     },
-    method: {
+    action: {
       type: String,
       "default": 'push' // push, replace, dispatch
 
@@ -108,7 +111,7 @@ var RouterLink = {
     function click(e) {
       if (!e.defaultPrevented && props.to) {
         e.preventDefault();
-        parent.$router[props.method](props.to);
+        parent.$router[props.action](props.to);
       }
     }
 
@@ -229,18 +232,18 @@ function () {
 
       var routerView = _ref2;
 
-      if (routerView.constructor === Array) {
+      if (routerView instanceof Array) {
         var names = routerView.map(function (c) {
           return c.name;
         });
         var children = [].concat(routerView, routerViews.filter(function (v) {
-          return v.constructor !== Array && !v.path && !names.includes(v.name);
+          return !(v instanceof Array) && !v.path && !names.includes(v.name);
         }));
 
         _this2._parseRoutes(children, depth, parsed);
       } else if (routerView.path) {
         var _children = [routerView].concat(routerViews.filter(function (v) {
-          return v.constructor !== Array && !v.path && v.name !== routerView.name;
+          return !(v instanceof Array) && !v.path && v.name !== routerView.name;
         }));
 
         parsed.push(['GET', routerView.path, [].concat(depth, [_children]), function (matchedRoute, _ref3) {
@@ -256,7 +259,7 @@ function () {
         }]);
       } else if (routerView.children) {
         var _children2 = [routerView].concat(routerViews.filter(function (v) {
-          return v.constructor !== Array && !v.path && v.name !== routerView.name;
+          return !(v instanceof Array) && !v.path && v.name !== routerView.name;
         }));
 
         _this2._parseRoutes(routerView.children, [].concat(depth, [_children2]), parsed);
@@ -329,7 +332,7 @@ function () {
   _proto._generateMeta = function _generateMeta(route) {
     if (route._meta.length) {
       route._meta.forEach(function (m) {
-        return Object.assign(route.meta, m.constructor === Function ? m(route) : m);
+        return Object.assign(route.meta, m instanceof Function ? m(route) : m);
       });
     }
   };
@@ -420,7 +423,7 @@ function () {
     var _loop2 = function _loop2(name) {
       var routerView = routerViews[name];
 
-      if (routerView.constructor === Array || routerView.path) {
+      if (routerView instanceof Array || routerView.path) {
         return "continue";
       }
 
@@ -436,7 +439,7 @@ function () {
         route._beforeEnterHooks.push(routerView.beforeEnter);
       }
 
-      if (routerView.component && routerView.component.constructor === Function) {
+      if (routerView.component && routerView.component instanceof Function) {
         route._asyncComponents.push(function () {
           return routerView.component().then(function (m) {
             return v.component = m.__esModule ? m["default"] : m;
