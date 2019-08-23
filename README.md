@@ -263,7 +263,7 @@ The `<router-link>` is a navigation component, it usally renders an `<a>` elemen
 
 `tag`: The HTML tag to render. Default: `<a>`.
 
-`method`: `push`, `replace` or `dispatch`. Default: `push`.
+`action`: `push`, `replace` or `dispatch`. Default: `push`.
 
 
 ## APIs
@@ -461,7 +461,7 @@ Returns:
   false: Prevent the navigation.
   null: Do nothing.
   location: Redirect to this location.
-            You can override the history manipulate method by providing location.method property, values are: 'push', 'replace', 'dispatch'.
+            You can override the history manipulate action by providing location.action property, values are: 'push', 'replace', 'dispatch'.
 
 Return value can be a Promise.
 ```
