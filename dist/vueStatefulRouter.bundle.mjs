@@ -1065,6 +1065,11 @@ function () {
   _default.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
+
+    Vue.config.optionMergeStrategies.beforeRouteLeave = function (parent, child) {
+      return child ? (parent || []).concat(child) : parent;
+    };
+
     Vue.mixin({
       beforeCreate: function beforeCreate() {
         var _this = this;
@@ -1073,36 +1078,18 @@ function () {
           return;
         }
 
-        if (this.$options.router) {
+        if (this.$root === this) {
           this.$router = this.$options.router; // make current route reactive
 
-          this.$route = new Vue({
-            data: {
-              route: this.$router.current
-            }
-          }).route;
+          this.$route = Vue.observable(this.$router.current);
         } else {
           this.$router = this.$root.$router;
+          this.$route = this.$root.$route;
 
-          if (this.$vnode && this.$vnode.data._routerView) {
-            var hooks = this.$root.$route._beforeLeaveHooksInComp;
-            var options = this.constructor.extendOptions;
-
-            if (options["extends"] && options["extends"].beforeRouteLeave) {
-              hooks.push(options["extends"].beforeRouteLeave.bind(this));
-            }
-
-            if (options.mixins) {
-              options.mixins.forEach(function (mixin) {
-                if (mixin.beforeRouteLeave) {
-                  hooks.push(mixin.beforeRouteLeave.bind(_this));
-                }
-              });
-            }
-
-            if (options.beforeRouteLeave) {
-              hooks.push(options.beforeRouteLeave.bind(this));
-            }
+          if (this.$vnode && this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+            Array.prototype.push.apply(this.$root.$route._beforeLeaveHooksInComp, this.$options.beforeRouteLeave.map(function (f) {
+              return f.bind(_this);
+            }));
           }
         }
       }
@@ -1369,7 +1356,7 @@ function () {
       }
 
       if (routerView.beforeEnter) {
-        route._beforeEnterHooks.push(routerView.beforeEnter);
+        Array.prototype.push.apply(route._beforeEnterHooks, [].concat(routerView.beforeEnter));
       }
 
       if (routerView.component && routerView.component instanceof Function) {

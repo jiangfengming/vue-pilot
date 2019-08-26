@@ -7,43 +7,30 @@ export default class {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
 
+    Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) => {
+      return child ? (parent || []).concat(child) : parent
+    }
+
     Vue.mixin({
       beforeCreate() {
         if (!this.$root.$options.router) {
           return
         }
 
-        if (this.$options.router) {
+        if (this.$root === this) {
           this.$router = this.$options.router
 
           // make current route reactive
-          this.$route = new Vue({
-            data: { route: this.$router.current }
-          }).route
-        }
-
-        else {
+          this.$route = Vue.observable(this.$router.current)
+        } else {
           this.$router = this.$root.$router
+          this.$route = this.$root.$route
 
-          if (this.$vnode && this.$vnode.data._routerView) {
-            const hooks = this.$root.$route._beforeLeaveHooksInComp
-            const options = this.constructor.extendOptions
-
-            if (options.extends && options.extends.beforeRouteLeave) {
-              hooks.push(options.extends.beforeRouteLeave.bind(this))
-            }
-
-            if (options.mixins) {
-              options.mixins.forEach(mixin => {
-                if (mixin.beforeRouteLeave) {
-                  hooks.push(mixin.beforeRouteLeave.bind(this))
-                }
-              })
-            }
-
-            if (options.beforeRouteLeave) {
-              hooks.push(options.beforeRouteLeave.bind(this))
-            }
+          if (this.$options.beforeRouteLeave) {
+            Array.prototype.push.apply(
+              this.$root.$route._beforeLeaveHooksInComp,
+              this.$options.beforeRouteLeave.map(f => f.bind(this))
+            )
           }
         }
       }
@@ -81,53 +68,60 @@ export default class {
     this._errorHooks.push(hook)
   }
 
-  _parseRoutes(routerViews, depth = [], parsed = []) {
+  _parseRoutes(routerViews, layers = [], parsed = []) {
     for (const routerView of routerViews) {
       if (routerView instanceof Array) {
         const names = routerView.map(c => c.name)
 
-        const children = [
-          ...routerView,
-          ...routerViews.filter(v => !(v instanceof Array) && !v.path && !names.includes(v.name))
-        ]
+        const children = [].concat(
+          // if `routerView` is an array,
+          // the final router view (has `path` field) must be in `routerView`.
+          // so we only need sibling layout views (no `path`).
+          // and layout views in `routerView` has higher priority than which in `routerViews`
+          routerViews.filter(v => !(v instanceof Array) && !v.path && !names.includes(v.name)),
+          routerView
+        )
 
-        this._parseRoutes(children, depth, parsed)
-      }
-
-      else if (routerView.path) {
-        const children = [
-          routerView,
-          ...routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-        ]
-
-        parsed.push([
-          'GET',
-          routerView.path,
-          [...depth, children],
-
-          (matchedRoute, { to, from, op }) => {
-            to.params = matchedRoute.params
-            to._layout = this._resolveRoute(to, matchedRoute.handler)
-            this._generateMeta(to)
-            return routerView.test ? routerView.test(to, from, op) : true
-          }
-        ])
+        this._parseRoutes(children, layers, parsed)
       }
 
       else if (routerView.children) {
-        const children = [
-          routerView,
-          ...routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-        ]
+        // if `routerView` has children,
+        // the final router view must be in children.
+        // we only need sibling views in `routerViews` that name isn't routerView.name
+        const newLayer = routerViews
+          .filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
+          .concat(routerView)
 
-        this._parseRoutes(routerView.children, [...depth, children], parsed)
+        this._parseRoutes(routerView.children, layers.concat([newLayer]), parsed)
+      }
+
+      else if (routerView.path) {
+        // if `routerView` has `path`,
+        // it is the final router view.
+        // we only need sibling views in `routerViews` that name isn't routerView.name
+        const newLayer = routerViews
+          .filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
+          .concat(routerView)
+
+        parsed.push([
+          routerView.path,
+          layers.concat([newLayer]),
+
+          (matchedRoute, { to, from, action }) => {
+            to.params = matchedRoute.params
+            to._layout = this._resolveRoute(to, matchedRoute.handler)
+            this._generateMeta(to)
+            return routerView.test ? routerView.test(to, from, action) : true
+          }
+        ])
       }
     }
 
     return parsed
   }
 
-  _beforeChange(to, from, op) {
+  _beforeChange(to, from, action) {
     return new Promise(resolve => {
       const route = to.route = {
         path: to.path,
@@ -143,10 +137,10 @@ export default class {
         _meta: []
       }
 
-      const _route = this._urlRouter.find('GET', to.path, {
+      const _route = this._urlRouter.find(to.path, {
         to: route,
         from: this.current,
-        op
+        action
       })
 
       if (!_route) {
@@ -161,7 +155,7 @@ export default class {
         route._beforeEnterHooks
       ).forEach(hook =>
         promise = promise.then(() =>
-          Promise.resolve(hook(route, this.current, op)).then(result => {
+          Promise.resolve(hook(route, this.current, action)).then(result => {
             // if the hook abort or redirect the navigation, cancel the promise chain.
             if (result !== undefined && result !== true) {
               throw result
@@ -214,11 +208,11 @@ export default class {
     this._errorHooks.forEach(hook => hook(e))
   }
 
-  _resolveRoute(route, depth) {
+  _resolveRoute(route, layers) {
     const layout = {}
     let current = layout
 
-    for (const routerViews of depth) {
+    for (const routerViews of layers) {
       current.children = {}
 
       for (const routerView of routerViews) {
@@ -250,7 +244,7 @@ export default class {
       }
 
       if (routerView.beforeEnter) {
-        route._beforeEnterHooks.push(routerView.beforeEnter)
+        Array.prototype.push.apply(route._beforeEnterHooks, [].concat(routerView.beforeEnter))
       }
 
       if (routerView.component && routerView.component instanceof Function) {
@@ -294,9 +288,9 @@ export default class {
   setState(state) {
     this._history.setState(state)
 
-    // Vue can not react if add new prop into state
+    // Vue can not react if add new props into an existing object
     // so we replace it with a new state object
-    this.current.state = { ...this._history.current.state }
+    this.current.state = Object.assign({}, this._history.current.state)
 
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta

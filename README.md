@@ -129,7 +129,7 @@ const routes = [
     path: '/route-test',
 
     // only matched if test() returns true
-    test(to, from, op) {
+    test(to, from, action) {
       return true
     },
 

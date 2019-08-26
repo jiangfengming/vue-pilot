@@ -24,24 +24,8 @@ export default {
       }
     }
 
-    return h(
-      props.tag,
-
-      {
-        ...data,
-
-        attrs: {
-          ...data.attrs,
-          href: props.to ? parent.$router.url(props.to) : 'javascript:'
-        },
-
-        on: {
-          ...listeners,
-          click: listeners.click ? [].concat(listeners.click, click) : click
-        }
-      },
-
-      children
-    )
+    data.attrs.href = props.to ? parent.$router.url(props.to) : 'javascript:'
+    listeners.click = listeners.click ? [].concat(listeners.click, click) : click
+    return h(props.tag, data, children)
   }
 }
