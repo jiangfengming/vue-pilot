@@ -24,13 +24,9 @@ export default class {
           this.$route = Vue.observable(this.$router.current)
         } else {
           this.$router = this.$root.$router
-          this.$route = this.$root.$route
 
-          if (this.$options.beforeRouteLeave) {
-            Array.prototype.push.apply(
-              this.$root.$route._beforeLeaveHooksInComp,
-              this.$options.beforeRouteLeave.map(f => f.bind(this))
-            )
+          if (this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
+            this.$vnode.data._routerView.beforeLeave = this.$options.beforeRouteLeave.map(f => f.bind(this))
           }
         }
       }
@@ -68,45 +64,36 @@ export default class {
     this._errorHooks.push(hook)
   }
 
-  _parseRoutes(routerViews, layers = [], parsed = []) {
-    for (const routerView of routerViews) {
+  _parseRoutes(routerViews, tmpLayer = [], layers = [], parsed = []) {
+    routerViews.forEach(routerView => {
       if (routerView instanceof Array) {
-        const names = routerView.map(c => c.name)
-
-        const children = [].concat(
-          // if `routerView` is an array,
-          // the final router view (has `path` field) must be in `routerView`.
-          // so we only need sibling layout views (no `path`).
-          // and layout views in `routerView` has higher priority than which in `routerViews`
-          routerViews.filter(v => !(v instanceof Array) && !v.path && !names.includes(v.name)),
-          routerView
-        )
-
-        this._parseRoutes(children, layers, parsed)
+        // if `routerView` is an array,
+        // the final router view (has `path` field) must be in `routerView`.
+        this._parseRoutes(routerView, tmpLayer.concat(routerViews), layers, parsed)
       }
 
       else if (routerView.children) {
-        // if `routerView` has children,
-        // the final router view must be in children.
-        // we only need sibling views in `routerViews` that name isn't routerView.name
-        const newLayer = routerViews
-          .filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-          .concat(routerView)
+        const layer =
+          // if `routerView` has children,
+          // the final router view must be in children.
+          // we only need sibling views in `routerViews` that name isn't routerView.name
+          routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
+            .concat(routerView)
 
-        this._parseRoutes(routerView.children, layers.concat([newLayer]), parsed)
+        this._parseRoutes(routerView.children, layers.concat([layer]), parsed)
       }
 
       else if (routerView.path) {
-        // if `routerView` has `path`,
-        // it is the final router view.
-        // we only need sibling views in `routerViews` that name isn't routerView.name
-        const newLayer = routerViews
-          .filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-          .concat(routerView)
+        const layer = [routerView].concat(
+          // if `routerView` has `path`,
+          // it is the final router view.
+          // we only need sibling views in `routerViews` that name isn't routerView.name
+          routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
+        )
 
         parsed.push([
           routerView.path,
-          layers.concat([newLayer]),
+          layers.concat([layer]),
 
           (matchedRoute, { to, from, action }) => {
             to.params = matchedRoute.params
@@ -116,7 +103,7 @@ export default class {
           }
         ])
       }
-    }
+    })
 
     return parsed
   }
@@ -210,19 +197,23 @@ export default class {
 
   _resolveRoute(route, layers) {
     const layout = {}
-    let current = layout
+    let node = layout
 
-    for (const routerViews of layers) {
-      current.children = {}
+    layers.forEach(layer => {
+      node.children = {}
 
-      for (const routerView of routerViews) {
-        current.children[routerView.name || 'default'] = Object.assign({}, routerView)
-      }
+      layer.forEach(routerView => {
+        const child = node.children[routerView.name || 'default'] = Object.assign({}, routerView)
 
-      current = current.children[routerViews[0].name || 'default']
-    }
+        if (child.children) {
 
-    delete current.path
+        }
+      })
+
+      node = node.children[layer[0].name || 'default']
+    })
+
+    delete node.path
 
     return this._resolveRouterViews(route, layout.children)
   }
