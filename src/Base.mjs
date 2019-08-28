@@ -6,6 +6,33 @@ export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
+
+    Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) => {
+      return child ? (parent || []).concat(child) : parent
+    }
+
+    Vue.mixin({
+      beforeCreate() {
+        const router = this.$root.$options.router
+
+        if (!router) {
+          return
+        }
+
+        this.$router = router
+
+        if (this.$root === this) {
+          this.$route = router.current = Vue.observable(router.current)
+        }
+
+        else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
+          Array.prototype.push.apply(
+            router.current._beforeLeave,
+            this.$options.beforeRouteLeave.map(f => f.bind(this))
+          )
+        }
+      }
+    })
   }
 
   constructor({ routes }) {
@@ -22,24 +49,26 @@ export default class {
       hash: null,
       state: null,
       params: null,
-      meta: null
+      meta: null,
+      _layout: null // make <router-view> reactive
     }
   }
 
   _parseRoutes(routerViews, siblings = [], layers = [], parsed = []) {
+    const sib = routerViews.filter(v => !(v instanceof Array) && !v.path)
+    const names = sib.map(v => v.name)
+    // router views in same array has higher priority than outer ones
+    siblings = siblings.filter(v => !names.includes(v.name)).concat(sib)
+
     routerViews.forEach(routerView => {
       if (routerView instanceof Array) {
-        let sib = routerViews.filter(v => !(v instanceof Array) && !v.path)
-        const names = sib.map(v => v.name)
-        // router views in same array has higher priority than outer ones
-        sib = siblings.filter(v => !names.includes(v.name)).concat(sib)
-        this._parseRoutes(routerView, sib, layers, parsed)
+        this._parseRoutes(routerView, siblings, layers, parsed)
       } else {
         const layer = siblings.filter(v => v.name !== routerView.name).concat(routerView)
         const _layers = layers.concat([layer])
 
         if (routerView.children) {
-          this._parseRoutes(routerView.children, _layers, parsed)
+          this._parseRoutes(routerView.children, siblings, _layers, parsed)
         } else if (routerView.path) {
           parsed.push([
             routerView.path,
@@ -62,6 +91,7 @@ export default class {
     to._meta = []
     to._test = []
     to._beforeEnter = []
+    to._beforeLeave = []
 
     const root = {}
     let routerView = root
@@ -84,16 +114,20 @@ export default class {
     routerViews.forEach(({ name = 'default', path, component, props, meta, test, beforeEnter, children }) => {
       const com = _routerViews[name] = { component, props }
 
+      if (path) {
+        com.path = path
+
+        if (beforeEnter) {
+          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter))
+        }
+      }
+
       if (meta) {
         route._meta.push(meta)
       }
 
       if (test) {
         Array.prototype.push.apply(route._test, [].concat(test))
-      }
-
-      if (path && beforeEnter) {
-        Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter))
       }
 
       if (children) {
@@ -153,7 +187,7 @@ export default class {
       return false
     }
 
-    const hooks = [].concat(from._getBeforeLeaveHooks(), to._beforeEnter, this._beforeChangeHooks)
+    const hooks = (this.current._beforeLeave || []).concat(to.route._beforeEnter, this._beforeChangeHooks)
 
     if (!hooks.length) {
       return true

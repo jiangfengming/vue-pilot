@@ -241,13 +241,9 @@ router.afterChange(to => {
   console.log(to)
 })
 
-router.onError(e => {
-  console.log('error:', e)
-})
-
 const app = new Vue({
-  el: '#app',
-  router
+  router,
+  el: '#app'
 })
 
 router.start()

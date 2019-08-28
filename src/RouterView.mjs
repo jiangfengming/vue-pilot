@@ -9,8 +9,7 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    const root = parent.$root
-    const route = root.$data.$route
+    const route = parent.$root.$route
 
     if (!route || !route._layout) {
       return
@@ -43,18 +42,6 @@ export default {
         : routerView.props
 
       Object.assign(data, { props: viewProps })
-    }
-
-    if (routerView.path) {
-      route._getBeforeLeaveHooks = () => {
-        const vm = parent.$children.find(c =>
-          c.$vnode.data._routerView && c.$vnode.data._routerView.name === props.name
-        )
-
-        return vm.$options.beforeRouteLeave ?
-          [].concat(vm.$options.beforeRouteLeave).map(f => f.bind(vm))
-          : []
-      }
     }
 
     data._routerView = routerView

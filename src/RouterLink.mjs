@@ -25,7 +25,11 @@ export default {
     }
 
     data.attrs.href = props.to ? parent.$router.url(props.to) : 'javascript:'
-    listeners.click = listeners.click ? [].concat(listeners.click, click) : click
+
+    data.on = Object.assign({}, listeners, {
+      click: listeners.click ? [].concat(listeners.click, click) : click
+    })
+
     return h(props.tag, data, children)
   }
 }
