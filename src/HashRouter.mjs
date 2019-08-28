@@ -7,7 +7,7 @@ export default class extends Base {
 
     this._history = new HashHistory({
       beforeChange: this._beforeChange.bind(this),
-      change: this._change.bind(this)
+      afterChange: this._afterChange.bind(this)
     })
   }
 }

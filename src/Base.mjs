@@ -6,31 +6,6 @@ export default class {
   static install(Vue) {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
-
-    Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) => {
-      return child ? (parent || []).concat(child) : parent
-    }
-
-    Vue.mixin({
-      beforeCreate() {
-        if (!this.$root.$options.router) {
-          return
-        }
-
-        if (this.$root === this) {
-          this.$router = this.$options.router
-
-          // make current route reactive
-          this.$route = Vue.observable(this.$router.current)
-        } else {
-          this.$router = this.$root.$router
-
-          if (this.$vnode.data._routerView && this.$options.beforeRouteLeave) {
-            this.$vnode.data._routerView.beforeLeave = this.$options.beforeRouteLeave.map(f => f.bind(this))
-          }
-        }
-      }
-    })
   }
 
   constructor({ routes }) {
@@ -38,30 +13,17 @@ export default class {
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
     this._afterChangeHooks = []
-    this._errorHooks = []
 
     this.current = {
       path: null,
-      query: {},
-      hash: null,
       fullPath: null,
-      state: {},
-      params: {},
-      meta: {},
-      _routerViews: null
+      url: null,
+      query: null,
+      hash: null,
+      state: null,
+      params: null,
+      meta: null
     }
-  }
-
-  beforeChange(hook) {
-    this._beforeChangeHooks.push(hook)
-  }
-
-  afterChange(hook) {
-    this._afterChangeHooks.push(hook)
-  }
-
-  onError(hook) {
-    this._errorHooks.push(hook)
   }
 
   _parseRoutes(routerViews, siblings = [], layers = [], parsed = []) {
@@ -72,183 +34,163 @@ export default class {
         // router views in same array has higher priority than outer ones
         sib = siblings.filter(v => !names.includes(v.name)).concat(sib)
         this._parseRoutes(routerView, sib, layers, parsed)
-      }
+      } else {
+        const layer = siblings.filter(v => v.name !== routerView.name).concat(routerView)
+        const _layers = layers.concat([layer])
 
-      else if (routerView.children) {
-        const layer =
-          routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-            .concat(routerView)
+        if (routerView.children) {
+          this._parseRoutes(routerView.children, _layers, parsed)
+        } else if (routerView.path) {
+          parsed.push([
+            routerView.path,
+            _layers,
 
-        this._parseRoutes(routerView.children, layers.concat([layer]), parsed)
-      }
-
-      else if (routerView.path) {
-        const layer = [routerView].concat(
-          // if `routerView` has `path`,
-          // it is the final router view.
-          // we only need sibling views in `routerViews` that name isn't routerView.name
-          routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
-        )
-
-        parsed.push([
-          routerView.path,
-          layers.concat([layer]),
-
-          (matchedRoute, { to, from, action }) => {
-            to.params = matchedRoute.params
-            to._layout = this._resolveRoute(to, matchedRoute.handler)
-            this._generateMeta(to)
-            return routerView.test ? routerView.test(to, from, action) : true
-          }
-        ])
+            (matchedRoute, { to, from, action }) => {
+              this._resolveRoute(to, from, matchedRoute)
+              return this._test(to, from, action)
+            }
+          ])
+        }
       }
     })
 
     return parsed
   }
 
-  _beforeChange(to, from, action) {
-    return new Promise(resolve => {
-      const route = to.route = {
-        path: to.path,
-        fullPath: to.fullPath,
-        url: to.url,
-        query: to.query,
-        hash: to.hash,
-        state: to.state,
-        meta: {},
-        _beforeLeaveHooksInComp: [],
-        _beforeEnterHooks: [],
-        _asyncComponents: [],
-        _meta: []
-      }
+  _resolveRoute(to, from, matchedRoute) {
+    to.params = matchedRoute.params
+    to._meta = []
+    to._test = []
+    to._beforeEnter = []
 
-      const _route = this._urlRouter.find(to.path, {
-        to: route,
-        from: this.current,
-        action
-      })
+    const root = {}
+    let routerView = root
 
-      if (!_route) {
-        return false
-      }
-
-      let promise = Promise.resolve(true)
-
-      ;[].concat(
-        this.current.path ? this.current._beforeLeaveHooksInComp : [], // not landing page
-        this._beforeChangeHooks,
-        route._beforeEnterHooks
-      ).forEach(hook =>
-        promise = promise.then(() =>
-          Promise.resolve(hook(route, this.current, action)).then(result => {
-            // if the hook abort or redirect the navigation, cancel the promise chain.
-            if (result !== undefined && result !== true) {
-              throw result
-            }
-          })
-        )
-      )
-
-      promise.catch(e => {
-        if (e instanceof Error) {
-          throw e // encountered unexpected error
-        } else {
-          return e // the result of cancelled promise
-        }
-      }).then(result => resolve(result))
+    matchedRoute.handler.forEach(layer => {
+      const last = Object.assign({}, layer[layer.length - 1])
+      delete last.children
+      const _layer = layer.slice(0, -1).concat(last)
+      routerView.children = this._resolveRouterViews(_layer, to)
+      routerView = routerView.children[last.name || 'default']
     })
+
+    to._layout = root.children
+    this._generateMeta(to)
+  }
+
+  _resolveRouterViews(routerViews, route) {
+    const _routerViews = {}
+
+    routerViews.forEach(({ name = 'default', path, component, props, meta, test, beforeEnter, children }) => {
+      const com = _routerViews[name] = { component, props }
+
+      if (meta) {
+        route._meta.push(meta)
+      }
+
+      if (test) {
+        Array.prototype.push.apply(route._test, [].concat(test))
+      }
+
+      if (path && beforeEnter) {
+        Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter))
+      }
+
+      if (children) {
+        children = children.filter(v => !(v instanceof Array) && !v.path)
+        com.children = this._resolveRouterViews(children, route)
+      }
+    })
+
+    return _routerViews
   }
 
   _generateMeta(route) {
+    route.meta = {}
+
     if (route._meta.length) {
       route._meta.forEach(m => Object.assign(route.meta, m instanceof Function ? m(route) : m))
     }
   }
 
-  _change(to) {
+  setState(state) {
+    this._history.setState(state)
+
+    // Vue can not react if add new props into an existing object
+    // so we replace it with a new state object
+    this.current.state = Object.assign({}, this._history.current.state)
+
+    // meta factory function may use state object to generate meta object
+    // so we need to re-generate a new meta
+    this._generateMeta(this.current)
+  }
+
+  _test(to, from, action) {
+    return !to._test.some(t => !t(to, from, action))
+  }
+
+  beforeChange(hook) {
+    this._beforeChangeHooks.push(hook)
+  }
+
+  _beforeChange(to, from, action) {
+    const route = to.route = {
+      path: to.path,
+      fullPath: to.fullPath,
+      url: to.url,
+      query: to.query,
+      hash: to.hash,
+      state: to.state
+    }
+
+    const _route = this._urlRouter.find(to.path, {
+      to: route,
+      from: this.current,
+      action
+    })
+
+    if (!_route) {
+      return false
+    }
+
+    const hooks = [].concat(from._getBeforeLeaveHooks(), to._beforeEnter, this._beforeChangeHooks)
+
+    if (!hooks.length) {
+      return true
+    }
+
     let promise = Promise.resolve(true)
 
-    this._afterChangeHooks.forEach(hook =>
+    hooks.forEach(hook =>
       promise = promise.then(() =>
-        Promise.resolve(hook(to.route, this.current)).then(result => {
-          if (result === false) {
+        Promise.resolve(hook(route, this.current, action)).then(result => {
+          // if the hook abort or redirect the navigation, cancel the promise chain.
+          if (result !== undefined && result !== true) {
             throw result
           }
         })
       )
     )
 
-    promise.then(() => {
-      Promise.all(to.route._asyncComponents.map(comp => comp())).then(() => {
-        Object.assign(this.current, to.route)
-      }).catch(e => this._handleError(e))
-    }).catch(e => {
-      if (e !== false) {
+    return promise.catch(e => {
+      if (e instanceof Error) {
+        // encountered unexpected error
         throw e
-      }
-    })
-  }
-
-  _handleError(e) {
-    this._errorHooks.forEach(hook => hook(e))
-  }
-
-  _resolveRoute(route, layers) {
-    const layout = {}
-    let node = layout
-
-    layers.forEach(layer => {
-      node.children = {}
-
-      layer.forEach(routerView => {
-        const child = node.children[routerView.name || 'default'] = Object.assign({}, routerView)
-
-        if (child.children) {
-
-        }
-      })
-
-      node = node.children[layer[0].name || 'default']
-    })
-
-    delete node.path
-
-    return this._resolveRouterViews(route, layout.children)
-  }
-
-  _resolveRouterViews(route, routerViews) {
-    const resolved = {}
-
-    for (const name in routerViews) {
-      const routerView = routerViews[name]
-
-      if (routerView instanceof Array || routerView.path) {
-        continue
-      }
-
-      const v = resolved[name] = { props: routerView.props }
-
-      if (routerView.meta) {
-        route._meta.push(routerView.meta)
-      }
-
-      if (routerView.beforeEnter) {
-        Array.prototype.push.apply(route._beforeEnterHooks, [].concat(routerView.beforeEnter))
-      }
-
-      if (routerView.component && routerView.component instanceof Function) {
-        route._asyncComponents.push(() => routerView.component().then(m => v.component = m.__esModule ? m.default : m))
       } else {
-        v.component = routerView.component
+        // abort or redirect
+        return e
       }
+    })
+  }
 
-      if (routerView.children) {
-        v.children = this._resolveRouterViews(route, routerView.children)
-      }
-    }
+  afterChange(hook) {
+    this._afterChangeHooks.push(hook)
+  }
 
-    return resolved
+  _afterChange(to, from, action) {
+    from = Object.assign({}, this.current)
+    Object.assign(this.current, to.route)
+    this._afterChangeHooks.forEach(hook => hook(this.current, from, action))
   }
 
   start(loc) {
@@ -273,18 +215,6 @@ export default class {
 
   replace(loc) {
     return this._history.replace(loc)
-  }
-
-  setState(state) {
-    this._history.setState(state)
-
-    // Vue can not react if add new props into an existing object
-    // so we replace it with a new state object
-    this.current.state = Object.assign({}, this._history.current.state)
-
-    // meta factory function may use state object to generate meta object
-    // so we need to re-generate a new meta
-    this._generateMeta(this.current)
   }
 
   go(n, opts) {

@@ -9,36 +9,55 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    if (!parent.$root.$route.path) {
+    const root = parent.$root
+    const route = root.$data.$route
+
+    if (!route || !route._layout) {
       return
     }
 
-    while (parent) {
-      if (parent.$vnode && parent.$vnode.data._routerView) {
-        if (parent.$vnode.data._routerView.children && parent.$vnode.data._routerView.children[props.name]) {
-          data._routerView = parent.$vnode.data._routerView.children[props.name]
-          break
-        } else {
-          return
-        }
-      } else if (parent.$parent) {
-        parent = parent.$parent
+    let routerView
+    let _parent = parent
+
+    while (_parent) {
+      // root vm's $vnode is undefined
+      if (_parent.$vnode && _parent.$vnode.data._routerView) {
+        const children = _parent.$vnode.data._routerView.children
+        routerView = children && children[props.name]
+        break
+      } else if (_parent.$parent) {
+        _parent = _parent.$parent
       } else {
-        data._routerView = parent.$route._layout[props.name]
+        routerView = route._layout[props.name]
         break
       }
     }
 
-    if (data._routerView.component) {
-      if (data._routerView.props) {
-        const viewProps = data._routerView.props instanceof Function
-          ? data._routerView.props(parent.$root.$route)
-          : data._routerView.props
-
-        Object.assign(data, { props: viewProps })
-      }
-
-      return h(data._routerView.component, data, children)
+    if (!routerView || !routerView.component) {
+      return
     }
+
+    if (routerView.props) {
+      const viewProps = routerView.props instanceof Function
+        ? routerView.props(route)
+        : routerView.props
+
+      Object.assign(data, { props: viewProps })
+    }
+
+    if (routerView.path) {
+      route._getBeforeLeaveHooks = () => {
+        const vm = parent.$children.find(c =>
+          c.$vnode.data._routerView && c.$vnode.data._routerView.name === props.name
+        )
+
+        return vm.$options.beforeRouteLeave ?
+          [].concat(vm.$options.beforeRouteLeave).map(f => f.bind(vm))
+          : []
+      }
+    }
+
+    data._routerView = routerView
+    return h(routerView.component, data, children)
   }
 }
