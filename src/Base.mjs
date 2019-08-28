@@ -7,9 +7,8 @@ export default class {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
 
-    Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) => {
-      return child ? (parent || []).concat(child) : parent
-    }
+    Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) =>
+      child ? (parent || []).concat(child) : parent
 
     Vue.mixin({
       beforeCreate() {
