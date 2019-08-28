@@ -64,19 +64,18 @@ export default class {
     this._errorHooks.push(hook)
   }
 
-  _parseRoutes(routerViews, tmpLayer = [], layers = [], parsed = []) {
+  _parseRoutes(routerViews, siblings = [], layers = [], parsed = []) {
     routerViews.forEach(routerView => {
       if (routerView instanceof Array) {
-        // if `routerView` is an array,
-        // the final router view (has `path` field) must be in `routerView`.
-        this._parseRoutes(routerView, tmpLayer.concat(routerViews), layers, parsed)
+        let sib = routerViews.filter(v => !(v instanceof Array) && !v.path)
+        const names = sib.map(v => v.name)
+        // router views in same array has higher priority than outer ones
+        sib = siblings.filter(v => !names.includes(v.name)).concat(sib)
+        this._parseRoutes(routerView, sib, layers, parsed)
       }
 
       else if (routerView.children) {
         const layer =
-          // if `routerView` has children,
-          // the final router view must be in children.
-          // we only need sibling views in `routerViews` that name isn't routerView.name
           routerViews.filter(v => !(v instanceof Array) && !v.path && v.name !== routerView.name)
             .concat(routerView)
 
