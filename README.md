@@ -6,16 +6,17 @@ A vue router.
 * Manipulating history.state.
 * Decoupling UI layout and URL structure.
 * Dispatching route without changing URL.
+* Typed query and params.
 
 - [Constructor](#constructor)
   - [HashRouter](#hashrouter)
   - [PathRouter](#pathrouter)
 - [Routes Definition](#routes-definition)
-  - [&lt;router-view&gt;](#ltrouter-viewgt)
+  - [&lt;router-view&gt;](#router-view)
   - [route table](#route-table)
 - [Matched Route Object](#matched-route-object)
 - [Location Object](#location-object)
-- [&lt;router-link&gt;](#ltrouter-linkgt)
+- [&lt;router-link&gt;](#router-link)
 - [APIs](#apis)
   - [router.current](#routercurrent)
   - [router.start](#routerstart)
@@ -101,7 +102,11 @@ For example, this is our root element:
 ```
 
 
-### &lt;router-view&gt;
+### \<router-view>
+
+```html
+<router-view name="foo" />
+```
 
 The `<router-view>` is a functional component that renders the matched component.
 
@@ -113,14 +118,18 @@ Let's see the example routes definition:
 
 ```js
 const routes = [
-  // define which component will be mounted into <router-view name="aside">
   {
-    name: 'aside',
+    name: 'aside', // will be mounted into <router-view name="aside">
     component: { /* component definition */ }
   },
 
-  // the default <router-view>
-  { path: '/basic', component: { /* component definition */ } },
+  {
+    path: '/basic',
+
+    // definition without `name`
+    // the component will be mounted into <router-view name="default">
+    component: { /* component definition */ }
+  },
 
   // return promise to define async components
   { path: '/async', component: () => import('./AsyncComponent.vue') },
@@ -138,11 +147,10 @@ const routes = [
   },
 
   {
-    // use : to define params
+    // use `:key` to define params
     path: '/article/:id',
 
     // props can be a factory function, it receives the current route object as the first argument.
-    // see route object definition below to see what info can get.
     props: route => ({
       articleId: route.params.int('id'),
       foo: route.query.string('foo'),
@@ -167,6 +175,7 @@ const routes = [
     path: '/route-test',
 
     // only matched if test() returns true
+    // Function | Array<Function>
     test(to, from, action) {
       return true
     },
@@ -198,9 +207,9 @@ const routes = [
   },
 
 
-  // use Array to group <router-view> definitions
+  // use array to group <router-view> definitions
+  // router view definitions in array will override outer definitions which has same name.
   [
-    // in this group, this aside component will override the default aside <router-view> definition
     {
       name: 'aside',
       component: { /* ... */}
@@ -239,7 +248,7 @@ const routes = [
           path: '/bar',
           component: { /* ... */},
 
-          // meta can be a factory function, the first argument is the current route object
+          // meta can be a factory function
           meta: route => ({ activeTab: route.query.string('active') })
         },
 
@@ -278,6 +287,8 @@ A route object contains the information of the matched route. It can be get from
 }
 ```
 
+`query` and `params` are [StringCaster](https://github.com/jiangfengming/cast-string#stringcaster) objects.
+
 ## Location Object
 A location object is used for changing the current address. It can be used in `<router-link>`, `router.push()`, `router.replace()`, `router.dispatch()`, etc.
 
@@ -293,7 +304,7 @@ A location object is used for changing the current address. It can be used in `<
 }
 ```
 
-## &lt;router-link&gt;
+## \<router-link>
 
 ```html
 <router-link to="/list?page=1" action="replace">List</router-link>
