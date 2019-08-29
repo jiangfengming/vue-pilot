@@ -8,6 +8,7 @@ A vue router.
 * Dispatching route without changing URL.
 * Typed query and params.
 
+## Table of Contents
 - [Constructor](#constructor)
   - [HashRouter](#hashrouter)
   - [PathRouter](#pathrouter)
