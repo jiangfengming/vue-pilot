@@ -1,5 +1,38 @@
-# vue-stateful-router
-A vue router with the power of history.state
+# vue-pilot
+A vue router.
+
+## Features
+* Small (5kb gzipped).
+* Manipulating history.state.
+* Decoupling UI layout and URL structure.
+* Dispatching route without changing URL.
+
+- [Constructor](#constructor)
+  - [HashRouter](#hashrouter)
+  - [PathRouter](#pathrouter)
+- [Routes Definition](#routes-definition)
+  - [&lt;router-view&gt;](#ltrouter-viewgt)
+  - [route table](#route-table)
+- [Matched Route Object](#matched-route-object)
+- [Location Object](#location-object)
+- [&lt;router-link&gt;](#ltrouter-linkgt)
+- [APIs](#apis)
+  - [router.current](#routercurrent)
+  - [router.start](#routerstart)
+  - [router.normalize](#routernormalize)
+  - [router.url](#routerurl)
+  - [router.push](#routerpush)
+  - [router.replace](#routerreplace)
+  - [router.dispatch](#routerdispatch)
+  - [router.setState](#routersetstate)
+  - [router.go](#routergo)
+  - [router.back](#routerback)
+  - [router.forward](#routerforward)
+  - [router.captureLinkClickEvent](#routercapturelinkclickevent)
+  - [router.beforeChange](#routerbeforechange)
+  - [router.afterChange](#routerafterchange)
+- [Dependencies](#dependencies)
+- [License](#license)
 
 ## Constructor
 
@@ -7,7 +40,7 @@ A vue router with the power of history.state
 
 ```js
 import Vue from 'vue'
-import { HashRouter } from 'vue-stateful-router'
+import { HashRouter } from 'vue-pilot'
 
 Vue.use(HashRouter)
 
@@ -37,7 +70,7 @@ router.start()
 
 ```js
 import Vue from 'vue'
-import { PathRouter } from 'vue-stateful-router'
+import { PathRouter } from 'vue-pilot'
 
 Vue.use(PathRouter)
 
@@ -67,9 +100,14 @@ For example, this is our root element:
 </div>
 ```
 
+
+### &lt;router-view&gt;
+
 The `<router-view>` is a functional component that renders the matched component.
 
 It has a `name` property.  The default value is `default`.
+
+### route table
 
 Let's see the example routes definition:
 
@@ -142,6 +180,7 @@ const routes = [
 
     // beforeEnter hook will be called before confirming the navigation.
     // see router.beforeChange below for details
+    // Function | Array<Function>
     beforeEnter(to, from, operation) {
 
     },
@@ -149,6 +188,7 @@ const routes = [
     component: {
       // in-component beforeRouteLeave hook
       // will be called before route leave
+      // Function | Array<Function>
       beforeRouteLeave(to, from) {
 
       },
@@ -217,9 +257,9 @@ const routes = [
 ]
 ```
 
-## Route Object
+## Matched Route Object
 A route object contains the information of the matched route. It can be get from route hooks,
-`router.beforeChange()`, `router.afterChange()`, `vm.$root.$route`, `router.current`, etc.
+`router.beforeChange()`, `router.afterChange()`, `router.current`, etc.
 
 ```js
 {
@@ -255,13 +295,16 @@ A location object is used for changing the current address. It can be used in `<
 
 ## &lt;router-link&gt;
 
-The `<router-link>` is a navigation component, it usally renders an `<a>` element.
+```html
+<router-link to="/list?page=1" action="replace">List</router-link>
+<router-link :to="{ path: '/category', query: { cat: 'shoes' }, state: { from: 'home' } }">Shoes</router-link>
+```
 
-### Props
+The `<router-link>` is a navigation component, it usally renders an `<a>` element.
 
 `to`: `Location` object, or `path`/`fullPath` of `Location` object.
 
-`tag`: The HTML tag to render. Default: `<a>`.
+`tag`: The HTML tag to render. Default: `a`.
 
 `action`: `push`, `replace` or `dispatch`. Default: `push`.
 
@@ -271,32 +314,25 @@ Mose of the APIs are proxied to [spa-history](https://github.com/jiangfengming/s
 
 In the vue instance, you can get the router object from `this.$router`.
 
-- [router.current](#routercurrent)
-- [router.start(URL string | location)](#routerstarturl-string--location)
-- [router.normalize(URL string | location)](#routernormalizeurl-string--location)
-- [router.url(URL String | location)](#routerurlurl-string--location)
-- [router.push(URL string | location)](#routerpushurl-string--location)
-- [router.replace(URL string | location)](#routerreplaceurl-string--location)
-- [router.dispatch(URL string | location)](#routerdispatchurl-string--location)
-- [router.setState(state)](#routersetstatestate)
-- [router.go(position, { silent = false, state = null } = {})](#routergoposition--silent--false-state--null---)
-- [router.back(position, options)](#routerbackoptions)
-- [router.forward(position, options)](#routerforwardoptions)
-- [router.captureLinkClickEvent(e)](#routercapturelinkclickevente)
-- [router.beforeChange(callback)](#routerbeforechangecallback)
-- [router.afterChange(callback)](#routerafterchangecallback)
-- [router.onError(callback)](#routeronerrorcallback)
-
-
 ### router.current
-The current active [route object](#the-route-object).
+The current [matched route object](#matched-route-object).
 
-### router.start(URL string | location)
+### router.start
+
+```js
+router.start(URL string | location)
+```
+
 Start the router.
 
-In browser, if URL/location is not given, the default value is the current address. This argument is mainly for server-side rendering.
+In browser, if URL/location is not given, the default value is the current address. This parameter is mainly for server-side rendering.
 
-### router.normalize(URL string | location)
+### router.normalize
+
+```js
+router.normalize(URL string | location)
+```
+
 convert the URL string or unnormalized location object to normalized object
 
 if URL/location.path is started with protocal, or `location.external` is `true`, `location.path` is treated as an external path, and will be converted to an internal path.
@@ -339,7 +375,12 @@ router.normalize('http://www.example.com/app/#/home?a=1#b')
 
 The `query` property can be of type Object, String and Array. see [URLSearchParams()](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for detail.
 
-### router.url(URL string | location)
+### router.url
+
+```js
+router.url(URL string | location)
+```
+
 Convert the internal URL string or location object to an external URL which can be used in `href` attribute of `<a>`.
 
 ```js
@@ -361,7 +402,12 @@ router.url('/home?a=1#b')
 */
 ```
 
-### router.push(URL string | location)
+### router.push
+
+```js
+router.push(URL string | location)
+```
+
 Counterpart of `window.history.pushState()`. Push the location onto the history stack. `beforeChange` will be called.
 
 ```js
@@ -411,29 +457,64 @@ router.push({
 })
 ```
 
-### router.replace(URL string | location)
+### router.replace
+
+```js
+router.replace(URL string | location)
+```
+
 Counterpart of `window.history.replaceState()`. Replace the current history entry with the location.
 
-### router.dispatch(URL string | location)
+### router.dispatch
+
+```
+router.dispatch(URL string | location)
+```
+
 Dispatch the route without changing the history session. That is, the location of browser's address bar won't change.
 
-### router.setState(state)
+### router.setState
+
+```js
+router.setState(state)
+```
+
 Set state of the current route. the state will be merged into `router.current.state`
 
-### router.go(position, { silent = false, state = null } = {})
+### router.go
+
+```js
+router.go(position, { silent = false, state = null } = {})
+```
+
 Counterpart of `window.history.go()`. Returns a promise which will be resolved when `popstate` event fired.
 
 `silent`: if true, `beforeChange` won't be called.
 
 `state`: if set, the state object will be merged into the state object of the destination location.
 
-### router.back(options)
-Same as `router.go(-1, options)`
+### router.back
 
-### router.forward(options)
-Same as `router.go(1, options)`
+```js
+router.back(options)
+```
 
-### router.captureLinkClickEvent(e)
+Alias of `router.go(-1, options)`
+
+### router.forward
+
+```js
+router.forward(options)
+```
+
+Alias of `router.go(1, options)`
+
+### router.captureLinkClickEvent
+
+```js
+router.captureLinkClickEvent(event)
+```
+
 Prevent the navigation when clicking the `<a>` element in the container and the `href` is an in-app address, `router.push()` will be called instead.
 
 ```html
@@ -442,7 +523,14 @@ Prevent the navigation when clicking the `<a>` element in the container and the 
 </div>
 ```
 
-### router.beforeChange(callback)
+### router.beforeChange
+
+```js
+router.beforeChange((to, from, operation) => {
+  // ...
+})
+```
+
 Add a global beforeChange callback. The callback will be called before confirming the navigation.
 
 ```
@@ -453,7 +541,7 @@ Arguments:
     push: router.push() is called.
     replace: router.replace() is called.
     init: "to" is the initial page, at this stage, "from.path" is null.
-    popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called.
+    popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
     dispatch: router.dispatch() is called.
 
 Returns:
@@ -466,35 +554,17 @@ Returns:
 Return value can be a Promise.
 ```
 
+### router.afterChange
+
 ```js
-router.beforeChange((to, from, operation) => {
+router.afterChange((to, from, action) => {
   // ...
 })
 ```
 
-### router.afterChange(callback)
 Add a global afterChange callback. The callback will be called after history has been changed but before async components have been loaded.
 
 Returning `false` can prevent to load the new page.
-
-```js
-router.afterChange((to, from) => {
-  // if our SPA has been updated
-  if (outdated()) {
-    location.reload()
-    return false
-  }
-})
-```
-
-### router.onError(callback)
-Add a global error callback. The callback will be called when loading async components failed.
-
-```js
-router.onError(error => {
-  // ...
-})
-```
 
 ## Dependencies
 - [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL)
@@ -507,16 +577,6 @@ You can use [@babel/polyfill](https://babeljs.io/docs/en/babel-polyfill/) and
 Or use the [polyfill.io](https://polyfill.io/) service:
 ```html
 <script src="https://polyfill.io/v3/polyfill.min.js"></script>
-```
-
-## Example
-```
-npm run example
-```
-
-## Build
-```
-npm run build
 ```
 
 ## License

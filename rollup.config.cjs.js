@@ -11,7 +11,7 @@ export default {
 
   output: {
     format: 'cjs',
-    file: 'dist/vueStatefulRouter.js'
+    file: 'dist/vue-pilot.js'
   },
 
   external: ['spa-history', 'url-router']

@@ -11,7 +11,7 @@ export default {
 
   output: {
     format: 'esm',
-    file: 'dist/vueStatefulRouter.mjs'
+    file: 'dist/vue-pilot.mjs'
   },
 
   external: ['spa-history', 'url-router']

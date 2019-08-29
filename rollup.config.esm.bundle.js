@@ -11,6 +11,6 @@ export default {
 
   output: {
     format: 'esm',
-    file: 'dist/vueStatefulRouter.bundle.mjs'
+    file: 'dist/vue-pilot.bundle.mjs'
   }
 }
