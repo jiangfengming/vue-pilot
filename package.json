@@ -1,5 +1,5 @@
 {
-  "name": "vue-stateful-router",
+  "name": "vue-pilot",
   "version": "0.13.1",
   "description": "A vue router with the power of history.state",
   "main": "dist/vueStatefulRouter",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jiangfengming/vue-stateful-router.git"
+    "url": "git+https://github.com/jiangfengming/vue-pilot.git"
   },
   "keywords": [
     "vue",
@@ -17,9 +17,9 @@
   ],
   "author": "Jiang Fengming <jiangfengming87@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/jiangfengming/vue-stateful-router#readme",
+  "homepage": "https://github.com/jiangfengming/vue-pilot#readme",
   "bugs": {
-    "url": "https://github.com/jiangfengming/vue-stateful-router/issues"
+    "url": "https://github.com/jiangfengming/vue-pilot/issues"
   },
   "dependencies": {
     "spa-history": "^0.12.0",

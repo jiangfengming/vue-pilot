@@ -968,7 +968,7 @@ var RouterView = {
         children = _ref.children,
         parent = _ref.parent,
         data = _ref.data;
-    var route = parent.$root.$route;
+    var route = parent.$root.$router.current;
 
     if (!route || !route._layout) {
       return;
@@ -1068,7 +1068,7 @@ function () {
         this.$router = router;
 
         if (this.$root === this) {
-          this.$route = router.current = Vue.observable(router.current);
+          router.current = Vue.observable(router.current);
         } else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
           Array.prototype.push.apply(router.current._beforeLeave, this.$options.beforeRouteLeave.map(function (f) {
             return f.bind(_this);

@@ -21,7 +21,7 @@ export default class {
         this.$router = router
 
         if (this.$root === this) {
-          this.$route = router.current = Vue.observable(router.current)
+          router.current = Vue.observable(router.current)
         }
 
         else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {

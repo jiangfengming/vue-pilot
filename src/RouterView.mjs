@@ -9,7 +9,7 @@ export default {
   },
 
   render(h, { props, children, parent, data }) {
-    const route = parent.$root.$route
+    const route = parent.$root.$router.current
 
     if (!route || !route._layout) {
       return
