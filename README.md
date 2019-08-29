@@ -237,6 +237,11 @@ const routes = [
       // define child <router-view>s
       children: [
         {
+          name: 'footer',
+          component: { /* ... */ }
+        },
+
+        {
           path: '/foo',
           component: { /* ... */ },
 
@@ -245,13 +250,21 @@ const routes = [
           meta: { activeTab: 'foo' }
         },
 
-        {
-          path: '/bar',
-          component: { /* ... */},
+        [
+          // override footer
+          {
+            name: 'footer',
+            component: { /* ... */ }
+          },
 
-          // meta can be a factory function
-          meta: route => ({ activeTab: route.query.string('active') })
-        },
+          {
+            path: '/bar',
+            component: { /* ... */},
+
+            // meta can be a factory function
+            meta: route => ({ activeTab: route.query.string('active') })
+          }
+        ],
 
         // define a catch-all route
         // it must be put at the last of all routes definition
