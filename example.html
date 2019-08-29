@@ -169,6 +169,8 @@ const routes = [
           },
 
           beforeEnter() {
+            console.log('beforeEnter')
+            console.log('this:', this)
             return confirm('Enter?')
           }
         },
@@ -232,12 +234,15 @@ const routes = [
 
 const router = new Router({ routes })
 
-router.beforeChange((to, from) => {
+router.beforeChange(function(to, from, action) {
+  console.log('beforeChange')
+  console.log('this:', this)
   if (from && from.path === '/layout/foo') return confirm('Leave?')
 })
 
-router.afterChange(to => {
-  console.log('afterChange called')
+router.afterChange(function(to, from, action) {
+  console.log('afterChange')
+  console.log('this:', this)
   console.log(to)
 })
 

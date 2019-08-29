@@ -117,7 +117,7 @@ export default class {
         com.path = path
 
         if (beforeEnter) {
-          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter))
+          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(f => f.bind(this)))
         }
       }
 
@@ -163,7 +163,7 @@ export default class {
   }
 
   beforeChange(hook) {
-    this._beforeChangeHooks.push(hook)
+    this._beforeChangeHooks.push(hook.bind(this))
   }
 
   _beforeChange(to, from, action) {
@@ -196,7 +196,7 @@ export default class {
 
     hooks.forEach(hook =>
       promise = promise.then(() =>
-        Promise.resolve(hook(route, this.current, action)).then(result => {
+        Promise.resolve(hook(route, this.current, action, this)).then(result => {
           // if the hook abort or redirect the navigation, cancel the promise chain.
           if (result !== undefined && result !== true) {
             throw result
@@ -217,13 +217,37 @@ export default class {
   }
 
   afterChange(hook) {
-    this._afterChangeHooks.push(hook)
+    this._afterChangeHooks.push(hook.bind(this))
   }
 
   _afterChange(to, from, action) {
     from = Object.assign({}, this.current)
-    Object.assign(this.current, to.route)
-    this._afterChangeHooks.forEach(hook => hook(this.current, from, action))
+
+    let promise = Promise.resolve(true)
+
+    this._afterChangeHooks.forEach(hook =>
+      promise = promise.then(() =>
+        Promise.resolve(hook(this.current, from, action, this)).then(result => {
+          if (result === false) {
+            throw result
+          }
+        })
+      )
+    )
+
+    promise.catch(e => {
+      if (e instanceof Error) {
+        // encountered unexpected error
+        throw e
+      } else {
+        // abort or redirect
+        return e
+      }
+    }).then(v => {
+      if (v !== false) {
+        Object.assign(this.current, to.route)
+      }
+    })
   }
 
   start(loc) {

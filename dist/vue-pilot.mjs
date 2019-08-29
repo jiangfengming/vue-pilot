@@ -260,7 +260,9 @@ function () {
         com.path = path;
 
         if (beforeEnter) {
-          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter));
+          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(function (f) {
+            return f.bind(_this4);
+          }));
         }
       }
 
@@ -310,7 +312,7 @@ function () {
   };
 
   _proto.beforeChange = function beforeChange(hook) {
-    this._beforeChangeHooks.push(hook);
+    this._beforeChangeHooks.push(hook.bind(this));
   };
 
   _proto._beforeChange = function _beforeChange(to, from, action) {
@@ -344,7 +346,7 @@ function () {
     var promise = Promise.resolve(true);
     hooks.forEach(function (hook) {
       return promise = promise.then(function () {
-        return Promise.resolve(hook(route, _this5.current, action)).then(function (result) {
+        return Promise.resolve(hook(route, _this5.current, action, _this5)).then(function (result) {
           // if the hook abort or redirect the navigation, cancel the promise chain.
           if (result !== undefined && result !== true) {
             throw result;
@@ -364,17 +366,37 @@ function () {
   };
 
   _proto.afterChange = function afterChange(hook) {
-    this._afterChangeHooks.push(hook);
+    this._afterChangeHooks.push(hook.bind(this));
   };
 
   _proto._afterChange = function _afterChange(to, from, action) {
     var _this6 = this;
 
     from = Object.assign({}, this.current);
-    Object.assign(this.current, to.route);
+    var promise = Promise.resolve(true);
 
     this._afterChangeHooks.forEach(function (hook) {
-      return hook(_this6.current, from, action);
+      return promise = promise.then(function () {
+        return Promise.resolve(hook(_this6.current, from, action, _this6)).then(function (result) {
+          if (result === false) {
+            throw result;
+          }
+        });
+      });
+    });
+
+    promise["catch"](function (e) {
+      if (e instanceof Error) {
+        // encountered unexpected error
+        throw e;
+      } else {
+        // abort or redirect
+        return e;
+      }
+    }).then(function (v) {
+      if (v !== false) {
+        Object.assign(_this6.current, to.route);
+      }
     });
   };
 

@@ -191,7 +191,8 @@ const routes = [
     // beforeEnter hook will be called before confirming the navigation.
     // see router.beforeChange below for details
     // Function | Array<Function>
-    beforeEnter(to, from, operation) {
+    // `this` refers to the router instance.
+    beforeEnter(to, from, action, router) {
 
     },
 
@@ -199,7 +200,8 @@ const routes = [
       // in-component beforeRouteLeave hook
       // will be called before route leave
       // Function | Array<Function>
-      beforeRouteLeave(to, from) {
+      // `this` refers to the vue component instance.
+      beforeRouteLeave(to, from, action, router) {
 
       },
 
@@ -551,23 +553,25 @@ Prevent the navigation when clicking the `<a>` element in the container and the 
 ### router.beforeChange
 
 ```js
-router.beforeChange((to, from, operation) => {
+router.beforeChange(function(to, from, action, router) {
   // ...
 })
 ```
 
 Add a global beforeChange callback. The callback will be called before confirming the navigation.
+`this` of callback refers to the router instance.
 
 ```
 Arguments:
   to: Route Object. The location will be changed to.
   from: Route Object. The current location.
-  operation:
+  action:
     push: router.push() is called.
     replace: router.replace() is called.
     init: "to" is the initial page, at this stage, "from.path" is null.
     popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
     dispatch: router.dispatch() is called.
+  router: the router instance
 
 Returns:
   true | undefined: The navigation is confirmed.
@@ -582,12 +586,13 @@ Return value can be a Promise.
 ### router.afterChange
 
 ```js
-router.afterChange((to, from, action) => {
+router.afterChange(function(to, from, action, router) {
   // ...
 })
 ```
 
 Add a global afterChange callback. The callback will be called after history has been changed but before async components have been loaded.
+`this` of callback refers to the router instance.
 
 Returning `false` can prevent to load the new page.
 
