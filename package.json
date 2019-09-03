@@ -22,13 +22,13 @@
     "url": "https://github.com/jiangfengming/vue-pilot/issues"
   },
   "dependencies": {
-    "spa-history": "^0.12.0",
+    "spa-history": "^0.12.1",
     "url-router": "^8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "eslint": "^6.2.2",
+    "eslint": "^6.3.0",
     "eslint-config-enough": "^0.3.8",
     "local-web-server": "^3.0.7",
     "rollup": "^1.20.3",

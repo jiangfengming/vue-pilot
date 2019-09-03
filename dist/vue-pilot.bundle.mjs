@@ -480,9 +480,13 @@ function () {
 
   _proto._getCurrentLocationFromBrowser = function _getCurrentLocationFromBrowser() {
     var state = window.history.state || {};
-    var loc = this.normalize(state.path || this._extractPathFromExternalURL(window.location));
-    loc.state = state.state || {};
-    if (state.path) loc.hidden = true;
+    var loc = this.normalize(state.__path__ || this._extractPathFromExternalURL(window.location));
+    loc.state = state;
+
+    if (state.__path__) {
+      loc.hidden = true;
+    }
+
     return loc;
   }
   /*
@@ -585,16 +589,11 @@ function () {
       return;
     }
 
-    var state = {};
-
-    if (to.state) {
-      state.state = to.state;
-    }
-
+    var state = to.state;
     var url = to.url;
 
     if (to.hidden) {
-      state.path = to.fullPath;
+      state.__path__ = to.fullPath;
       url = to.appearPath && this.url(to.appearPath);
     }
 
