@@ -28,7 +28,7 @@ var RouterView = {
         children = _ref.children,
         parent = _ref.parent,
         data = _ref.data;
-    var route = parent.$root.$router.current;
+    var route = parent.$root.$router && parent.$root.$router.current;
 
     if (!route || !route._layout) {
       return;
@@ -198,100 +198,11 @@ function () {
         if (routerView.children) {
           _this2._parseRoutes(routerView.children, siblings, _layers, parsed);
         } else if (routerView.path) {
-          parsed.push([routerView.path, _layers, function (matchedRoute, _ref2) {
-            var to = _ref2.to,
-                from = _ref2.from,
-                action = _ref2.action;
-
-            _this2._resolveRoute(to, from, matchedRoute);
-
-            return _this2._test(to, from, action);
-          }]);
+          parsed.push([routerView.path, _layers]);
         }
       }
     });
     return parsed;
-  };
-
-  _proto._resolveRoute = function _resolveRoute(to, from, matchedRoute) {
-    var _this3 = this;
-
-    to.params = matchedRoute.params;
-    to._meta = [];
-    to._test = [];
-    to._beforeEnter = [];
-    to._beforeLeave = [];
-    var root = {};
-    var routerView = root;
-    matchedRoute.handler.forEach(function (layer) {
-      var last = Object.assign({}, layer[layer.length - 1]);
-      delete last.children;
-
-      var _layer = layer.slice(0, -1).concat(last);
-
-      routerView.children = _this3._resolveRouterViews(_layer, to);
-      routerView = routerView.children[last.name || 'default'];
-    });
-    to._layout = root.children;
-
-    this._generateMeta(to);
-  };
-
-  _proto._resolveRouterViews = function _resolveRouterViews(routerViews, route) {
-    var _this4 = this;
-
-    var _routerViews = {};
-    routerViews.forEach(function (_ref3) {
-      var _ref3$name = _ref3.name,
-          name = _ref3$name === void 0 ? 'default' : _ref3$name,
-          path = _ref3.path,
-          component = _ref3.component,
-          props = _ref3.props,
-          meta = _ref3.meta,
-          test = _ref3.test,
-          beforeEnter = _ref3.beforeEnter,
-          children = _ref3.children;
-      var com = _routerViews[name] = {
-        component: component,
-        props: props
-      };
-
-      if (path) {
-        com.path = path;
-
-        if (beforeEnter) {
-          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(function (f) {
-            return f.bind(_this4);
-          }));
-        }
-      }
-
-      if (meta) {
-        route._meta.push(meta);
-      }
-
-      if (test) {
-        Array.prototype.push.apply(route._test, [].concat(test));
-      }
-
-      if (children) {
-        children = children.filter(function (v) {
-          return !(v instanceof Array) && !v.path;
-        });
-        com.children = _this4._resolveRouterViews(children, route);
-      }
-    });
-    return _routerViews;
-  };
-
-  _proto._generateMeta = function _generateMeta(route) {
-    route.meta = {};
-
-    if (route._meta.length) {
-      route._meta.forEach(function (m) {
-        return Object.assign(route.meta, m instanceof Function ? m(route) : m);
-      });
-    }
   };
 
   _proto.setState = function setState(state) {
@@ -305,18 +216,12 @@ function () {
     this._generateMeta(this.current);
   };
 
-  _proto._test = function _test(to, from, action) {
-    return !to._test.some(function (t) {
-      return !t(to, from, action);
-    });
-  };
-
   _proto.beforeChange = function beforeChange(hook) {
     this._beforeChangeHooks.push(hook.bind(this));
   };
 
   _proto._beforeChange = function _beforeChange(to, from, action) {
-    var _this5 = this;
+    var _this3 = this;
 
     var route = to.route = {
       path: to.path,
@@ -327,14 +232,10 @@ function () {
       state: to.state
     };
 
-    var _route = this._urlRouter.find(to.path, {
-      to: route,
-      from: this.current,
-      action: action
-    });
+    var _route = this._urlRouter.find(to.path);
 
-    if (!_route) {
-      return false;
+    if (_route) {
+      this._resolveRoute(route, _route);
     }
 
     var hooks = (this.current._beforeLeave || []).concat(to.route._beforeEnter, this._beforeChangeHooks);
@@ -346,7 +247,7 @@ function () {
     var promise = Promise.resolve(true);
     hooks.forEach(function (hook) {
       return promise = promise.then(function () {
-        return Promise.resolve(hook(route, _this5.current, action, _this5)).then(function (result) {
+        return Promise.resolve(hook(route, _this3.current, action, _this3)).then(function (result) {
           // if the hook abort or redirect the navigation, cancel the promise chain.
           if (result !== undefined && result !== true) {
             throw result;
@@ -363,6 +264,83 @@ function () {
         return e;
       }
     });
+  };
+
+  _proto._resolveRoute = function _resolveRoute(to, _route) {
+    var _this4 = this;
+
+    to.params = _route.params;
+    to._meta = [];
+    to._beforeEnter = [];
+    to._beforeLeave = [];
+    var root = {};
+    var routerView = root;
+
+    _route.handler.forEach(function (layer) {
+      var last = Object.assign({}, layer[layer.length - 1]);
+      delete last.children;
+
+      var _layer = layer.slice(0, -1).concat(last);
+
+      routerView.children = _this4._resolveRouterViews(_layer, to);
+      routerView = routerView.children[last.name || 'default'];
+    });
+
+    to._layout = root.children;
+
+    this._generateMeta(to);
+  };
+
+  _proto._resolveRouterViews = function _resolveRouterViews(routerViews, route) {
+    var _this5 = this;
+
+    var _routerViews = {};
+    routerViews.forEach(function (_ref2) {
+      var _ref2$name = _ref2.name,
+          name = _ref2$name === void 0 ? 'default' : _ref2$name,
+          path = _ref2.path,
+          component = _ref2.component,
+          props = _ref2.props,
+          meta = _ref2.meta,
+          beforeEnter = _ref2.beforeEnter,
+          children = _ref2.children;
+      var com = _routerViews[name] = {
+        component: component,
+        props: props
+      };
+
+      if (path) {
+        com.path = path;
+
+        if (beforeEnter) {
+          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(function (f) {
+            return f.bind(_this5);
+          }));
+        }
+      }
+
+      if (meta) {
+        route._meta.push(meta);
+      }
+
+      if (children) {
+        children = children.filter(function (v) {
+          return !(v instanceof Array) && !v.path;
+        });
+        com.children = _this5._resolveRouterViews(children, route);
+      }
+    });
+    return _routerViews;
+  };
+
+  _proto._generateMeta = function _generateMeta(route) {
+    route.meta = {};
+
+    if (route._meta.length) {
+      route._meta.forEach(function (m) {
+        return Object.assign(route.meta, m instanceof Function ? m(route) : m);
+      });
+    }
   };
 
   _proto.afterChange = function afterChange(hook) {

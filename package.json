@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "spa-history": "^0.12.1",
-    "url-router": "^8.0.0"
+    "url-router": "^9.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",

@@ -56,6 +56,7 @@ export default class {
   _parseRoutes(routerViews, siblings = [], layers = [], parsed = []) {
     const sib = routerViews.filter(v => !(v instanceof Array) && !v.path)
     const names = sib.map(v => v.name)
+
     // router views in same array has higher priority than outer ones
     siblings = siblings.filter(v => !names.includes(v.name)).concat(sib)
 
@@ -69,81 +70,12 @@ export default class {
         if (routerView.children) {
           this._parseRoutes(routerView.children, siblings, _layers, parsed)
         } else if (routerView.path) {
-          parsed.push([
-            routerView.path,
-            _layers,
-
-            (matchedRoute, { to, from, action }) => {
-              this._resolveRoute(to, from, matchedRoute)
-              return this._test(to, from, action)
-            }
-          ])
+          parsed.push([routerView.path, _layers])
         }
       }
     })
 
     return parsed
-  }
-
-  _resolveRoute(to, from, matchedRoute) {
-    to.params = matchedRoute.params
-    to._meta = []
-    to._test = []
-    to._beforeEnter = []
-    to._beforeLeave = []
-
-    const root = {}
-    let routerView = root
-
-    matchedRoute.handler.forEach(layer => {
-      const last = Object.assign({}, layer[layer.length - 1])
-      delete last.children
-      const _layer = layer.slice(0, -1).concat(last)
-      routerView.children = this._resolveRouterViews(_layer, to)
-      routerView = routerView.children[last.name || 'default']
-    })
-
-    to._layout = root.children
-    this._generateMeta(to)
-  }
-
-  _resolveRouterViews(routerViews, route) {
-    const _routerViews = {}
-
-    routerViews.forEach(({ name = 'default', path, component, props, meta, test, beforeEnter, children }) => {
-      const com = _routerViews[name] = { component, props }
-
-      if (path) {
-        com.path = path
-
-        if (beforeEnter) {
-          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(f => f.bind(this)))
-        }
-      }
-
-      if (meta) {
-        route._meta.push(meta)
-      }
-
-      if (test) {
-        Array.prototype.push.apply(route._test, [].concat(test))
-      }
-
-      if (children) {
-        children = children.filter(v => !(v instanceof Array) && !v.path)
-        com.children = this._resolveRouterViews(children, route)
-      }
-    })
-
-    return _routerViews
-  }
-
-  _generateMeta(route) {
-    route.meta = {}
-
-    if (route._meta.length) {
-      route._meta.forEach(m => Object.assign(route.meta, m instanceof Function ? m(route) : m))
-    }
   }
 
   setState(state) {
@@ -156,10 +88,6 @@ export default class {
     // meta factory function may use state object to generate meta object
     // so we need to re-generate a new meta
     this._generateMeta(this.current)
-  }
-
-  _test(to, from, action) {
-    return !to._test.some(t => !t(to, from, action))
   }
 
   beforeChange(hook) {
@@ -176,14 +104,10 @@ export default class {
       state: to.state
     }
 
-    const _route = this._urlRouter.find(to.path, {
-      to: route,
-      from: this.current,
-      action
-    })
+    const _route = this._urlRouter.find(to.path)
 
-    if (!_route) {
-      return false
+    if (_route) {
+      this._resolveRoute(route, _route)
     }
 
     const hooks = (this.current._beforeLeave || []).concat(to.route._beforeEnter, this._beforeChangeHooks)
@@ -214,6 +138,62 @@ export default class {
         return e
       }
     })
+  }
+
+  _resolveRoute(to, _route) {
+    to.params = _route.params
+    to._meta = []
+    to._beforeEnter = []
+    to._beforeLeave = []
+
+    const root = {}
+    let routerView = root
+
+    _route.handler.forEach(layer => {
+      const last = Object.assign({}, layer[layer.length - 1])
+      delete last.children
+      const _layer = layer.slice(0, -1).concat(last)
+      routerView.children = this._resolveRouterViews(_layer, to)
+      routerView = routerView.children[last.name || 'default']
+    })
+
+    to._layout = root.children
+    this._generateMeta(to)
+  }
+
+  _resolveRouterViews(routerViews, route) {
+    const _routerViews = {}
+
+    routerViews.forEach(({ name = 'default', path, component, props, meta, beforeEnter, children }) => {
+      const com = _routerViews[name] = { component, props }
+
+      if (path) {
+        com.path = path
+
+        if (beforeEnter) {
+          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(f => f.bind(this)))
+        }
+      }
+
+      if (meta) {
+        route._meta.push(meta)
+      }
+
+      if (children) {
+        children = children.filter(v => !(v instanceof Array) && !v.path)
+        com.children = this._resolveRouterViews(children, route)
+      }
+    })
+
+    return _routerViews
+  }
+
+  _generateMeta(route) {
+    route.meta = {}
+
+    if (route._meta.length) {
+      route._meta.forEach(m => Object.assign(route.meta, m instanceof Function ? m(route) : m))
+    }
   }
 
   afterChange(hook) {
