@@ -11,7 +11,7 @@ export default {
   render(h, { props, children, parent, data }) {
     const route = parent.$root.$router && parent.$root.$router.current
 
-    if (!route || !route._layout) {
+    if (!route || !route.routerViews) {
       return
     }
 
@@ -27,7 +27,7 @@ export default {
       } else if (_parent.$parent) {
         _parent = _parent.$parent
       } else {
-        routerView = route._layout[props.name]
+        routerView = route.routerViews[props.name]
         break
       }
     }

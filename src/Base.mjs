@@ -34,7 +34,8 @@ export default class {
     })
   }
 
-  constructor({ routes }) {
+  constructor({ routes, domain }) {
+    this.domain = domain
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
@@ -49,7 +50,7 @@ export default class {
       state: null,
       params: null,
       meta: null,
-      _layout: null // make <router-view> reactive
+      routerViews: null // make <router-view> reactive
     }
   }
 
@@ -157,7 +158,7 @@ export default class {
       routerView = routerView.children[last.name || 'default']
     })
 
-    to._layout = root.children
+    to.routerViews = root.children
     this._generateMeta(to)
   }
 
