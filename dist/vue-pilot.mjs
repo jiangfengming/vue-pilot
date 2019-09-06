@@ -76,6 +76,10 @@ var RouterLink = {
     action: {
       type: String,
       "default": 'push'
+    },
+    tag: {
+      type: String,
+      "default": 'a'
     }
   },
   render: function render(h, _ref) {
@@ -90,7 +94,7 @@ var RouterLink = {
     data.on = Object.assign({}, listeners, {
       click: listeners.click ? [].concat(listeners.click, click) : click
     });
-    return h('a', data, children);
+    return h(props.tag, data, children);
 
     function click(e) {
       if (e.defaultPrevented) {
