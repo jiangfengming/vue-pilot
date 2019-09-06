@@ -22,7 +22,7 @@
     "url": "https://github.com/jiangfengming/vue-pilot/issues"
   },
   "dependencies": {
-    "spa-history": "^0.12.1",
+    "spa-history": "^0.12.2",
     "url-router": "^9.0.1"
   },
   "devDependencies": {

@@ -311,18 +311,15 @@ A location object is used for changing the current address. It can be used in `<
 ## \<router-link>
 
 ```html
-<router-link to="/list?page=1" action="replace">List</router-link>
+<router-link to="/list?page=1">List</router-link>
+<router-link to="/home" target="_blank">Open new tab</router-link>
 <router-link :to="{ path: '/category', query: { cat: 'shoes' }, state: { from: 'home' } }">Shoes</router-link>
+<router-link to="https://www.example.com">external link</router-link>
 ```
 
-The `<router-link>` is a navigation component, it usally renders an `<a>` element.
+The `<router-link>` is a navigation component, it renders an `<a>` element.
 
-`to`: `Location` object, or `path`/`fullPath` of `Location` object.
-
-`tag`: The HTML tag to render. Default: `a`.
-
-`action`: `push`, `replace` or `dispatch`. Default: `push`.
-
+`to`: `Location` object, `path`/`fullPath` of `Location` object, or absolute URL.
 
 ## APIs
 Mose of the APIs are proxied to [spa-history](https://github.com/jiangfengming/spa-history).

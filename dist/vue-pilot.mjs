@@ -30,7 +30,7 @@ var RouterView = {
         data = _ref.data;
     var route = parent.$root.$router && parent.$root.$router.current;
 
-    if (!route || !route._layout) {
+    if (!route || !route.routerViews) {
       return;
     }
 
@@ -46,7 +46,7 @@ var RouterView = {
       } else if (_parent.$parent) {
         _parent = _parent.$parent;
       } else {
-        routerView = route._layout[props.name];
+        routerView = route.routerViews[props.name];
         break;
       }
     }
@@ -70,16 +70,8 @@ var RouterView = {
 var RouterLink = {
   functional: true,
   props: {
-    tag: {
-      "default": 'a'
-    },
     to: {
       type: [String, Object]
-    },
-    action: {
-      type: String,
-      "default": 'push' // push, replace, dispatch
-
     }
   },
   render: function render(h, _ref) {
@@ -88,19 +80,51 @@ var RouterLink = {
         children = _ref.children,
         listeners = _ref.listeners,
         data = _ref.data;
-
-    function click(e) {
-      if (!e.defaultPrevented && props.to) {
-        e.preventDefault();
-        parent.$router[props.action](props.to);
-      }
-    }
-
-    data.attrs.href = props.to ? parent.$router.url(props.to) : 'javascript:';
+    var router = parent.$router;
+    var isAbsURL = props.to && props.to.constructor === String && /^https?:/.test(props.to);
+    data.attrs.href = props.to ? isAbsURL ? props.to : router.url(props.to) : 'javascript:';
     data.on = Object.assign({}, listeners, {
       click: listeners.click ? [].concat(listeners.click, click) : click
     });
-    return h(props.tag, data, children);
+    return h('a', data, children);
+
+    function click(e) {
+      if (e.defaultPrevented) {
+        return;
+      }
+
+      var a = e.currentTarget; // open new window
+
+      var target = a.target;
+
+      if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in {
+        _self: 1,
+        _blank: 1,
+        _parent: 1,
+        _top: 1
+      }) && target !== window.name)) {
+        return;
+      } // outside of app
+
+
+      if (isAbsURL && !props.to.startsWith(location.origin + router.url('/'))) {
+        return;
+      }
+
+      var to = router.normalize(props.to);
+
+      if (!router._urlRouter.find(to.path)) {
+        return;
+      } // hash change
+
+
+      if (to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash && to.hash !== router.current.hash) {
+        return;
+      }
+
+      e.preventDefault();
+      router.push(to);
+    }
   }
 };
 
@@ -139,7 +163,9 @@ function () {
   };
 
   function _default(_ref) {
-    var routes = _ref.routes;
+    var routes = _ref.routes,
+        domain = _ref.domain;
+    this.domain = domain;
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
     this._beforeChangeHooks = [];
@@ -153,7 +179,7 @@ function () {
       state: null,
       params: null,
       meta: null,
-      _layout: null // make <router-view> reactive
+      routerViews: null // make <router-view> reactive
 
     };
   }
@@ -286,7 +312,7 @@ function () {
       routerView = routerView.children[last.name || 'default'];
     });
 
-    to._layout = root.children;
+    to.routerViews = root.children;
 
     this._generateMeta(to);
   };
