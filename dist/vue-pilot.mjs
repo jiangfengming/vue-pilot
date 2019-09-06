@@ -265,6 +265,7 @@ function () {
       query: to.query,
       hash: to.hash,
       state: to.state,
+      meta: {},
       params: null,
       routerViews: null,
       _meta: [],
