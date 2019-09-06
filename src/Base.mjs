@@ -34,8 +34,7 @@ export default class {
     })
   }
 
-  constructor({ routes, domain }) {
-    this.domain = domain
+  constructor({ routes }) {
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []
@@ -50,7 +49,10 @@ export default class {
       state: null,
       params: null,
       meta: null,
-      routerViews: null // make <router-view> reactive
+      routerViews: null, // make <router-view> reactive
+      _meta: [],
+      _beforeEnter: [],
+      _beforeLeave: []
     }
   }
 
@@ -102,7 +104,12 @@ export default class {
       url: to.url,
       query: to.query,
       hash: to.hash,
-      state: to.state
+      state: to.state,
+      params: null,
+      routerViews: null,
+      _meta: [],
+      _beforeEnter: [],
+      _beforeLeave: []
     }
 
     const _route = this._urlRouter.find(to.path)
@@ -111,7 +118,7 @@ export default class {
       this._resolveRoute(route, _route)
     }
 
-    const hooks = (this.current._beforeLeave || []).concat(to.route._beforeEnter, this._beforeChangeHooks)
+    const hooks = this.current._beforeLeave.concat(to.route._beforeEnter, this._beforeChangeHooks)
 
     if (!hooks.length) {
       return true
@@ -143,9 +150,6 @@ export default class {
 
   _resolveRoute(to, _route) {
     to.params = _route.params
-    to._meta = []
-    to._beforeEnter = []
-    to._beforeLeave = []
 
     const root = {}
     let routerView = root

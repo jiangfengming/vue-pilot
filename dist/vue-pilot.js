@@ -169,9 +169,7 @@ function () {
   };
 
   function _default(_ref) {
-    var routes = _ref.routes,
-        domain = _ref.domain;
-    this.domain = domain;
+    var routes = _ref.routes;
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new UrlRouter(this._routes);
     this._beforeChangeHooks = [];
@@ -185,8 +183,11 @@ function () {
       state: null,
       params: null,
       meta: null,
-      routerViews: null // make <router-view> reactive
-
+      routerViews: null,
+      // make <router-view> reactive
+      _meta: [],
+      _beforeEnter: [],
+      _beforeLeave: []
     };
   }
 
@@ -261,7 +262,12 @@ function () {
       url: to.url,
       query: to.query,
       hash: to.hash,
-      state: to.state
+      state: to.state,
+      params: null,
+      routerViews: null,
+      _meta: [],
+      _beforeEnter: [],
+      _beforeLeave: []
     };
 
     var _route = this._urlRouter.find(to.path);
@@ -270,7 +276,7 @@ function () {
       this._resolveRoute(route, _route);
     }
 
-    var hooks = (this.current._beforeLeave || []).concat(to.route._beforeEnter, this._beforeChangeHooks);
+    var hooks = this.current._beforeLeave.concat(to.route._beforeEnter, this._beforeChangeHooks);
 
     if (!hooks.length) {
       return true;
@@ -302,9 +308,6 @@ function () {
     var _this4 = this;
 
     to.params = _route.params;
-    to._meta = [];
-    to._beforeEnter = [];
-    to._beforeLeave = [];
     var root = {};
     var routerView = root;
 
