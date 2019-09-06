@@ -207,13 +207,11 @@ export default class {
   }
 
   _afterChange(to, from, action) {
-    from = Object.assign({}, this.current)
-
     let promise = Promise.resolve(true)
 
     this._afterChangeHooks.forEach(hook =>
       promise = promise.then(() =>
-        Promise.resolve(hook(this.current, from, action, this)).then(result => {
+        Promise.resolve(hook(to.route, this.current, action, this)).then(result => {
           if (result === false) {
             throw result
           }

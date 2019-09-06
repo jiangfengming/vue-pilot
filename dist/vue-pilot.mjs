@@ -388,12 +388,11 @@ function () {
   _proto._afterChange = function _afterChange(to, from, action) {
     var _this6 = this;
 
-    from = Object.assign({}, this.current);
     var promise = Promise.resolve(true);
 
     this._afterChangeHooks.forEach(function (hook) {
       return promise = promise.then(function () {
-        return Promise.resolve(hook(_this6.current, from, action, _this6)).then(function (result) {
+        return Promise.resolve(hook(to.route, _this6.current, action, _this6)).then(function (result) {
           if (result === false) {
             throw result;
           }
