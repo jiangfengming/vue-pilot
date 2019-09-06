@@ -1010,6 +1010,10 @@ var RouterLink = {
   props: {
     to: {
       type: [String, Object]
+    },
+    action: {
+      type: String,
+      "default": 'push'
     }
   },
   render: function render(h, _ref) {
@@ -1061,7 +1065,7 @@ var RouterLink = {
       }
 
       e.preventDefault();
-      router.push(to);
+      router[props.action](to);
     }
   }
 };

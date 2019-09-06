@@ -4,6 +4,11 @@ export default {
   props: {
     to: {
       type: [String, Object]
+    },
+
+    action: {
+      type: String,
+      default: 'push'
     }
   },
 
@@ -61,7 +66,7 @@ export default {
       }
 
       e.preventDefault()
-      router.push(to)
+      router[props.action](to)
     }
   }
 }
