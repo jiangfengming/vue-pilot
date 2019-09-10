@@ -1,6 +1,6 @@
 {
   "name": "vue-pilot",
-  "version": "0.15.6",
+  "version": "0.15.7",
   "description": "A vue router with the power of history.state",
   "main": "dist/vue-pilot",
   "scripts": {
