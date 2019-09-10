@@ -184,7 +184,7 @@ function () {
       beforeCreate: function beforeCreate() {
         var _this = this;
 
-        var router = this.$options.router || this.$parent && this.$parent.router;
+        var router = this.$options.router || this.$parent && this.$parent.$router;
 
         if (!router) {
           return;
