@@ -12,7 +12,7 @@ export default class {
 
     Vue.mixin({
       beforeCreate() {
-        const router = this.$options.router || (this.$parent && this.$parent.$options.router)
+        const router = this.$options.router || (this.$parent && this.$parent.router)
 
         if (!router) {
           return
