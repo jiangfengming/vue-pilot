@@ -8,7 +8,9 @@
 <div id="app">
   <router-view name="header"></router-view>
 
-  <router-link tag="button" data-foo="bar" to="/">/</router-link><br>
+  <router-link tag="button" data-foo="bar" to="/" class="button">/</router-link><br>
+  <router-link to="/#a">/#a</router-link><br>
+  <router-link to="/#b">/#b</router-link><br>
   <router-link to="http://localhost:8000/props-obj" action="replace">/props-obj</router-link><br>
   <router-link to="/props-func/%E4%BD%A0%E5%A5%BD?foo=hey">/props-func/你好?foo=hey</router-link><br>
   <router-link to="/regex/123">/regex/123</router-link><br>
@@ -233,18 +235,21 @@ const routes = [
   }
 ]
 
-const router = new Router({ routes })
+const router = new Router({
+  origin: 'https://www.example.com',
+  routes
+})
 
 router.beforeChange(function(to, from, action) {
   console.log('beforeChange')
-  console.log('this:', this)
+  console.log('to', to)
+  console.log('from', from)
+  console.log('action', action)
   if (from && from.path === '/layout/foo') return confirm('Leave?')
 })
 
 router.afterChange(function(to, from, action) {
   console.log('afterChange')
-  console.log('this:', this)
-  console.log(to)
 })
 
 const app = new Vue({

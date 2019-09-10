@@ -12,7 +12,7 @@ export default class {
 
     Vue.mixin({
       beforeCreate() {
-        const router = this.$root.$options.router
+        const router = this.$options.router || (this.$parent && this.$parent.$options.router)
 
         if (!router) {
           return
@@ -20,8 +20,9 @@ export default class {
 
         this.$router = router
 
-        if (this.$root === this) {
+        if (this.$root === this && !router._observed) {
           router.current = Vue.observable(router.current)
+          router._observed = true
         }
 
         else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
@@ -34,7 +35,9 @@ export default class {
     })
   }
 
-  constructor({ routes }) {
+  constructor({ origin, routes }) {
+    const locationOrigin = typeof window === 'object' && window.location && window.location.origin
+    this.origin = [].concat(origin || [], locationOrigin || [])
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []

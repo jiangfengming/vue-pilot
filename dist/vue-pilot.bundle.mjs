@@ -670,7 +670,7 @@ function () {
       _top: 1
     }) && target !== window.name)) {
       return;
-    } // out of app
+    } // outside of the app
 
 
     if (!a.href.startsWith(location.origin + this.url('/'))) {
@@ -679,7 +679,7 @@ function () {
 
     var to = this.normalize(a.href); // hash change
 
-    if (to.path === this.current.path && to.query.source.toString() === this.current.query.source.toString() && to.hash && to.hash !== this.current.hash) {
+    if (to.path === this.current.path && to.query.source.toString() === this.current.query.source.toString() && to.hash) {
       return;
     }
 
@@ -1018,7 +1018,8 @@ var RouterLink = {
     tag: {
       type: String,
       "default": 'a'
-    }
+    },
+    target: String
   },
   render: function render(h, _ref) {
     var parent = _ref.parent,
@@ -1027,49 +1028,81 @@ var RouterLink = {
         listeners = _ref.listeners,
         data = _ref.data;
     var router = parent.$router;
-    var isAbsURL = props.to && props.to.constructor === String && /^https?:/.test(props.to);
-    data.attrs.href = props.to ? isAbsURL ? props.to : router.url(props.to) : 'javascript:';
-    data.on = Object.assign({}, listeners, {
-      click: listeners.click ? [].concat(listeners.click, click) : click
-    });
-    return h(props.tag, data, children);
+    var hasWindow = typeof window === 'object';
+    var href, to;
+    var addEvent = false;
 
-    function click(e) {
-      if (e.defaultPrevented) {
-        return;
+    if (!props.to) {
+      href = 'javascript:';
+    } else {
+      var isAbsURL = props.to.constructor === String && /^\w+:/.test(props.to);
+
+      if (isAbsURL) {
+        if (router.origin.length) {
+          try {
+            var url = new URL(props.to);
+
+            if (router.origin.includes(url.origin) && url.pathname.startsWith(router.url('/'))) {
+              to = router.normalize(props.to);
+            }
+          } catch (e) {// nop
+          }
+        }
+      } else {
+        to = router.normalize(props.to);
       }
 
-      var a = e.currentTarget; // open new window
+      if (to && router._urlRouter.find(to.path)) {
+        href = to.url;
 
-      var target = a.target;
+        if (to.path === router.current.path) {
+          data["class"] = 'active';
+        }
 
-      if (target && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in {
-        _self: 1,
-        _blank: 1,
-        _parent: 1,
-        _top: 1
-      }) && target !== window.name)) {
-        return;
-      } // outside of app
-
-
-      if (isAbsURL && !props.to.startsWith(location.origin + router.url('/'))) {
-        return;
+        if (hasWindow) {
+          addEvent = true;
+        }
+      } else {
+        href = isAbsURL ? props.to : to.url;
       }
+    }
 
-      var to = router.normalize(props.to);
+    if (props.tag === 'a') {
+      data.attrs.href = href;
 
-      if (!router._urlRouter.find(to.path)) {
-        return;
+      if (props.target) {
+        var target = props.target;
+        data.attrs.target = target;
+
+        if (addEvent && (target === '_blank' || target === '_parent' && window.parent !== window || target === '_top' && window.top !== window || !(target in {
+          _self: 1,
+          _blank: 1,
+          _parent: 1,
+          _top: 1
+        }) && target !== window.name)) {
+          addEvent = false;
+        }
       } // hash change
 
 
-      if (to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash && to.hash !== router.current.hash) {
-        return;
+      if (addEvent && to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash) {
+        addEvent = false;
       }
+    }
 
-      e.preventDefault();
-      router[props.action](to);
+    if (addEvent) {
+      data.on = Object.assign({}, listeners, {
+        click: listeners.click ? [].concat(listeners.click, click) : click
+      });
+    }
+
+    return h(props.tag, data, children);
+
+    function click(e) {
+      if (!e.defaultPrevented) {
+        e.preventDefault();
+        router[props.action](to);
+      }
     }
   }
 };
@@ -1089,7 +1122,7 @@ function () {
       beforeCreate: function beforeCreate() {
         var _this = this;
 
-        var router = this.$root.$options.router;
+        var router = this.$options.router || this.$parent && this.$parent.$options.router;
 
         if (!router) {
           return;
@@ -1097,8 +1130,9 @@ function () {
 
         this.$router = router;
 
-        if (this.$root === this) {
+        if (this.$root === this && !router._observed) {
           router.current = Vue.observable(router.current);
+          router._observed = true;
         } else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
           Array.prototype.push.apply(router.current._beforeLeave, this.$options.beforeRouteLeave.map(function (f) {
             return f.bind(_this);
@@ -1109,7 +1143,10 @@ function () {
   };
 
   function _default(_ref) {
-    var routes = _ref.routes;
+    var origin = _ref.origin,
+        routes = _ref.routes;
+    var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
+    this.origin = [].concat(origin || [], locationOrigin || []);
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new Router(this._routes);
     this._beforeChangeHooks = [];

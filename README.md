@@ -10,8 +10,8 @@ A vue router.
 
 ## Table of Contents
 - [Constructor](#constructor)
-  - [HashRouter](#hashrouter)
   - [PathRouter](#pathrouter)
+  - [HashRouter](#hashrouter)
 - [Routes Definition](#routes-definition)
   - [&lt;router-view&gt;](#router-view)
   - [route table](#route-table)
@@ -38,6 +38,44 @@ A vue router.
 
 ## Constructor
 
+### PathRouter
+
+```js
+import Vue from 'vue'
+import { PathRouter } from 'vue-pilot'
+
+Vue.use(PathRouter)
+
+// define routes
+const routes = [
+  // see definition below
+]
+
+const router = new PathRouter({
+  routes,
+  base: '/app/',
+  origin: 'https://www.example.com/'
+})
+
+const app = new Vue({
+  el: '#app',
+  router,
+  template: `
+    <div id="app">
+      <router-view />
+    </div>
+  `,
+  // ...
+})
+
+router.start()
+```
+
+`base`: `String`. defines the base path of the app. If you want the root path not end with slash,
+you can set the base without ending slash, like '/app'. default: `''`
+
+`origin`: `String` | `Array<String>`. Let `<router-link>` treats URLs with `origin` as in-app links.
+
 ### HashRouter
 
 ```js
@@ -46,50 +84,14 @@ import { HashRouter } from 'vue-pilot'
 
 Vue.use(HashRouter)
 
-// define routes
 const routes = [
-  // see examples below
+  // ...
 ]
 
 const router = new HashRouter({ routes })
-
-const app = new Vue({
-  router,
-  template: `
-    <div id="app">
-      <router-view />
-    </div>
-  `,
-  // ...
-}).$mount()
-
-document.body.appendChild(app.$el)
-router.start()
 ```
 
-### PathRouter
-`PathRouter` is similar to `HashRouter`, but has a `base` option. `base` defines the base path of the app.
-
-```js
-import Vue from 'vue'
-import { PathRouter } from 'vue-pilot'
-
-Vue.use(PathRouter)
-
-const routes = [
-  //...
-]
-
-const router = new PathRouter({
-  routes,
-
-  // default: ''
-  // If you want the root path doesn't contain ending slash,
-  // you can set the base without ending slash, like '/app'
-  base: '/app/'
-})
-```
-
+`HashRouter` doesn't have `base` option.
 
 ## Routes Definition
 
@@ -322,6 +324,8 @@ The `<router-link>` is a navigation component, it normally renders an `<a>` elem
 `to`: `Location` object, `path`/`fullPath` of `Location` object, or absolute URL.  
 `action`: `String`. `push`, `replace`, or `dispatch`. Defaults to `push`.  
 `tag`: `String`. The HTML tag name, defaults to `a`.
+
+`<router-link>` will have `active` class if it equals to the current path.
 
 ## APIs
 Mose of the APIs are proxied to [spa-history](https://github.com/jiangfengming/spa-history).
