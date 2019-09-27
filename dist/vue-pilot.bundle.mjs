@@ -569,7 +569,9 @@ function () {
   _proto.setState = function setState(state) {
     Object.assign(this.current.state, JSON.parse(JSON.stringify(state))); // dereferencing
 
-    this.__changeHistory('replace', this.current);
+    this.__changeHistory('replace', {
+      state: this.current.state
+    });
   };
 
   _proto._changeHistory = function _changeHistory(action, to) {
