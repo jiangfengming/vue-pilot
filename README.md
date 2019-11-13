@@ -151,6 +151,7 @@ const routes = [
 
   {
     // use `:key` to define params
+    // more pattern syntax, see https://github.com/jiangfengming/url-router
     path: '/article/:id',
 
     // props can be a factory function, it receives the current route object as the first argument.
@@ -258,9 +259,8 @@ const routes = [
         ],
 
         // define a catch-all route
-        // it must be put at the last of all routes definition
         {
-          path: '*',
+          path: '(.*)',
           component: {
             template: '<h1>404 Not Found</h1>'
           }

@@ -226,9 +226,8 @@ const routes = [
     }
   },
 
-  // catch-all route must be put at the last
   {
-    path: '*',
+    path: '(.*)',
     component: {
       template: '<div>404 Not Found</div>'
     }
