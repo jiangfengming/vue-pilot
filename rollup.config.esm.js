@@ -14,5 +14,5 @@ export default {
     file: 'dist/vue-pilot.mjs'
   },
 
-  external: ['spa-history', 'url-router']
+  external: ['spa-history', 'url-router', 'cast-string']
 }

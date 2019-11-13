@@ -1,5 +1,6 @@
 import { PathHistory, HashHistory } from 'spa-history';
 import UrlRouter from 'url-router';
+import { StringCaster } from 'cast-string';
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -347,7 +348,7 @@ function () {
   _proto._resolveRoute = function _resolveRoute(to, _route) {
     var _this4 = this;
 
-    to.params = _route.params;
+    to.params = new StringCaster(_route.params);
     var root = {};
     var routerView = root;
 

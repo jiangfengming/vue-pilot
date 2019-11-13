@@ -22,16 +22,17 @@
     "url": "https://github.com/jiangfengming/vue-pilot/issues"
   },
   "dependencies": {
+    "cast-string": "^0.3.0",
     "spa-history": "^0.12.5",
-    "url-router": "^9.0.1"
+    "url-router": "^11.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
-    "eslint": "^6.4.0",
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
+    "eslint": "^6.6.0",
     "eslint-config-enough": "^0.3.8",
     "local-web-server": "^3.0.7",
-    "rollup": "^1.21.4",
+    "rollup": "^1.27.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-node-resolve": "^5.2.0"
   },

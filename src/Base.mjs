@@ -1,6 +1,7 @@
 import UrlRouter from 'url-router'
 import RouterView from './RouterView'
 import RouterLink from './RouterLink'
+import { StringCaster } from 'cast-string'
 
 export default class {
   static install(Vue) {
@@ -153,7 +154,7 @@ export default class {
   }
 
   _resolveRoute(to, _route) {
-    to.params = _route.params
+    to.params = new StringCaster(_route.params)
 
     const root = {}
     let routerView = root

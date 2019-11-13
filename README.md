@@ -167,11 +167,10 @@ const routes = [
   },
 
   {
-    // path can be RegExp
-    path: /^\/regex\/(\d+)$/,
+    // param with regex
+    path: '/date/:year(\\d+)-:month(\\d+)',
     component: VFoo,
-    // the subexpressions are stored as $1, $2, ...
-    props: route => ({ foo: route.params.int('$1') })
+    props: route => ({ foo: route.params.int('year'), bar: route.params.int('month') })
   },
 
   // define hooks

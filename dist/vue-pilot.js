@@ -6,6 +6,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var spaHistory = require('spa-history');
 var UrlRouter = _interopDefault(require('url-router'));
+var castString = require('cast-string');
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -353,7 +354,7 @@ function () {
   _proto._resolveRoute = function _resolveRoute(to, _route) {
     var _this4 = this;
 
-    to.params = _route.params;
+    to.params = new castString.StringCaster(_route.params);
     var root = {};
     var routerView = root;
 
