@@ -27,7 +27,7 @@
   <router-link to="/test-func">/test-func</router-link><br>
   <router-link to="/" @click.prevent>preventDefault</router-link><br>
   <div @click="$router.captureLinkClickEvent($event)"><a :href="$router.url('/capture-link')">/capture-link</a></div>
-  <router-link to="https://www.example.com/">www.example.com</router-link>
+  <router-link to="https://www.example.com/" tag="div" target="_blank">www.example.com</router-link>
 
   <router-view foo="hello" class="foo"></router-view>
 </div>
@@ -235,7 +235,7 @@ const routes = [
 ]
 
 const router = new Router({
-  origin: 'https://www.example.com',
+  // origin: 'https://www.example.com',
   routes
 })
 
