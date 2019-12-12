@@ -196,7 +196,8 @@ function () {
         if (this.$root === this && !router._observed) {
           router.current = Vue.observable(router.current);
           router._observed = true;
-        } else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
+        } else if (this.$vnode && // root vm's $vnode is undefined
+        this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
           Array.prototype.push.apply(router.current._beforeLeave, this.$options.beforeRouteLeave.map(function (f) {
             return f.bind(_this);
           }));

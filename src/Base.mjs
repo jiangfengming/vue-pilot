@@ -26,7 +26,12 @@ export default class {
           router._observed = true
         }
 
-        else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
+        else if (
+          this.$vnode && // root vm's $vnode is undefined
+          this.$vnode.data._routerView &&
+          this.$vnode.data._routerView.path &&
+          this.$options.beforeRouteLeave
+        ) {
           Array.prototype.push.apply(
             router.current._beforeLeave,
             this.$options.beforeRouteLeave.map(f => f.bind(this))

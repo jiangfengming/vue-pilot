@@ -877,7 +877,7 @@ function () {
       if (match) {
         if (match[0].length === remain.length && child.handler !== undefined) {
           if (child.param) {
-            params[child.param] = match[0];
+            params[child.param] = decodeURIComponent(match[0]);
           }
 
           return {
@@ -889,7 +889,7 @@ function () {
 
           if (_result) {
             if (child.param) {
-              params[child.param] = match[0];
+              params[child.param] = decodeURIComponent(match[0]);
             }
 
             return _result;
@@ -1084,7 +1084,8 @@ function () {
         if (this.$root === this && !router._observed) {
           router.current = Vue.observable(router.current);
           router._observed = true;
-        } else if (this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
+        } else if (this.$vnode && // root vm's $vnode is undefined
+        this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
           Array.prototype.push.apply(router.current._beforeLeave, this.$options.beforeRouteLeave.map(function (f) {
             return f.bind(_this);
           }));
