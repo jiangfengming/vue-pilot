@@ -8,7 +8,7 @@
 <div id="app">
   <router-view name="header"></router-view>
 
-  <router-link tag="button" data-foo="bar" to="/" class="button">/</router-link><br>
+  <!-- <router-link tag="button" data-foo="bar" to="/" class="button">/</router-link><br>
   <router-link to="/#a">/#a</router-link><br>
   <router-link to="/#b">/#b</router-link><br>
   <router-link to="http://localhost:8000/props-obj" action="replace">/props-obj</router-link><br>
@@ -26,8 +26,8 @@
   <router-link to="/undefined-children">/undefined-children</router-link><br>
   <router-link to="/test-func">/test-func</router-link><br>
   <router-link to="/" @click.prevent>preventDefault</router-link><br>
-  <div @click="$router.captureLinkClickEvent($event)"><a :href="$router.url('/capture-link')">/capture-link</a></div>
-  <router-link to="https://www.example.com/" tag="div" target="_blank">www.example.com</router-link>
+  <div @click="$router.captureLinkClickEvent($event)"><a :href="$router.url('/capture-link')">/capture-link</a></div> -->
+  <router-link to="https://www.example.com/foo" tag="div" target="_blank">www.example.com</router-link>
 
   <router-view foo="hello" class="foo"></router-view>
 </div>
@@ -235,7 +235,7 @@ const routes = [
 ]
 
 const router = new Router({
-  // origin: 'https://www.example.com',
+  origin: 'https://www.example.com',
   routes
 })
 

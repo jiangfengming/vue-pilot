@@ -43,7 +43,7 @@ export default class {
 
   constructor({ origin, routes }) {
     const locationOrigin = typeof window === 'object' && window.location && window.location.origin
-    this.origin = [].concat(origin || [], locationOrigin || [])
+    this.origin = [].concat(locationOrigin || [], origin || [])
     this._routes = this._parseRoutes(routes)
     this._urlRouter = new UrlRouter(this._routes)
     this._beforeChangeHooks = []

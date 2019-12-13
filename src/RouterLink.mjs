@@ -22,28 +22,34 @@ export default {
 
   render(h, { parent, props, children, listeners, data }) {
     const router = parent.$router
+    let url = props.to
     let href, to
     let spa = false
 
-    if (!props.to) {
+    if (!url) {
       href = 'javascript:'
     } else {
-      const isAbsURL = props.to.constructor === String && /^\w+:/.test(props.to)
+      const isAbsURL = url.constructor === String && /^\w+:/.test(url)
 
       if (isAbsURL) {
         if (router.origin.length) {
           try {
-            const url = new URL(props.to)
+            const u = new URL(url)
 
-            if (router.origin.includes(url.origin) && url.pathname.startsWith(router.url('/'))) {
-              to = router.normalize(props.to)
+            if (router.origin.includes(u.origin) && u.pathname.startsWith(router.url('/'))) {
+              to = router.normalize(url)
+              const locationOrigin = typeof window === 'object' && window.location && window.location.origin
+
+              if (locationOrigin && u.origin !== locationOrigin) {
+                url = locationOrigin + u.pathname + u.search + u.hash
+              }
             }
           } catch (e) {
             // nop
           }
         }
       } else {
-        to = router.normalize(props.to)
+        to = router.normalize(url)
       }
 
       if (to && router._urlRouter.find(to.path)) {
@@ -54,7 +60,7 @@ export default {
           data.class = 'active'
         }
       } else {
-        href = isAbsURL ? props.to : to.url
+        href = isAbsURL ? url : to.url
       }
     }
 
@@ -102,11 +108,11 @@ export default {
         if (spa) {
           router[props.action](to)
         } else if (props.target) {
-          window.open(props.to, props.target)
+          window.open(url, props.target)
         } else if (props.action === 'push') {
-          location = props.to
+          location = url
         } else {
-          location.replace(props.to)
+          location.replace(url)
         }
       }
     }

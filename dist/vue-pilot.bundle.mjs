@@ -980,27 +980,33 @@ var RouterLink = {
         listeners = _ref.listeners,
         data = _ref.data;
     var router = parent.$router;
+    var url = props.to;
     var href, to;
     var spa = false;
 
-    if (!props.to) {
+    if (!url) {
       href = 'javascript:';
     } else {
-      var isAbsURL = props.to.constructor === String && /^\w+:/.test(props.to);
+      var isAbsURL = url.constructor === String && /^\w+:/.test(url);
 
       if (isAbsURL) {
         if (router.origin.length) {
           try {
-            var url = new URL(props.to);
+            var u = new URL(url);
 
-            if (router.origin.includes(url.origin) && url.pathname.startsWith(router.url('/'))) {
-              to = router.normalize(props.to);
+            if (router.origin.includes(u.origin) && url.pathname.startsWith(u.url('/'))) {
+              to = router.normalize(url);
+              var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
+
+              if (locationOrigin && u.origin !== locationOrigin) {
+                url = locationOrigin + u.pathname + u.search + u.hash;
+              }
             }
           } catch (e) {// nop
           }
         }
       } else {
-        to = router.normalize(props.to);
+        to = router.normalize(url);
       }
 
       if (to && router._urlRouter.find(to.path)) {
@@ -1011,7 +1017,7 @@ var RouterLink = {
           data["class"] = 'active';
         }
       } else {
-        href = isAbsURL ? props.to : to.url;
+        href = isAbsURL ? url : to.url;
       }
     }
 
@@ -1050,11 +1056,11 @@ var RouterLink = {
         if (spa) {
           router[props.action](to);
         } else if (props.target) {
-          window.open(props.to, props.target);
+          window.open(url, props.target);
         } else if (props.action === 'push') {
-          location = props.to;
+          location = url;
         } else {
-          location.replace(props.to);
+          location.replace(url);
         }
       }
     }
@@ -1101,7 +1107,7 @@ function () {
     var origin = _ref.origin,
         routes = _ref.routes;
     var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
-    this.origin = [].concat(origin || [], locationOrigin || []);
+    this.origin = [].concat(locationOrigin || [], origin || []);
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new Router(this._routes);
     this._beforeChangeHooks = [];
