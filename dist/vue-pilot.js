@@ -112,7 +112,7 @@ var RouterLink = {
           try {
             var u = new URL(url);
 
-            if (router.origin.includes(u.origin) && url.pathname.startsWith(u.url('/'))) {
+            if (router.origin.includes(u.origin) && u.pathname.startsWith(router.url('/'))) {
               to = router.normalize(url);
               var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
 

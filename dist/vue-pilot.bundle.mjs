@@ -522,7 +522,7 @@ function () {
 
         _this2.afterChange(to, from, action);
       } else if (ret === false) {
-        if (action === 'popstate') {
+        if (action === 'pop') {
           _this2.__changeHistory('push', _this2.current);
         }
       } // do nothing if returns null
@@ -533,7 +533,7 @@ function () {
             action = ret.action;
           } else if (action === 'init') {
             action = 'replace';
-          } else if (action === 'popstate') {
+          } else if (action === 'pop') {
             action = 'push';
           }
 
@@ -994,7 +994,7 @@ var RouterLink = {
           try {
             var u = new URL(url);
 
-            if (router.origin.includes(u.origin) && url.pathname.startsWith(u.url('/'))) {
+            if (router.origin.includes(u.origin) && u.pathname.startsWith(router.url('/'))) {
               to = router.normalize(url);
               var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
 

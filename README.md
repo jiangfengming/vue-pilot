@@ -559,7 +559,7 @@ Arguments:
     push: router.push() is called.
     replace: router.replace() is called.
     init: "to" is the initial page, at this stage, "from.path" is null.
-    popstate: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
+    pop: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
     dispatch: router.dispatch() is called.
   router: the router instance
 
