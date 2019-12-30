@@ -3,7 +3,7 @@ A Trie-based vue router with the ability of managing history.state.
 
 ## Features
 * Small (5kb gzipped).
-* Manipulating history.state.
+* Ability of managing history.state.
 * Decoupling UI layout from URL segments.
 * Dispatching route without changing URL.
 * Typed query and params.
@@ -12,8 +12,8 @@ A Trie-based vue router with the ability of managing history.state.
 - [Constructor](#constructor)
   - [PathRouter](#pathrouter)
   - [HashRouter](#hashrouter)
-- [&lt;router-view&gt;](#ltrouter-viewgt)
-- [&lt;router-link&gt;](#ltrouter-linkgt)
+- [&lt;router-view&gt;](#router-view)
+- [&lt;router-link&gt;](#router-link)
 - [Location object](#location-object)
   - [path](#path)
   - [external](#external)
@@ -35,19 +35,19 @@ A Trie-based vue router with the ability of managing history.state.
 - [Routes definition](#routes-definition)
 - [APIs](#apis)
   - [router.current](#routercurrent)
-  - [router.start](#routerstart)
-  - [router.normalize](#routernormalize)
-  - [router.url](#routerurl)
-  - [router.push](#routerpush)
-  - [router.replace](#routerreplace)
-  - [router.dispatch](#routerdispatch)
-  - [router.setState](#routersetstate)
-  - [router.go](#routergo)
-  - [router.back](#routerback)
-  - [router.forward](#routerforward)
-  - [router.captureLinkClickEvent](#routercapturelinkclickevent)
-  - [router.on](#routeron)
-  - [router.off](#routeroff)
+  - [router.start()](#routerstart)
+  - [router.normalize()](#routernormalize)
+  - [router.url()](#routerurl)
+  - [router.push()](#routerpush)
+  - [router.replace()](#routerreplace)
+  - [router.dispatch()](#routerdispatch)
+  - [router.setState()](#routersetstate)
+  - [router.go()](#routergo)
+  - [router.back()](#routerback)
+  - [router.forward()](#routerforward)
+  - [router.captureLinkClickEvent()](#routercapturelinkclickevent)
+  - [router.on()](#routeron)
+  - [router.off()](#routeroff)
 - [Events](#events)
   - [beforeChange](#beforechange)
     - [Arguments](#arguments)
@@ -150,7 +150,7 @@ The `<router-link>` is a navigation component, it normally renders an `<a>` elem
 
 ## Location object
 A location object is used for changing the current address.
-It can be used in `<router-link :to="location">`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
+It can be used in `<router-link :to="location">`, `router.start(location)`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
 
 A string URL can be converted to a location object by [router.normalize()](#routernormalize).
 And a location object can be converted to a URL string by [router.url()](#routerurl).
@@ -215,7 +215,7 @@ See `state` parameter of [history.pushState()](https://developer.mozilla.org/en-
 ### hidden
 `Boolean`
 
-Indicate whether it is a hidden history entry. see `router.push()` for detail.
+Indicate whether it is a hidden history entry. see [router.push()](#routerpush) for detail.
 
 ### appearPath
 `String`
@@ -446,7 +446,7 @@ In the vue instance, you can get the router object from `this.$router`.
 ### router.current
 The current [matched route object](#matched-route-object).
 
-### router.start
+### router.start()
 
 ```js
 router.start(URL string | location)
@@ -456,7 +456,7 @@ Starts the router.
 
 In browser, if URL/location is not given, the default value is the current address.
 
-### router.normalize
+### router.normalize()
 
 ```js
 router.normalize(URL string | location)
@@ -504,7 +504,7 @@ router.normalize('http://www.example.com/app/#/home?a=1#b')
 
 The `query` property can be of type `Object`, `String` or `Array`. see [URLSearchParams()](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for detail.
 
-### router.url
+### router.url()
 
 ```js
 router.url(URL string | location)
@@ -531,7 +531,7 @@ router.url('/home?a=1#b')
 */
 ```
 
-### router.push
+### router.push()
 
 ```js
 router.push(URL string | location)
@@ -586,7 +586,7 @@ router.push({
 })
 ```
 
-### router.replace
+### router.replace()
 
 ```js
 router.replace(URL string | location)
@@ -594,7 +594,7 @@ router.replace(URL string | location)
 
  Replaces the current history entry with the location specified.
 
-### router.dispatch
+### router.dispatch()
 
 ```js
 router.dispatch(URL string | location)
@@ -602,7 +602,7 @@ router.dispatch(URL string | location)
 
 Dispatchs the route without changing the history. That is, the location of browser's address bar won't be changed.
 
-### router.setState
+### router.setState()
 
 ```js
 router.setState(state)
@@ -610,7 +610,7 @@ router.setState(state)
 
 Sets state of the current route. the state will be merged into `router.current.state`
 
-### router.go
+### router.go()
 
 ```js
 router.go(position, { silent = false, state = null } = {})
@@ -622,7 +622,7 @@ Counterpart of `window.history.go()`. Returns a promise which will be resolved w
 
 `state`: if set, the state object will be merged into the state object of the destination location.
 
-### router.back
+### router.back()
 
 ```js
 router.back(options)
@@ -630,7 +630,7 @@ router.back(options)
 
 Alias of `router.go(-1, options)`
 
-### router.forward
+### router.forward()
 
 ```js
 router.forward(options)
@@ -638,7 +638,7 @@ router.forward(options)
 
 Alias of `router.go(1, options)`
 
-### router.captureLinkClickEvent
+### router.captureLinkClickEvent()
 
 ```js
 router.captureLinkClickEvent(event)
@@ -653,7 +653,7 @@ Prevents the navigation when clicking the `<a>` element in the container and `hr
 </div>
 ```
 
-### router.on
+### router.on()
 
 ```js
 router.on(event, callback, { once = false, beginning = false })
@@ -666,7 +666,7 @@ If `once` is `true`, the callback function will be removed after
 If `beginning` is `true`, the callback function will be inserted at the beginning of the callback array,
 so it will be called first.
 
-### router.off
+### router.off()
 
 ```js
 router.off(event, callback, { once = true })
