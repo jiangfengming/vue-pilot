@@ -1,5 +1,5 @@
 # vue-pilot
-A Trie-based vue router.
+A Trie-based vue router with the ability of managing history.state.
 
 ## Features
 * Small (5kb gzipped).
@@ -12,11 +12,27 @@ A Trie-based vue router.
 - [Constructor](#constructor)
   - [PathRouter](#pathrouter)
   - [HashRouter](#hashrouter)
-- [&lt;router-view&gt;](#router-view)
-- [&lt;router-link&gt;](#router-link)
-- [Routes definition](#routes-definition)
-- [Matched route object](#matched-route-object)
+- [&lt;router-view&gt;](#ltrouter-viewgt)
+- [&lt;router-link&gt;](#ltrouter-linkgt)
 - [Location object](#location-object)
+  - [path](#path)
+  - [external](#external)
+  - [query](#query)
+  - [hash](#hash)
+  - [fullPath](#fullpath)
+  - [url](#url)
+  - [state](#state)
+  - [hidden](#hidden)
+  - [appearPath](#appearpath)
+- [Matched route object](#matched-route-object)
+  - [path](#path-1)
+  - [query](#query-1)
+  - [hash](#hash-1)
+  - [fullPath](#fullpath-1)
+  - [url](#url-1)
+  - [params](#params)
+  - [meta](#meta)
+- [Routes definition](#routes-definition)
 - [APIs](#apis)
   - [router.current](#routercurrent)
   - [router.start](#routerstart)
@@ -30,8 +46,14 @@ A Trie-based vue router.
   - [router.back](#routerback)
   - [router.forward](#routerforward)
   - [router.captureLinkClickEvent](#routercapturelinkclickevent)
-  - [router.beforeChange](#routerbeforechange)
-  - [router.afterChange](#routerafterchange)
+  - [router.on](#routeron)
+  - [router.off](#routeroff)
+- [Events](#events)
+  - [beforeChange](#beforechange)
+    - [Arguments](#arguments)
+    - [Returns](#returns)
+  - [beforeUpdate](#beforeupdate)
+  - [afterChange](#afterchange)
 - [Dependencies](#dependencies)
 - [License](#license)
 
@@ -130,14 +152,20 @@ The `<router-link>` is a navigation component, it normally renders an `<a>` elem
 A location object is used for changing the current address.
 It can be used in `<router-link :to="location">`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
 
+A string URL can be converted to a location object by [router.normalize()](#routernormalize).
+And a location object can be converted to a URL string by [router.url()](#routerurl).
+
 ```js
 {
   path,
   external,
   query,
   hash,
+  fullPath,
+  url,
   state,
-  hidden
+  hidden,
+  appearPath
 }
 ```
 
@@ -164,6 +192,20 @@ constructor. Or it can be a [StringCaster](https://github.com/jiangfengming/cast
 A string containing a `#` followed by the fragment identifier of the URL.
 If `HashRouter` is used, the fragment identifier is followed by the second `#` mark.
 
+### fullPath
+`String`. Read-only.
+
+path + query string + hash
+
+### url
+`String`. Read-only.
+
+An external relative URL which can be used as `href` attribute of `<a>`.
+It is the same as `router.url(location)`.
+
+* `PathRouter`: base + path + query string + hash
+* `HashRouter`: # + path + query string + hash
+
 ### state
 `Object`
 
@@ -175,6 +217,11 @@ See `state` parameter of [history.pushState()](https://developer.mozilla.org/en-
 
 Indicate whether it is a hidden history entry. see `router.push()` for detail.
 
+### appearPath
+`String`
+
+If `hidden` is `true` and `appearPath` is set, the location bar will show this address instead.
+
 ## Matched route object
 A matched route object contains the information of the matched route.
 It contains some same properties as the `Location` object, and some extra properties.
@@ -185,15 +232,11 @@ It's provided by the hook functions as the `to` and `from` parameter.
   path,
   query,
   hash,
-  fullPath, // path + query + hash
-
-  // PathRouter: base + path + query + hash
-  // HashRouter: '#' + path + query + hash
+  fullPath,
   url,
-
-  state, // state object
-  params, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
-  meta // meta collected from route definition
+  state,
+  params,
+  meta
 }
 ```
 
@@ -215,15 +258,12 @@ Same as `location.hash`.
 ### fullPath
 `String`
 
-path + query string + hash
+Same as `location.fullPath`.
 
 ### url
 `String`
 
-An external relative URL which can be used in `href` attribute of `<a>`.
-
-* `PathRouter`: base + path + query string + hash
-* `HashRouter`: # + path + query string + hash
+Same as `location.url`.
 
 ### params
 `StringCaster`
@@ -470,7 +510,7 @@ The `query` property can be of type `Object`, `String` or `Array`. see [URLSearc
 router.url(URL string | location)
 ```
 
-Converts the internal URL string or location object to an external relative URL which can be used in `href` attribute of `<a>`.
+Converts an internal URL string or location object to an external relative URL which can be set as `href` attribute of `<a>`.
 
 ```js
 router.url({
@@ -604,7 +644,8 @@ Alias of `router.go(1, options)`
 router.captureLinkClickEvent(event)
 ```
 
-Prevents the navigation when clicking the `<a>` element in the container and the `href` is an in-app address, `router.push()` will be called instead.
+Prevents the navigation when clicking the `<a>` element in the container and `href` is an in-app address,
+`router.push()` will be called instead.
 
 ```html
 <div @click="$router.captureLinkClickEvent($event)">

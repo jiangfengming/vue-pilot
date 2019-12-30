@@ -1,7 +1,7 @@
 {
   "name": "vue-pilot",
   "version": "0.16.3",
-  "description": "A vue router with the power of history.state",
+  "description": "A Trie-based vue router with the ability of managing history.state",
   "main": "dist/vue-pilot",
   "scripts": {
     "build": "rollup -c rollup.config.esm.js && rollup -c rollup.config.cjs.js && rollup -c rollup.config.esm.bundle.js",
