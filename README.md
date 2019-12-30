@@ -277,7 +277,6 @@ See [Routes definition](#routes-definition) below for details.
 
 A object collected from the route definiton. See [Routes definition](#routes-definition) below for details.
 
-
 ## Routes definition
 
 ```js
@@ -592,7 +591,7 @@ router.push({
 router.replace(URL string | location)
 ```
 
- Replaces the current history entry with the location specified.
+Replaces the current history entry with the location specified.
 
 ### router.dispatch()
 
@@ -672,7 +671,7 @@ so it will be called first.
 router.off(event, callback, { once = true })
 ```
 
-Remove the specified callback function.
+Removes the specified event callback.
 
 ## Events
 
