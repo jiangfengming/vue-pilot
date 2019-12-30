@@ -1,7 +1,7 @@
 import { HashHistory } from 'spa-history'
 import Base from './Base'
 
-export default class extends Base {
+export default class HashRouter extends Base {
   constructor(args) {
     super(args)
 

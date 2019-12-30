@@ -11,7 +11,12 @@ export default {
   render(h, { props, children, parent, data }) {
     const route = parent.$root.$router && parent.$root.$router.current
 
-    if (!route || !route.routerViews) {
+    // make reactive
+    route.fullPath
+    route.state
+    route.meta
+
+    if (!route || !route._routerViews) {
       return
     }
 
@@ -27,7 +32,7 @@ export default {
       } else if (_parent.$parent) {
         _parent = _parent.$parent
       } else {
-        routerView = route.routerViews[props.name]
+        routerView = route._routerViews[props.name]
         break
       }
     }
@@ -42,6 +47,10 @@ export default {
         : routerView.props
 
       Object.assign(data, { props: viewProps })
+    }
+
+    if (routerView.key) {
+      data.key = routerView.key instanceof Function ? routerView.key(route) : routerView.key
     }
 
     data._routerView = routerView

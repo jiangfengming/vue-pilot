@@ -1,10 +1,10 @@
 # vue-pilot
-A vue router.
+A Trie-based vue router.
 
 ## Features
 * Small (5kb gzipped).
 * Manipulating history.state.
-* Decoupling UI layout and URL structure.
+* Decoupling UI layout from URL segments.
 * Dispatching route without changing URL.
 * Typed query and params.
 
@@ -12,12 +12,11 @@ A vue router.
 - [Constructor](#constructor)
   - [PathRouter](#pathrouter)
   - [HashRouter](#hashrouter)
-- [Routes Definition](#routes-definition)
-  - [&lt;router-view&gt;](#router-view)
-  - [route table](#route-table)
-- [Matched Route Object](#matched-route-object)
-- [Location Object](#location-object)
+- [&lt;router-view&gt;](#router-view)
 - [&lt;router-link&gt;](#router-link)
+- [Routes definition](#routes-definition)
+- [Matched route object](#matched-route-object)
+- [Location object](#location-object)
 - [APIs](#apis)
   - [router.current](#routercurrent)
   - [router.start](#routerstart)
@@ -46,25 +45,19 @@ import { PathRouter } from 'vue-pilot'
 
 Vue.use(PathRouter)
 
-// define routes
-const routes = [
-  // see definition below
-]
-
 const router = new PathRouter({
-  routes,
+  routes: [
+    // see routes definition below
+  ],
+
   base: '/app/',
   origin: 'https://www.example.com/'
 })
 
 const app = new Vue({
-  el: '#app',
+  // inject the router instance
   router,
-  template: `
-    <div id="app">
-      <router-view />
-    </div>
-  `,
+  
   // ...
 })
 
@@ -72,9 +65,9 @@ router.start()
 ```
 
 `base`: `String`. defines the base path of the app. If you want the root path not end with slash,
-you can set the base without ending slash, like '/app'. default: `''`
+you can set the base without ending slash, like '/app'. Defaults to `''`.
 
-`origin`: `String` | `Array<String>`. Let `<router-link>` treats URLs with `origin` as in-app links.
+`origin`: `String` | `Array<String>`. Let `<router-link>` treats absolute URLs with `origin` as in-app links.
 
 ### HashRouter
 
@@ -84,18 +77,22 @@ import { HashRouter } from 'vue-pilot'
 
 Vue.use(HashRouter)
 
-const routes = [
-  // ...
-]
-
-const router = new HashRouter({ routes })
+const router = new HashRouter({
+  routes: [
+    // ...
+  ]
+})
 ```
 
 `HashRouter` doesn't have `base` option.
 
-## Routes Definition
+## \<router-view>
 
-For example, this is our root element:
+The `<router-view>` is a functional component that renders the matched component.
+
+It has a `name` property.  The default value is `default`.
+
+Example:
 
 ```html
 <div id="app">
@@ -104,20 +101,144 @@ For example, this is our root element:
 </div>
 ```
 
-
-### \<router-view>
+## \<router-link>
 
 ```html
-<router-view name="foo" />
+<router-link to="/list?page=1">List</router-link>
+<router-link to="/home" target="_blank">Open new tab</router-link>
+
+<router-link
+  tag="div"
+  action="replace"
+  :to="{ path: '/category', query: { cat: 'shoes' }, state: { from: 'home' } }"
+>
+  Shoes
+</router-link>
+
+<router-link to="https://www.example.com">external link</router-link>
 ```
 
-The `<router-view>` is a functional component that renders the matched component.
+The `<router-link>` is a navigation component, it normally renders an `<a>` element.
 
-It has a `name` property.  The default value is `default`.
+* `to`: `Location` object, or `path`/`fullPath` of the `Location` object, or an absolute URL.
+* `action`: `String`. `push`, `replace`, or `dispatch`. Defaults to `push`.
+* `tag`: `String`. The HTML tag name. Defaults to `a`.
 
-### route table
+`<router-link>` will have `active` class if it equals to the current path.
 
-Let's see the example routes definition:
+## Location object
+A location object is used for changing the current address.
+It can be used in `<router-link :to="location">`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
+
+```js
+{
+  path,
+  external,
+  query,
+  hash,
+  state,
+  hidden
+}
+```
+
+### path
+`String`
+
+Router internal path, which has stripped the protocol, host, and base path.
+
+### external
+`Boolean`
+
+If `path` is started with protocal, or `external` is `true`,
+`path` is treated as an external path, and will be converted to an internal path.
+
+### query
+`Object` | `String` | `Array` | `URLSearchParams` | `StringCaster<URLSearchParams>`
+
+`query` accepts the same parameter types as [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams)
+constructor. Or it can be a [StringCaster](https://github.com/jiangfengming/cast-string#stringcaster) object that wraps a `URLSearchParams` object.
+
+### hash
+`String`
+
+A string containing a `#` followed by the fragment identifier of the URL.
+If `HashRouter` is used, the fragment identifier is followed by the second `#` mark.
+
+### state
+`Object`
+
+The state object is a JavaScript object which is associated with the history entry.
+See `state` parameter of [history.pushState()](https://developer.mozilla.org/en-US/docs/Web/API/History/pushState) for details.
+
+### hidden
+`Boolean`
+
+Indicate whether it is a hidden history entry. see `router.push()` for detail.
+
+## Matched route object
+A matched route object contains the information of the matched route.
+It contains some same properties as the `Location` object, and some extra properties.
+It's provided by the hook functions as the `to` and `from` parameter.
+
+```js
+{
+  path,
+  query,
+  hash,
+  fullPath, // path + query + hash
+
+  // PathRouter: base + path + query + hash
+  // HashRouter: '#' + path + query + hash
+  url,
+
+  state, // state object
+  params, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
+  meta // meta collected from route definition
+}
+```
+
+### path
+`String`
+
+Same as `location.path`.
+
+### query
+`StringCaster`
+
+A [StringCaster](https://github.com/jiangfengming/cast-string#stringcaster) object that wraps a `URLSearchParams` object.
+
+### hash
+`String`
+
+Same as `location.hash`.
+
+### fullPath
+`String`
+
+path + query string + hash
+
+### url
+`String`
+
+An external relative URL which can be used in `href` attribute of `<a>`.
+
+* `PathRouter`: base + path + query string + hash
+* `HashRouter`: # + path + query string + hash
+
+### params
+`StringCaster`
+
+A [StringCaster](https://github.com/jiangfengming/cast-string#stringcaster) object that wraps a plain object.
+The plain object is collected from the path segments.
+See [Routes definition](#routes-definition) below for details.
+
+### meta
+`Object`
+
+A object collected from the route definiton. See [Routes definition](#routes-definition) below for details.
+
+
+## Routes definition
 
 ```js
 const routes = [
@@ -150,9 +271,14 @@ const routes = [
   },
 
   {
-    // use `:key` to define params
+    // use `:paramName` to define params
     // more pattern syntax, see https://github.com/jiangfengming/url-router
     path: '/article/:id',
+
+    // set VM key for dynamic route
+    // see https://vuejs.org/v2/api/#key
+    // if key is a function, the returned value will be the key
+    key: route => route.params.int('id'),
 
     // props can be a factory function, it receives the current route object as the first argument.
     props: route => ({
@@ -179,7 +305,7 @@ const routes = [
     path: '/login',
 
     // beforeEnter hook will be called before confirming the navigation.
-    // see router.beforeChange below for details
+    // see global `beforeChange` event for details
     // Function | Array<Function>
     // `this` refers to the router instance.
     beforeEnter(to, from, action, router) {
@@ -189,6 +315,7 @@ const routes = [
     component: {
       // in-component beforeRouteLeave hook
       // will be called before route leave
+      // see global `beforeChange` event for details
       // Function | Array<Function>
       // `this` refers to the vue component instance.
       beforeRouteLeave(to, from, action, router) {
@@ -271,63 +398,8 @@ const routes = [
 ]
 ```
 
-## Matched Route Object
-A route object contains the information of the matched route. It can be get from route hooks,
-`router.beforeChange()`, `router.afterChange()`, `router.current`, etc.
-
-```js
-{
-  path, // router internal path, which has stripped the protocol, host, and base path.
-  query, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
-  hash, // url hash
-  fullPath, // path + query + hash
-
-  // PathRouter: base + path + query + hash
-  // HashRouter: '#' + path + query + hash
-  url,
-
-  state, // state object
-  params, // StringCaster object. https://github.com/jiangfengming/cast-string#stringcaster
-  meta // meta collected from route definition
-}
-```
-
-`query` and `params` are [StringCaster](https://github.com/jiangfengming/cast-string#stringcaster) objects.
-
-## Location Object
-A location object is used for changing the current address. It can be used in `<router-link>`, `router.push()`, `router.replace()`, `router.dispatch()`, etc.
-
-```js
-{
-  path,
-  query,
-  hash,
-  fullPath,
-  url,
-  state,
-  hidden // Boolean. Indicate whether it is a hidden history entry. see history.push() for detail.
-}
-```
-
-## \<router-link>
-
-```html
-<router-link to="/list?page=1">List</router-link>
-<router-link to="/home" target="_blank">Open new tab</router-link>
-<router-link tag="div" action="replace" :to="{ path: '/category', query: { cat: 'shoes' }, state: { from: 'home' } }">Shoes</router-link>
-<router-link to="https://www.example.com">external link</router-link>
-```
-
-The `<router-link>` is a navigation component, it normally renders an `<a>` element.
-
-`to`: `Location` object, `path`/`fullPath` of `Location` object, or absolute URL.  
-`action`: `String`. `push`, `replace`, or `dispatch`. Defaults to `push`.  
-`tag`: `String`. The HTML tag name, defaults to `a`.
-
-`<router-link>` will have `active` class if it equals to the current path.
-
 ## APIs
-Mose of the APIs are proxied to [spa-history](https://github.com/jiangfengming/spa-history).
+Most of the APIs are proxied to [spa-history](https://github.com/jiangfengming/spa-history).
 
 In the vue instance, you can get the router object from `this.$router`.
 
@@ -340,9 +412,9 @@ The current [matched route object](#matched-route-object).
 router.start(URL string | location)
 ```
 
-Start the router.
+Starts the router.
 
-In browser, if URL/location is not given, the default value is the current address. This parameter is mainly for server-side rendering.
+In browser, if URL/location is not given, the default value is the current address.
 
 ### router.normalize
 
@@ -350,7 +422,7 @@ In browser, if URL/location is not given, the default value is the current addre
 router.normalize(URL string | location)
 ```
 
-convert the URL string or unnormalized location object to normalized object
+converts the URL string or unnormalized location object to a normalized object.
 
 if URL/location.path is started with protocal, or `location.external` is `true`, `location.path` is treated as an external path, and will be converted to an internal path.
 
@@ -390,7 +462,7 @@ router.normalize({
 router.normalize('http://www.example.com/app/#/home?a=1#b')
 ```
 
-The `query` property can be of type Object, String and Array. see [URLSearchParams()](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for detail.
+The `query` property can be of type `Object`, `String` or `Array`. see [URLSearchParams()](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for detail.
 
 ### router.url
 
@@ -398,7 +470,7 @@ The `query` property can be of type Object, String and Array. see [URLSearchPara
 router.url(URL string | location)
 ```
 
-Convert the internal URL string or location object to an external URL which can be used in `href` attribute of `<a>`.
+Converts the internal URL string or location object to an external relative URL which can be used in `href` attribute of `<a>`.
 
 ```js
 router.url({
@@ -425,7 +497,7 @@ router.url('/home?a=1#b')
 router.push(URL string | location)
 ```
 
-Counterpart of `window.history.pushState()`. Push the location onto the history stack. `beforeChange` will be called.
+Pushs the location onto the history stack. `beforeChange` event will be fired.
 
 ```js
 router.push('/home?a=1#b')
@@ -480,15 +552,15 @@ router.push({
 router.replace(URL string | location)
 ```
 
-Counterpart of `window.history.replaceState()`. Replace the current history entry with the location.
+ Replaces the current history entry with the location specified.
 
 ### router.dispatch
 
-```
+```js
 router.dispatch(URL string | location)
 ```
 
-Dispatch the route without changing the history session. That is, the location of browser's address bar won't change.
+Dispatchs the route without changing the history. That is, the location of browser's address bar won't be changed.
 
 ### router.setState
 
@@ -496,7 +568,7 @@ Dispatch the route without changing the history session. That is, the location o
 router.setState(state)
 ```
 
-Set state of the current route. the state will be merged into `router.current.state`
+Sets state of the current route. the state will be merged into `router.current.state`
 
 ### router.go
 
@@ -506,7 +578,7 @@ router.go(position, { silent = false, state = null } = {})
 
 Counterpart of `window.history.go()`. Returns a promise which will be resolved when `popstate` event fired.
 
-`silent`: if true, `beforeChange` won't be called.
+`silent`: if true, `beforeChange` event won't be fired.
 
 `state`: if set, the state object will be merged into the state object of the destination location.
 
@@ -532,7 +604,7 @@ Alias of `router.go(1, options)`
 router.captureLinkClickEvent(event)
 ```
 
-Prevent the navigation when clicking the `<a>` element in the container and the `href` is an in-app address, `router.push()` will be called instead.
+Prevents the navigation when clicking the `<a>` element in the container and the `href` is an in-app address, `router.push()` will be called instead.
 
 ```html
 <div @click="$router.captureLinkClickEvent($event)">
@@ -540,51 +612,85 @@ Prevent the navigation when clicking the `<a>` element in the container and the 
 </div>
 ```
 
-### router.beforeChange
+### router.on
 
 ```js
-router.beforeChange(function(to, from, action, router) {
+router.on(event, callback, { once = false, beginning = false })
+```
+
+Adds a callback function that will be called when the specified event fires.
+
+If `once` is `true`, the callback function will be removed after 
+
+If `beginning` is `true`, the callback function will be inserted at the beginning of the callback array,
+so it will be called first.
+
+### router.off
+
+```js
+router.off(event, callback, { once = true })
+```
+
+Remove the specified callback function.
+
+## Events
+
+### beforeChange
+
+```js
+router.on('beforeChange', function(to, from, action, router) {
   // ...
 })
 ```
 
-Add a global beforeChange callback. The callback will be called before confirming the navigation.
-`this` of callback refers to the router instance.
+The `beforeChange` hook will be called before confirming the navigation.
+`this` refers to the router instance.
 
-```
-Arguments:
-  to: Route Object. The location will be changed to.
-  from: Route Object. The current location.
-  action:
-    push: router.push() is called.
-    replace: router.replace() is called.
-    init: "to" is the initial page, at this stage, "from.path" is null.
-    pop: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
-    dispatch: router.dispatch() is called.
-  router: the router instance
+#### Arguments
+* to: Route object. The route will be changed to.
+* from: Route object. The current route.
+* action:
+    - push: router.push() is called.
+    - replace: router.replace() is called.
+    - init: "to" is the initial page, at this stage, "from.path" is null.
+    - pop: user clicked the back or foraward button , or router.go(), router.back(), router.forward() is called, or hash changed.
+    - dispatch: router.dispatch() is called.
+* router: the router instance
 
-Returns:
-  true | undefined: The navigation is confirmed.
-  false: Prevent the navigation.
-  null: Do nothing.
-  location: Redirect to this location.
+#### Returns
+
+The hook can return one of the following values, or a promise that resolves with one of the following values,
+to control the navigation:
+
+* true | undefined: The navigation is confirmed.
+* false: Prevent the navigation.
+* null: Do nothing.
+* location: Redirect to this location.
             You can override the history manipulate action by providing location.action property, values are: 'push', 'replace', 'dispatch'.
 
-Return value can be a Promise.
-```
-
-### router.afterChange
+### beforeUpdate
 
 ```js
-router.afterChange(function(to, from, action, router) {
+router.on('beforeUpdate', function(to, from, action, router) {
   // ...
 })
 ```
 
-Add a global afterChange callback. The callback will be called after history has been changed but before async components have been loaded.
-`this` of callback refers to the router instance.
+The `beforeUpdate` hook will be called after the history has been changed but before updating the `<router-view>`s.
+`this` refers to the router instance.
 
-Returning `false` can prevent to load the new page.
+Returning `false` or a promise that resolves with `false` can prevent to update the `<router-view>`s.
+
+### afterChange
+
+```js
+router.on('afterChange', function(to, from, action, router) {
+  // ...
+})
+```
+
+The `afterChange` hook will be called after `<router-view>`s have been updated.
+`this` refers to the router instance.
 
 ## Dependencies
 - [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL)

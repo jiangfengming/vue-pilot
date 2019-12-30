@@ -917,9 +917,13 @@ var RouterView = {
         children = _ref.children,
         parent = _ref.parent,
         data = _ref.data;
-    var route = parent.$root.$router && parent.$root.$router.current;
+    var route = parent.$root.$router && parent.$root.$router.current; // make reactive
 
-    if (!route || !route.routerViews) {
+    route.fullPath;
+    route.state;
+    route.meta;
+
+    if (!route || !route._routerViews) {
       return;
     }
 
@@ -935,7 +939,7 @@ var RouterView = {
       } else if (_parent.$parent) {
         _parent = _parent.$parent;
       } else {
-        routerView = route.routerViews[props.name];
+        routerView = route._routerViews[props.name];
         break;
       }
     }
@@ -949,6 +953,10 @@ var RouterView = {
       Object.assign(data, {
         props: viewProps
       });
+    }
+
+    if (routerView.key) {
+      data.key = routerView.key instanceof Function ? routerView.key(route) : routerView.key;
     }
 
     data._routerView = routerView;
@@ -1007,6 +1015,7 @@ var RouterLink = {
         }
       } else {
         to = router.normalize(url);
+        url = to.url;
       }
 
       if (to && router._urlRouter.find(to.path)) {
@@ -1067,10 +1076,10 @@ var RouterLink = {
   }
 };
 
-var _default$3 =
+var Base =
 /*#__PURE__*/
 function () {
-  _default.install = function install(Vue) {
+  Base.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
 
@@ -1080,8 +1089,6 @@ function () {
 
     Vue.mixin({
       beforeCreate: function beforeCreate() {
-        var _this = this;
-
         var router = this.$options.router || this.$parent && this.$parent.$router;
 
         if (!router) {
@@ -1093,25 +1100,43 @@ function () {
         if (this.$root === this && !router._observed) {
           router.current = Vue.observable(router.current);
           router._observed = true;
-        } else if (this.$vnode && // root vm's $vnode is undefined
+        }
+      },
+      mounted: function mounted() {
+        var _this = this;
+
+        if (this.$router && this.$vnode && // root vm's $vnode is undefined
         this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
-          Array.prototype.push.apply(router.current._beforeLeave, this.$options.beforeRouteLeave.map(function (f) {
+          this.$router._hooks.beforeRouteLeave = this.$options.beforeRouteLeave.map(function (f) {
             return f.bind(_this);
-          }));
+          });
+        }
+      },
+      beforeDestroy: function beforeDestroy() {
+        if (this.$router && this.$vnode && this.$vnode.data._routerView && this.$vnode.data._routerView.path && this.$options.beforeRouteLeave) {
+          this.$router._hooks.beforeRouteLeave = [];
         }
       }
     });
   };
 
-  function _default(_ref) {
+  function Base(_ref) {
     var origin = _ref.origin,
         routes = _ref.routes;
     var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
     this.origin = [].concat(locationOrigin || [], origin || []);
     this._routes = this._parseRoutes(routes);
     this._urlRouter = new Router(this._routes);
-    this._beforeChangeHooks = [];
-    this._afterChangeHooks = [];
+    this._hooks = {
+      beforeChange: [],
+      beforeChangeOnce: [],
+      beforeUpdate: [],
+      beforeUpdateOnce: [],
+      afterChange: [],
+      afterChangeOnce: [],
+      beforeRouteEnter: [],
+      beforeRouteLeave: []
+    };
     this.current = {
       path: null,
       fullPath: null,
@@ -1120,16 +1145,11 @@ function () {
       hash: null,
       state: null,
       params: null,
-      meta: null,
-      routerViews: null,
-      // make <router-view> reactive
-      _meta: [],
-      _beforeEnter: [],
-      _beforeLeave: []
+      meta: null
     };
   }
 
-  var _proto = _default.prototype;
+  var _proto = Base.prototype;
 
   _proto._parseRoutes = function _parseRoutes(routerViews, siblings, layers, parsed) {
     var _this2 = this;
@@ -1167,7 +1187,7 @@ function () {
         var _layers = layers.concat([layer]);
 
         if (routerView.children) {
-          _this2._parseRoutes(routerView.children, siblings, _layers, parsed);
+          _this2._parseRoutes(routerView.children, [], _layers, parsed);
         } else if (routerView.path) {
           parsed.push([routerView.path, _layers]);
         }
@@ -1187,8 +1207,33 @@ function () {
     this._generateMeta(this.current);
   };
 
-  _proto.beforeChange = function beforeChange(hook) {
-    this._beforeChangeHooks.push(hook.bind(this));
+  _proto.on = function on(event, fn, _temp) {
+    var _ref2 = _temp === void 0 ? {} : _temp,
+        once = _ref2.once,
+        beginning = _ref2.beginning;
+
+    if (once) {
+      event += 'Once';
+    }
+
+    if (beginning) {
+      this._hooks[event].unshift(fn);
+    } else {
+      this._hooks[event].push(fn);
+    }
+  };
+
+  _proto.off = function off(event, fn, _temp2) {
+    var _ref3 = _temp2 === void 0 ? {} : _temp2,
+        once = _ref3.once;
+
+    if (once) {
+      event += 'Once';
+    }
+
+    this._hooks[event] = this._hooks[event].filter(function (f) {
+      return f !== fn;
+    });
   };
 
   _proto._beforeChange = function _beforeChange(to, from, action) {
@@ -1203,10 +1248,8 @@ function () {
       state: to.state,
       meta: {},
       params: null,
-      routerViews: null,
-      _meta: [],
-      _beforeEnter: [],
-      _beforeLeave: []
+      _routerViews: null,
+      _meta: []
     };
 
     var _route = this._urlRouter.find(to.path);
@@ -1215,12 +1258,17 @@ function () {
       this._resolveRoute(route, _route);
     }
 
-    var hooks = this.current._beforeLeave.concat(to.route._beforeEnter, this._beforeChangeHooks);
+    var hooks = this._hooks.beforeRouteLeave.concat(this._hooks.beforeRouteEnter, this._hooks.beforeChangeOnce.map(function (fn) {
+      return fn.bind(_this3);
+    }), this._hooks.beforeChange.map(function (fn) {
+      return fn.bind(_this3);
+    }));
 
     if (!hooks.length) {
       return true;
     }
 
+    this._hooks.beforeChangeOnce = [];
     var promise = Promise.resolve(true);
     hooks.forEach(function (hook) {
       return promise = promise.then(function () {
@@ -1260,7 +1308,7 @@ function () {
       routerView = routerView.children[last.name || 'default'];
     });
 
-    to.routerViews = root.children;
+    to._routerViews = root.children;
 
     this._generateMeta(to);
   };
@@ -1269,28 +1317,27 @@ function () {
     var _this5 = this;
 
     var _routerViews = {};
-    routerViews.forEach(function (_ref2) {
-      var _ref2$name = _ref2.name,
-          name = _ref2$name === void 0 ? 'default' : _ref2$name,
-          path = _ref2.path,
-          component = _ref2.component,
-          props = _ref2.props,
-          meta = _ref2.meta,
-          beforeEnter = _ref2.beforeEnter,
-          children = _ref2.children;
+    routerViews.forEach(function (_ref4) {
+      var _ref4$name = _ref4.name,
+          name = _ref4$name === void 0 ? 'default' : _ref4$name,
+          path = _ref4.path,
+          component = _ref4.component,
+          key = _ref4.key,
+          props = _ref4.props,
+          meta = _ref4.meta,
+          beforeEnter = _ref4.beforeEnter,
+          children = _ref4.children;
       var com = _routerViews[name] = {
         component: component,
+        key: key,
         props: props
       };
 
       if (path) {
         com.path = path;
-
-        if (beforeEnter) {
-          Array.prototype.push.apply(route._beforeEnter, [].concat(beforeEnter).map(function (f) {
-            return f.bind(_this5);
-          }));
-        }
+        _this5._hooks.beforeRouteEnter = beforeEnter ? [].concat(beforeEnter).map(function (f) {
+          return f.bind(_this5);
+        }) : [];
       }
 
       if (meta) {
@@ -1317,18 +1364,14 @@ function () {
     }
   };
 
-  _proto.afterChange = function afterChange(hook) {
-    this._afterChangeHooks.push(hook.bind(this));
-  };
-
-  _proto._afterChange = function _afterChange(to, from, action) {
+  _proto._afterChange = function _afterChange(to, _, action) {
     var _this6 = this;
 
     var promise = Promise.resolve(true);
 
-    this._afterChangeHooks.forEach(function (hook) {
+    this._hooks.beforeUpdateOnce.concat(this._hooks.beforeUpdate).forEach(function (hook) {
       return promise = promise.then(function () {
-        return Promise.resolve(hook(to.route, _this6.current, action, _this6)).then(function (result) {
+        return Promise.resolve(hook.call(_this6, to.route, _this6.current, action, _this6)).then(function (result) {
           if (result === false) {
             throw result;
           }
@@ -1336,6 +1379,7 @@ function () {
       });
     });
 
+    this._hooks.beforeUpdateOnce = [];
     promise["catch"](function (e) {
       if (e instanceof Error) {
         // encountered unexpected error
@@ -1346,7 +1390,14 @@ function () {
       }
     }).then(function (v) {
       if (v !== false) {
+        var from = Object.assign({}, _this6.current);
         Object.assign(_this6.current, to.route);
+
+        _this6._hooks.afterChangeOnce.concat(_this6._hooks.afterChange).forEach(function (hook) {
+          hook.call(_this6, to.route, from, action, _this6);
+        });
+
+        _this6._hooks.afterChangeOnce = [];
       }
     });
   };
@@ -1391,15 +1442,15 @@ function () {
     return this._history.captureLinkClickEvent(e);
   };
 
-  return _default;
+  return Base;
 }();
 
-var _default$4 =
+var PathRouter =
 /*#__PURE__*/
 function (_Base) {
-  _inheritsLoose(_default, _Base);
+  _inheritsLoose(PathRouter, _Base);
 
-  function _default(args) {
+  function PathRouter(args) {
     var _this;
 
     _this = _Base.call(this, args) || this;
@@ -1411,15 +1462,15 @@ function (_Base) {
     return _this;
   }
 
-  return _default;
-}(_default$3);
+  return PathRouter;
+}(Base);
 
-var _default$5 =
+var HashRouter =
 /*#__PURE__*/
 function (_Base) {
-  _inheritsLoose(_default, _Base);
+  _inheritsLoose(HashRouter, _Base);
 
-  function _default(args) {
+  function HashRouter(args) {
     var _this;
 
     _this = _Base.call(this, args) || this;
@@ -1430,7 +1481,7 @@ function (_Base) {
     return _this;
   }
 
-  return _default;
-}(_default$3);
+  return HashRouter;
+}(Base);
 
-export { _default$5 as HashRouter, _default$4 as PathRouter, RouterLink, RouterView };
+export { HashRouter, PathRouter, RouterLink, RouterView };

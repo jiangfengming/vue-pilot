@@ -50,6 +50,7 @@ export default {
         }
       } else {
         to = router.normalize(url)
+        url = to.url
       }
 
       if (to && router._urlRouter.find(to.path)) {

@@ -1,7 +1,7 @@
 import { PathHistory } from 'spa-history'
 import Base from './Base'
 
-export default class extends Base {
+export default class PathRouter extends Base {
   constructor(args) {
     super(args)
 
