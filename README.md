@@ -1,6 +1,12 @@
 # vue-pilot
 A Trie-based vue router with the ability of managing history.state.
 
+## Install
+
+```
+npm install vue-pilot
+```
+
 ## Features
 * Small (5kb gzipped).
 * Ability of managing history.state.
