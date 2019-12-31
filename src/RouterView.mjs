@@ -12,9 +12,9 @@ export default {
     const route = parent.$root.$router && parent.$root.$router.current
 
     // make reactive
-    route.fullPath
-    route.state
-    route.meta
+    route.fullPath // eslint-disable-line no-unused-expressions
+    route.state // eslint-disable-line no-unused-expressions
+    route.meta // eslint-disable-line no-unused-expressions
 
     if (!route || !route._routerViews) {
       return
