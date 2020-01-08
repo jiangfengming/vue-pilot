@@ -27,9 +27,7 @@ export default {
     let spa = false
     let action = props.action
 
-    if (!url) {
-      href = 'javascript:'
-    } else {
+    if (url) {
       const isAbsURL = url.constructor === String && /^\w+:/.test(url)
 
       if (isAbsURL) {
@@ -64,41 +62,41 @@ export default {
       } else {
         href = isAbsURL ? url : to.url
       }
-    }
 
-    if (props.tag === 'a') {
-      data.attrs.href = props.href || href
+      if (props.tag === 'a') {
+        data.attrs.href = props.href || href
 
-      if (props.target) {
-        const target = props.target
-        data.attrs.target = target
+        if (props.target) {
+          const target = props.target
+          data.attrs.target = target
 
-        if (
-          spa &&
-          (
-            target === '_blank' ||
-            target === '_parent' && window.parent !== window ||
-            target === '_top' && window.top !== window ||
-            !(target in { _self: 1, _blank: 1, _parent: 1, _top: 1 }) && target !== window.name
-          )
-        ) {
-          spa = false
+          if (
+            spa &&
+            (
+              target === '_blank' ||
+              target === '_parent' && window.parent !== window ||
+              target === '_top' && window.top !== window ||
+              !(target in { _self: 1, _blank: 1, _parent: 1, _top: 1 }) && target !== window.name
+            )
+          ) {
+            spa = false
+          }
         }
       }
-    }
 
-    // same url
-    if (
-      to.path === router.current.path &&
-      to.query.source.toString() === router.current.query.source.toString() &&
-      to.hash === router.current.hash
-    ) {
-      action = 'replace'
-    }
+      // same url
+      if (
+        to.path === router.current.path &&
+        to.query.source.toString() === router.current.query.source.toString() &&
+        to.hash === router.current.hash
+      ) {
+        action = 'replace'
+      }
 
-    data.on = Object.assign({}, listeners, {
-      click: listeners.click ? [].concat(listeners.click, click) : click
-    })
+      data.on = Object.assign({}, listeners, {
+        click: listeners.click ? [].concat(listeners.click, click) : click
+      })
+    }
 
     return h(props.tag, data, children)
 
