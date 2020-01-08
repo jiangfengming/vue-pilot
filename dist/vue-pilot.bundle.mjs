@@ -479,7 +479,7 @@ function () {
   };
 
   _proto._getCurrentLocationFromBrowser = function _getCurrentLocationFromBrowser() {
-    var state = window.history.state || {};
+    var state = Object.assign({}, window.history.state);
     var loc = this.normalize(state.__path__ || this._extractPathFromExternalURL(window.location));
     loc.state = state;
 
