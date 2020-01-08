@@ -167,7 +167,7 @@ var RouterLink = {
       } // same url
 
 
-      if (to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash === router.current.hash) {
+      if (to && to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash === router.current.hash) {
         action = 'replace';
       }
 
