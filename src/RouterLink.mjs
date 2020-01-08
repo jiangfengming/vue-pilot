@@ -86,6 +86,7 @@ export default {
 
       // same url
       if (
+        to &&
         to.path === router.current.path &&
         to.query.source.toString() === router.current.query.source.toString() &&
         to.hash === router.current.hash
