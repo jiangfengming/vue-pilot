@@ -105,6 +105,7 @@ var RouterLink = {
     var url = props.to;
     var href, to;
     var spa = false;
+    var action = props.action;
 
     if (!url) {
       href = 'javascript:';
@@ -159,12 +160,12 @@ var RouterLink = {
         }) && target !== window.name)) {
           spa = false;
         }
-      } // hash change
-
-
-      if (spa && to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash) {
-        spa = false;
       }
+    } // same url
+
+
+    if (to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash === router.current.hash) {
+      action = 'replace';
     }
 
     data.on = Object.assign({}, listeners, {
@@ -177,10 +178,10 @@ var RouterLink = {
         e.preventDefault();
 
         if (spa) {
-          router[props.action](to);
+          router[action](to);
         } else if (props.target) {
           window.open(url, props.target);
-        } else if (props.action === 'push') {
+        } else if (action === 'push') {
           location = url;
         } else {
           location.replace(url);

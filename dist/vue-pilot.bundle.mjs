@@ -488,28 +488,10 @@ function () {
     }
 
     return loc;
-  }
-  /*
-    init
-    success: nop                       fail: _beforeChange('replace', current)       redirect: _beforeChange('replace', redirect)
-     push
-    success: pushState(to)             fail: nop                                     redirect: _beforeChange('push', redirect)
-     replace
-    success: replaceState(to)          fail: nop                                     redirect: _beforeChange('replace', redirect)
-     pop
-    success: nop                       fail: __changeHistory('push', current)        redirect: _beforeChange('push', redirect)
-     dispatch
-    success: nop                       fail: nop                                     redirect: _beforeChange('dispatch', redirect)
-  */
-  ;
+  };
 
   _proto._beforeChange = function _beforeChange(action, to) {
-    var _this2 = this; // `to` is same as `current` and `action` is `push`, set `action` to `replace`
-
-
-    if (this.current && to.path === this.current.path && to.query.source.toString() === this.current.query.source.toString() && action === 'push') {
-      action = 'replace';
-    }
+    var _this2 = this;
 
     Promise.resolve(this.beforeChange(to, this.current, action)).then(function (ret) {
       if (ret === undefined || ret === true) {
@@ -656,7 +638,7 @@ function () {
       return;
     }
 
-    var a = e.target.closest('a'); // force not handle the <a> element
+    var a = e.target.closest('a');
 
     if (!a) {
       return;
@@ -679,14 +661,14 @@ function () {
       return;
     }
 
-    var to = this.normalize(a.href); // hash change
+    var to = this.normalize(a.href);
+    e.preventDefault(); // same url
 
-    if (to.path === this.current.path && to.query.source.toString() === this.current.query.source.toString() && to.hash) {
-      return;
+    if (to.path === this.current.path && to.query.source.toString() === this.current.query.source.toString() && to.hash === this.current.hash) {
+      this.replace(to);
+    } else {
+      this.push(to);
     }
-
-    e.preventDefault();
-    this.push(to);
   };
 
   return _default;
@@ -993,6 +975,7 @@ var RouterLink = {
     var url = props.to;
     var href, to;
     var spa = false;
+    var action = props.action;
 
     if (!url) {
       href = 'javascript:';
@@ -1047,12 +1030,12 @@ var RouterLink = {
         }) && target !== window.name)) {
           spa = false;
         }
-      } // hash change
-
-
-      if (spa && to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash) {
-        spa = false;
       }
+    } // same url
+
+
+    if (to.path === router.current.path && to.query.source.toString() === router.current.query.source.toString() && to.hash === router.current.hash) {
+      action = 'replace';
     }
 
     data.on = Object.assign({}, listeners, {
@@ -1065,10 +1048,10 @@ var RouterLink = {
         e.preventDefault();
 
         if (spa) {
-          router[props.action](to);
+          router[action](to);
         } else if (props.target) {
           window.open(url, props.target);
-        } else if (props.action === 'push') {
+        } else if (action === 'push') {
           location = url;
         } else {
           location.replace(url);
