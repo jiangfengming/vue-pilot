@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "cast-string": "^0.3.0",
-    "spa-history": "^0.12.10",
+    "spa-history": "^0.12.11",
     "url-router": "^11.0.1"
   },
   "devDependencies": {

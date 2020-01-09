@@ -425,19 +425,19 @@ function () {
       loc = this.normalize(loc);
     }
 
-    if (!loc.state.__position__) {
-      this.setState({});
-    }
-
-    this._beforeChange('init', loc);
-
     if (SUPPORT_HISTORY_API) {
+      if (!history.state || !history.state.__position__) {
+        this.setState({});
+      }
+
       this._onpopstate = function () {
         _this._beforeChange('pop', _this._getCurrentLocationFromBrowser());
       };
 
       window.addEventListener('popstate', this._onpopstate);
     }
+
+    this._beforeChange('init', loc);
   };
 
   _proto.url = function url(loc) {
@@ -497,6 +497,8 @@ function () {
   _proto._beforeChange = function _beforeChange(action, to) {
     var _this2 = this;
 
+    var position = history.state && history.state.__position__ || history.length;
+    to.state.__position__ = action === 'push' ? position + 1 : position;
     Promise.resolve(this.beforeChange(to, this.current, action)).then(function (ret) {
       if (ret === undefined || ret === true) {
         if (action === 'push' || action === 'replace') {
