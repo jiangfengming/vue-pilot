@@ -832,9 +832,15 @@ function () {
     if (REGEX_INCLUDE_PARAM.test(remain)) {
       this._parse(remain, handler, node);
     } else {
-      node.children.string[remain] = this._createNode({
-        handler: handler
-      });
+      var child = node.children.string[remain];
+
+      if (child) {
+        child.handler = handler;
+      } else {
+        node.children.string[remain] = this._createNode({
+          handler: handler
+        });
+      }
     }
   };
 
