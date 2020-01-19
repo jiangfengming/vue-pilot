@@ -57,7 +57,7 @@ export default {
         href = to.url
 
         if (to.path === router.current.path) {
-          data.class = 'active'
+          data.class = data.class ? ['active'].concat(data.class) : 'active'
         }
       } else {
         href = isAbsURL ? url : to.url
