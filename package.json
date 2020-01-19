@@ -1,6 +1,6 @@
 {
   "name": "vue-pilot",
-  "version": "0.17.8",
+  "version": "0.17.9",
   "description": "A Trie-based vue router with the ability of managing history.state",
   "main": "dist/vue-pilot",
   "scripts": {
