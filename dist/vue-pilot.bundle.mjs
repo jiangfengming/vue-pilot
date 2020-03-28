@@ -205,9 +205,7 @@ function trimArray(a, defaults, dedup) {
   return a.length ? a : defaults;
 }
 
-var StringCaster =
-/*#__PURE__*/
-function () {
+var StringCaster = /*#__PURE__*/function () {
   function StringCaster(source) {
     this.source = source;
   }
@@ -402,9 +400,7 @@ function appendSearchParams(searchParams, q) {
 var SUPPORT_HISTORY_API = typeof window === 'object' && window.history && window.history.pushState;
 var SUPPORT_HISTORY_ERR = 'Current environment doesn\'t support History API';
 
-var _default =
-/*#__PURE__*/
-function () {
+var _default = /*#__PURE__*/function () {
   function _default(_ref) {
     var _ref$beforeChange = _ref.beforeChange,
         beforeChange = _ref$beforeChange === void 0 ? function () {} : _ref$beforeChange,
@@ -688,9 +684,7 @@ function () {
   return _default;
 }();
 
-var _default$1 =
-/*#__PURE__*/
-function (_Base) {
+var _default$1 = /*#__PURE__*/function (_Base) {
   _inheritsLoose$1(_default, _Base);
 
   function _default(args) {
@@ -732,9 +726,7 @@ function (_Base) {
   return _default;
 }(_default);
 
-var _default$2 =
-/*#__PURE__*/
-function (_Base) {
+var _default$2 = /*#__PURE__*/function (_Base) {
   _inheritsLoose$1(_default, _Base);
 
   function _default() {
@@ -759,9 +751,7 @@ var REGEX_START_WITH_PARAM = /^(:\w|\()/;
 var REGEX_INCLUDE_PARAM = /:\w|\(/;
 var REGEX_MATCH_PARAM = /^(?::(\w+))?(?:\(([^)]+)\))?/;
 
-var Router =
-/*#__PURE__*/
-function () {
+var Router = /*#__PURE__*/function () {
   function Router(routes) {
     var _this = this;
 
@@ -1080,9 +1070,7 @@ var RouterLink = {
   }
 };
 
-var Base =
-/*#__PURE__*/
-function () {
+var Base = /*#__PURE__*/function () {
   Base.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
@@ -1449,9 +1437,7 @@ function () {
   return Base;
 }();
 
-var PathRouter =
-/*#__PURE__*/
-function (_Base) {
+var PathRouter = /*#__PURE__*/function (_Base) {
   _inheritsLoose(PathRouter, _Base);
 
   function PathRouter(args) {
@@ -1469,9 +1455,7 @@ function (_Base) {
   return PathRouter;
 }(Base);
 
-var HashRouter =
-/*#__PURE__*/
-function (_Base) {
+var HashRouter = /*#__PURE__*/function (_Base) {
   _inheritsLoose(HashRouter, _Base);
 
   function HashRouter(args) {

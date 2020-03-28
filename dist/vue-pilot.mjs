@@ -190,9 +190,7 @@ var RouterLink = {
   }
 };
 
-var Base =
-/*#__PURE__*/
-function () {
+var Base = /*#__PURE__*/function () {
   Base.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
@@ -559,9 +557,7 @@ function () {
   return Base;
 }();
 
-var PathRouter =
-/*#__PURE__*/
-function (_Base) {
+var PathRouter = /*#__PURE__*/function (_Base) {
   _inheritsLoose(PathRouter, _Base);
 
   function PathRouter(args) {
@@ -579,9 +575,7 @@ function (_Base) {
   return PathRouter;
 }(Base);
 
-var HashRouter =
-/*#__PURE__*/
-function (_Base) {
+var HashRouter = /*#__PURE__*/function (_Base) {
   _inheritsLoose(HashRouter, _Base);
 
   function HashRouter(args) {

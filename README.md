@@ -8,60 +8,64 @@ npm install vue-pilot
 ```
 
 ## Features
-* Small (5kb gzipped).
+* Small (8kb after gzipped).
 * Ability of managing history.state.
 * Decoupling UI layout from URL segments.
 * Dispatching route without changing URL.
 * Typed query and params.
 
 ## Table of Contents
-- [Constructor](#constructor)
-  - [PathRouter](#pathrouter)
-  - [HashRouter](#hashrouter)
-- [&lt;router-view&gt;](#router-view)
-- [&lt;router-link&gt;](#router-link)
-- [Location object](#location-object)
-  - [path](#path)
-  - [external](#external)
-  - [query](#query)
-  - [hash](#hash)
-  - [fullPath](#fullpath)
-  - [url](#url)
-  - [state](#state)
-  - [hidden](#hidden)
-  - [appearPath](#appearpath)
-- [Matched route object](#matched-route-object)
-  - [path](#path-1)
-  - [query](#query-1)
-  - [hash](#hash-1)
-  - [fullPath](#fullpath-1)
-  - [url](#url-1)
-  - [params](#params)
-  - [meta](#meta)
-- [Routes definition](#routes-definition)
-- [APIs](#apis)
-  - [router.current](#routercurrent)
-  - [router.start()](#routerstart)
-  - [router.normalize()](#routernormalize)
-  - [router.url()](#routerurl)
-  - [router.push()](#routerpush)
-  - [router.replace()](#routerreplace)
-  - [router.dispatch()](#routerdispatch)
-  - [router.setState()](#routersetstate)
-  - [router.go()](#routergo)
-  - [router.back()](#routerback)
-  - [router.forward()](#routerforward)
-  - [router.captureLinkClickEvent()](#routercapturelinkclickevent)
-  - [router.on()](#routeron)
-  - [router.off()](#routeroff)
-- [Events](#events)
-  - [beforeChange](#beforechange)
-    - [Arguments](#arguments)
-    - [Returns](#returns)
-  - [beforeUpdate](#beforeupdate)
-  - [afterChange](#afterchange)
-- [Dependencies](#dependencies)
-- [License](#license)
+- [vue-pilot](#vue-pilot)
+  - [Install](#install)
+  - [Features](#features)
+  - [Table of Contents](#table-of-contents)
+  - [Constructor](#constructor)
+    - [PathRouter](#pathrouter)
+    - [HashRouter](#hashrouter)
+  - [\<RouterView>](#routerview)
+  - [\<RouterLink>](#routerlink)
+  - [Location object](#location-object)
+    - [path](#path)
+    - [external](#external)
+    - [query](#query)
+    - [hash](#hash)
+    - [fullPath](#fullpath)
+    - [url](#url)
+    - [state](#state)
+    - [hidden](#hidden)
+    - [appearPath](#appearpath)
+  - [Matched route object](#matched-route-object)
+    - [path](#path-1)
+    - [query](#query-1)
+    - [hash](#hash-1)
+    - [fullPath](#fullpath-1)
+    - [url](#url-1)
+    - [params](#params)
+    - [meta](#meta)
+  - [Routes definition](#routes-definition)
+  - [APIs](#apis)
+    - [router.current](#routercurrent)
+    - [router.start()](#routerstart)
+    - [router.normalize()](#routernormalize)
+    - [router.url()](#routerurl)
+    - [router.push()](#routerpush)
+    - [router.replace()](#routerreplace)
+    - [router.dispatch()](#routerdispatch)
+    - [router.setState()](#routersetstate)
+    - [router.go()](#routergo)
+    - [router.back()](#routerback)
+    - [router.forward()](#routerforward)
+    - [router.captureLinkClickEvent()](#routercapturelinkclickevent)
+    - [router.on()](#routeron)
+    - [router.off()](#routeroff)
+  - [Events](#events)
+    - [beforeChange](#beforechange)
+      - [Arguments](#arguments)
+      - [Returns](#returns)
+    - [beforeUpdate](#beforeupdate)
+    - [afterChange](#afterchange)
+  - [Dependencies](#dependencies)
+  - [License](#license)
 
 ## Constructor
 
@@ -95,7 +99,7 @@ router.start()
 `base`: `String`. defines the base path of the app. If you want the root path not end with slash,
 you can set the base without ending slash, like '/app'. Defaults to `''`.
 
-`origin`: `String` | `Array<String>`. Let `<router-link>` treats absolute URLs with `origin` as in-app links.
+`origin`: `String` | `Array<String>`. Let `<RouterLink>` treats absolute URLs with `origin` as in-app links.
 
 ### HashRouter
 
@@ -114,9 +118,9 @@ const router = new HashRouter({
 
 `HashRouter` doesn't have `base` option.
 
-## \<router-view>
+## \<RouterView>
 
-The `<router-view>` is a functional component that renders the matched component.
+The `<RouterView>` is a functional component that renders the matched component.
 
 It has a `name` property.  The default value is `default`.
 
@@ -124,39 +128,39 @@ Example:
 
 ```html
 <div id="app">
-  <router-view name="aside">
-  <router-view />
+  <RouterView name="aside">
+  <RouterView />
 </div>
 ```
 
-## \<router-link>
+## \<RouterLink>
 
 ```html
-<router-link to="/list?page=1">List</router-link>
-<router-link to="/home" target="_blank">Open new tab</router-link>
+<RouterLink to="/list?page=1">List</RouterLink>
+<RouterLink to="/home" target="_blank">Open new tab</RouterLink>
 
-<router-link
+<RouterLink
   tag="div"
   action="replace"
   :to="{ path: '/category', query: { cat: 'shoes' }, state: { from: 'home' } }"
 >
   Shoes
-</router-link>
+</RouterLink>
 
-<router-link to="https://www.example.com">external link</router-link>
+<RouterLink to="https://www.example.com">external link</RouterLink>
 ```
 
-The `<router-link>` is a navigation component, it normally renders an `<a>` element.
+The `<RouterLink>` is a navigation component, it normally renders an `<a>` element.
 
 * `to`: `Location` object, or `path`/`fullPath` of the `Location` object, or an absolute URL.
 * `action`: `String`. `push`, `replace`, or `dispatch`. Defaults to `push`.
 * `tag`: `String`. The HTML tag name. Defaults to `a`.
 
-`<router-link>` will have `active` class if it equals to the current path.
+`<RouterLink>` will have `active` class if it equals to the current path.
 
 ## Location object
 A location object is used for changing the current address.
-It can be used in `<router-link :to="location">`, `router.start(location)`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
+It can be used in `<RouterLink :to="location">`, `router.start(location)`, `router.push(location)`, `router.replace(location)`, `router.dispatch(location)`, etc.
 
 A string URL can be converted to a location object by [router.normalize()](#routernormalize).
 And a location object can be converted to a URL string by [router.url()](#routerurl).
@@ -288,25 +292,25 @@ A object collected from the route definiton. See [Routes definition](#routes-def
 ```js
 const routes = [
   {
-    name: 'aside', // will be mounted into <router-view name="aside">
+    name: 'aside', // will be mounted into <RouterView name="aside">
     component: { /* component definition */ }
   },
 
   {
     path: '/basic',
 
-    // definition without `name`
-    // the component will be mounted into <router-view name="default">
+    // Definition without `name`.
+    // The component will be mounted into <RouterView name="default">
     component: { /* component definition */ }
   },
 
-  // return promise to define async components
-  { path: '/async', component: () => import('./AsyncComponent.vue') },
+  // Return promise to define async components
+  { path: '/async', component: () => import('./Component.vue') },
 
   {
     path: '/prop',
 
-    // pass some props to the component
+    // Pass some props to the component
     props: { foo: 'hello' },
 
     component: {
@@ -316,14 +320,9 @@ const routes = [
   },
 
   {
-    // use `:paramName` to define params
-    // more pattern syntax, see https://github.com/jiangfengming/url-router
+    // Use `:paramName` to define params
+    // More pattern syntax, see https://github.com/jiangfengming/url-router
     path: '/article/:id',
-
-    // set VM key for dynamic route
-    // see https://vuejs.org/v2/api/#key
-    // if key is a function, the returned value will be the key
-    key: route => route.params.int('id'),
 
     // props can be a factory function, it receives the current route object as the first argument.
     props: route => ({
@@ -335,7 +334,14 @@ const routes = [
     component: {
       props: ['articleId', 'foo', 'bar'],
       // ...
-    }
+    },
+
+    // Setting key attribute of the <RouterView>.
+    // It will re-create the component instead of reusing it when key changes.
+    // So you needn't to watch the prop changes.
+    // See https://vuejs.org/v2/api/#key
+    // If key is a function, the returned value will be the key
+    key: route => route.params.int('id')
   },
 
   {
@@ -345,12 +351,12 @@ const routes = [
     props: route => ({ foo: route.params.int('year'), bar: route.params.int('month') })
   },
 
-  // define hooks
+  // Define hooks
   {
     path: '/login',
 
     // beforeEnter hook will be called before confirming the navigation.
-    // see global `beforeChange` event for details
+    // See global `beforeChange` event for details.
     // Function | Array<Function>
     // `this` refers to the router instance.
     beforeEnter(to, from, action, router) {
@@ -358,9 +364,9 @@ const routes = [
     },
 
     component: {
-      // in-component beforeRouteLeave hook
-      // will be called before route leave
-      // see global `beforeChange` event for details
+      // in-component beforeRouteLeave hook.
+      // Will be called before route leave.
+      // See global `beforeChange` event for details.
       // Function | Array<Function>
       // `this` refers to the vue component instance.
       beforeRouteLeave(to, from, action, router) {
@@ -372,8 +378,8 @@ const routes = [
   },
 
 
-  // use array to group <router-view> definitions
-  // router view definitions in array will override outer definitions which has same name.
+  // Use array to group <RouterView> definitions
+  // Router view definitions in array will override outer definitions which has the same name.
   [
     {
       name: 'aside',
@@ -381,24 +387,24 @@ const routes = [
     },
 
     {
-      // in this layout, the default <router-view> will mount a component that has nested <router-view>s
+      // In this layout, the default <RouterView> will mount a component that has nested <RouterView>s
       component: {
         props: ['activeTab'],
 
-        // define two child <router-view>s
+        // Define two child <RouterView>s
         template: `
-          <router-view />
-          <router-view name="footer" />
+          <RouterView />
+          <RouterView name="footer" />
         `
       },
 
-      // define some meta
+      // Define some meta
       meta: { activeTab: 'main' },
 
       // route.meta.activeTab is "foo" when path is "/foo"
       props: route => ({ activeTab: route.meta.activeTab })
 
-      // define child <router-view>s
+      // Define child <RouterView>s
       children: [
         {
           name: 'footer',
@@ -409,13 +415,13 @@ const routes = [
           path: '/foo',
           component: { /* ... */ },
 
-          // parent route meta and child route meta will be merged together
-          // if child route meta has same keys as parent, it will override parent ones.
+          // Parent route meta and child route meta will be merged together.
+          // If child route meta has same keys as parent, it will override parent ones.
           meta: { activeTab: 'foo' }
         },
 
         [
-          // override footer
+          // Override footer
           {
             name: 'footer',
             component: { /* ... */ }
@@ -430,7 +436,7 @@ const routes = [
           }
         ],
 
-        // define a catch-all route
+        // Define a catch-all route
         {
           path: '(.*)',
           component: {
@@ -722,10 +728,10 @@ router.on('beforeUpdate', function(to, from, action, router) {
 })
 ```
 
-The `beforeUpdate` hook will be called after the history has been changed but before updating the `<router-view>`s.
+The `beforeUpdate` hook will be called after the history has been changed but before updating the `<RouterView>`s.
 `this` refers to the router instance.
 
-Returning `false` or a promise that resolves with `false` can prevent to update the `<router-view>`s.
+Returning `false` or a promise that resolves with `false` can prevent to update the `<RouterView>`s.
 
 ### afterChange
 
@@ -735,7 +741,7 @@ router.on('afterChange', function(to, from, action, router) {
 })
 ```
 
-The `afterChange` hook will be called after `<router-view>`s have been updated.
+The `afterChange` hook will be called after `<RouterView>`s have been updated.
 `this` refers to the router instance.
 
 ## Dependencies
