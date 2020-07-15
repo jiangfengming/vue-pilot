@@ -582,7 +582,7 @@ var _default = /*#__PURE__*/function () {
     }
 
     var state = to.state;
-    var url = to.url;
+    var url = to.url || null;
 
     if (to.hidden) {
       state.__path__ = to.fullPath;

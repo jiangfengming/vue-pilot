@@ -23,18 +23,18 @@
   },
   "dependencies": {
     "cast-string": "^0.3.0",
-    "spa-history": "^0.12.11",
+    "spa-history": "^0.12.12",
     "url-router": "^11.0.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.0",
-    "@rollup/plugin-node-resolve": "^7.1.1",
-    "eslint": "^6.8.0",
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@rollup/plugin-babel": "^5.1.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "eslint": "^7.4.0",
     "eslint-config-enough": "^0.4.3",
-    "local-web-server": "^4.0.0",
-    "rollup": "^2.2.0",
-    "rollup-plugin-babel": "^4.4.0"
+    "local-web-server": "^4.2.1",
+    "rollup": "^2.21.0"
   },
   "babel": {
     "presets": [
