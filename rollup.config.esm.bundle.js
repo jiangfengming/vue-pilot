@@ -6,7 +6,10 @@ export default {
 
   plugins: [
     resolve(),
-    babel()
+
+    babel({
+      babelHelpers: 'bundled'
+    })
   ],
 
   output: {

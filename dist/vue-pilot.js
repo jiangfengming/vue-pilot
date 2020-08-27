@@ -2,11 +2,13 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
 var spaHistory = require('spa-history');
-var URLRouter = _interopDefault(require('url-router'));
+var URLRouter = require('url-router');
 var castString = require('cast-string');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var URLRouter__default = /*#__PURE__*/_interopDefaultLegacy(URLRouter);
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -200,6 +202,8 @@ var Base = /*#__PURE__*/function () {
   Base.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
+    Vue.component('RouterView', RouterView);
+    Vue.component('RouterLink', RouterLink);
 
     Vue.config.optionMergeStrategies.beforeRouteLeave = function (parent, child) {
       return child ? (parent || []).concat(child) : parent;
@@ -244,7 +248,7 @@ var Base = /*#__PURE__*/function () {
     var locationOrigin = typeof window === 'object' && window.location && window.location.origin;
     this.origin = [].concat(locationOrigin || [], origin || []);
     this._routes = this._parseRoutes(routes);
-    this._urlRouter = new URLRouter(this._routes);
+    this._urlRouter = new URLRouter__default['default'](this._routes);
     this._hooks = {
       beforeChange: [],
       beforeChangeOnce: [],

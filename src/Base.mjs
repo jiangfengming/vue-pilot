@@ -7,6 +7,8 @@ export default class Base {
   static install(Vue) {
     Vue.component('router-view', RouterView)
     Vue.component('router-link', RouterLink)
+    Vue.component('RouterView', RouterView)
+    Vue.component('RouterLink', RouterLink)
 
     Vue.config.optionMergeStrategies.beforeRouteLeave = (parent, child) =>
       child ? (parent || []).concat(child) : parent

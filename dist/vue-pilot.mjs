@@ -194,6 +194,8 @@ var Base = /*#__PURE__*/function () {
   Base.install = function install(Vue) {
     Vue.component('router-view', RouterView);
     Vue.component('router-link', RouterLink);
+    Vue.component('RouterView', RouterView);
+    Vue.component('RouterLink', RouterLink);
 
     Vue.config.optionMergeStrategies.beforeRouteLeave = function (parent, child) {
       return child ? (parent || []).concat(child) : parent;

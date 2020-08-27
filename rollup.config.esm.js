@@ -4,7 +4,9 @@ export default {
   input: 'src/index.mjs',
 
   plugins: [
-    babel()
+    babel({
+      babelHelpers: 'bundled'
+    })
   ],
 
   output: {
